@@ -1,0 +1,138 @@
+/* =====================================================================
+   MASAR design tokens — single source of truth for colour, type, space.
+   Consumed by Tailwind (tailwind.config.ts maps these to theme.extend)
+   and by shadcn/ui components. Light is default; dark via [data-theme].
+   Fonts: Manrope (Latin) + IBM Plex Sans Arabic (Arabic) — load from
+   Google Fonts; both have matching x-height so mixed lines look even.
+   ===================================================================== */
+
+:root {
+  /* ---- Brand ---- */
+  --brand-50:  #eef4ff;
+  --brand-100: #d9e5ff;
+  --brand-200: #bcd0ff;
+  --brand-300: #8fb1ff;
+  --brand-400: #5b87fb;
+  --brand-500: #2f5ff5;   /* primary */
+  --brand-600: #1f45db;
+  --brand-700: #1a37b1;
+  --brand-800: #1b318f;
+  --brand-900: #1b2c70;
+
+  /* ---- Task categories (used for calendar, badges, map pins) ---- */
+  --cat-routine:  #0ea5a4;   /* teal   — daily routine   */
+  --cat-airport:  #6366f1;   /* indigo — airport trip    */
+  --cat-delivery: #f59e0b;   /* amber  — document delivery */
+  --cat-escort:   #ec4899;   /* pink   — escorting staff */
+
+  /* ---- Status ---- */
+  --status-draft:        #94a3b8;
+  --status-scheduled:    #64748b;
+  --status-assigned:     #3b82f6;
+  --status-acknowledged: #0891b2;
+  --status-en-route:     #8b5cf6;
+  --status-in-progress:  #10b981;
+  --status-delayed:      #f97316;
+  --status-completed:    #16a34a;
+  --status-cancelled:    #9ca3af;
+  --status-no-show:      #dc2626;
+
+  /* ---- Semantic ---- */
+  --success: #16a34a;
+  --warning: #f59e0b;
+  --danger:  #dc2626;
+  --info:    #0284c7;
+
+  /* ---- Surfaces (light) ---- */
+  --bg:            #f6f7fb;
+  --surface:       #ffffff;
+  --surface-2:     #f1f3f9;
+  --surface-3:     #e6e9f2;
+  --border:        #e3e6ef;
+  --border-strong: #cdd2e0;
+  --text:          #0f172a;
+  --text-2:        #475569;
+  --text-3:        #94a3b8;
+  --text-on-brand: #ffffff;
+  --ring:          var(--brand-400);
+  --overlay:       rgb(15 23 42 / 0.45);
+
+  /* ---- Typography ---- */
+  --font-sans:   "Manrope", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Manrope", system-ui, sans-serif;
+  --font-mono:   "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --text-xs:  0.75rem;   /* 12 */
+  --text-sm:  0.875rem;  /* 14 */
+  --text-md:  1rem;      /* 16 */
+  --text-lg:  1.125rem;  /* 18 */
+  --text-xl:  1.375rem;  /* 22 */
+  --text-2xl: 1.75rem;   /* 28 */
+  --text-3xl: 2.25rem;   /* 36 */
+  --leading-tight:  1.2;
+  --leading-normal: 1.5;
+
+  /* ---- Spacing (4-pt grid) ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+
+  /* ---- Radii ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 999px;
+
+  /* ---- Elevation ---- */
+  --shadow-xs: 0 1px 2px rgb(15 23 42 / 0.05);
+  --shadow-sm: 0 1px 3px rgb(15 23 42 / 0.08), 0 1px 2px rgb(15 23 42 / 0.04);
+  --shadow-md: 0 4px 12px rgb(15 23 42 / 0.08), 0 2px 4px rgb(15 23 42 / 0.04);
+  --shadow-lg: 0 12px 32px rgb(15 23 42 / 0.12);
+
+  /* ---- Layout ---- */
+  --sidebar-w: 256px;
+  --sidebar-w-collapsed: 72px;
+  --topbar-h: 60px;
+  --content-max: 1440px;
+  --touch-target: 44px;
+
+  /* ---- Motion ---- */
+  --ease: cubic-bezier(.2,.8,.2,1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-slow: 320ms;
+
+  color-scheme: light;
+}
+
+[data-theme="dark"] {
+  --bg:            #0b1020;
+  --surface:       #111827;
+  --surface-2:     #161e31;
+  --surface-3:     #1f2940;
+  --border:        #243049;
+  --border-strong: #34425f;
+  --text:          #e6eaf3;
+  --text-2:        #a7b1c6;
+  --text-3:        #6b768e;
+  --overlay:       rgb(0 0 0 / 0.6);
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.5);
+  --shadow-md: 0 4px 12px rgb(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.6);
+  color-scheme: dark;
+}
+
+/* Arabic: switch primary font, keep sizes */
+[dir="rtl"] { --font-sans: var(--font-arabic); }
+
+/* Base */
+html { font-family: var(--font-sans); color: var(--text); background: var(--bg); }
+body { margin: 0; line-height: var(--leading-normal); -webkit-font-smoothing: antialiased; }

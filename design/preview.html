@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Masar Design Template</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+body{margin:0}
+img{max-width:100%}
+
+:root{
+  --brand-50:#eef4ff;--brand-100:#d9e5ff;--brand-300:#8fb1ff;--brand-400:#5b87fb;--brand-500:#2f5ff5;--brand-600:#1f45db;--brand-900:#1b2c70;
+  --cat-routine:#0ea5a4;--cat-airport:#6366f1;--cat-delivery:#f59e0b;--cat-escort:#ec4899;
+  --st-assigned:#3b82f6;--st-ack:#0891b2;--st-enroute:#8b5cf6;--st-progress:#10b981;--st-delayed:#f97316;--st-completed:#16a34a;--st-noshow:#dc2626;
+  --success:#16a34a;--warning:#f59e0b;--danger:#dc2626;
+  --bg:#f6f7fb;--surface:#ffffff;--surface-2:#f1f3f9;--surface-3:#e6e9f2;--border:#e3e6ef;--border-strong:#cdd2e0;
+  --text:#0f172a;--text-2:#475569;--text-3:#94a3b8;--on-brand:#fff;
+  --map-land:#eef1f7;--map-road:#ffffff;--map-water:#dbe7f5;
+  --shadow-sm:0 1px 3px rgb(15 23 42/.08),0 1px 2px rgb(15 23 42/.04);--shadow-md:0 4px 12px rgb(15 23 42/.08),0 2px 4px rgb(15 23 42/.04);--shadow-lg:0 20px 48px rgb(15 23 42/.16);
+  --font-latin:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;--font-arabic:"IBM Plex Sans Arabic","Noto Sans Arabic",system-ui,sans-serif;
+  --font:var(--font-latin);
+  --r-sm:6px;--r-md:10px;--r-lg:14px;--r-xl:20px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0b1020;--surface:#111827;--surface-2:#161e31;--surface-3:#1f2940;--border:#243049;--border-strong:#34425f;
+  --text:#e6eaf3;--text-2:#a7b1c6;--text-3:#6b768e;--map-land:#141c30;--map-road:#1f2a44;--map-water:#0f1a33;
+  --shadow-sm:0 1px 3px rgb(0 0 0/.5);--shadow-md:0 4px 12px rgb(0 0 0/.5);--shadow-lg:0 20px 48px rgb(0 0 0/.6);color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1020;--surface:#111827;--surface-2:#161e31;--surface-3:#1f2940;--border:#243049;--border-strong:#34425f;
+  --text:#e6eaf3;--text-2:#a7b1c6;--text-3:#6b768e;--map-land:#141c30;--map-road:#1f2a44;--map-water:#0f1a33;
+  --shadow-sm:0 1px 3px rgb(0 0 0/.5);--shadow-md:0 4px 12px rgb(0 0 0/.5);--shadow-lg:0 20px 48px rgb(0 0 0/.6);color-scheme:dark}
+:root[dir="rtl"]{--font:var(--font-arabic)}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;padding-block:0 64px;padding-inline:clamp(16px,3vw,40px)}
+[dir="rtl"] body{line-height:1.7}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.2}
+button{font:inherit;color:inherit;cursor:pointer}
+.num{font-variant-numeric:tabular-nums}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3)}
+[dir="rtl"] .eyebrow{letter-spacing:0}
+
+/* page chrome */
+.page-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;padding-block:20px 28px;max-width:1280px;margin-inline:auto}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--brand-500),var(--brand-900));display:grid;place-items:center;color:#fff}
+.brand h1{font-size:22px;font-weight:800;letter-spacing:-.01em}
+.brand p{margin:0;color:var(--text-2);font-size:13px}
+.controls{display:flex;gap:8px;flex-wrap:wrap}
+.seg{display:inline-flex;background:var(--surface-2);border:1px solid var(--border);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 14px;border-radius:999px;font-weight:600;color:var(--text-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm)}
+.seg button:focus-visible,.btn:focus-visible{outline:2px solid var(--brand-400);outline-offset:2px}
+section.block{max-width:1280px;margin-inline:auto;margin-block:0 40px}
+.block-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-block:0 14px;flex-wrap:wrap}
+.block-head h2{font-size:17px;font-weight:700}
+.block-head p{margin:0;color:var(--text-2);font-size:13px;max-width:60ch}
+
+/* ===== Desktop frame ===== */
+.frame{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);overflow:hidden}
+.titlebar{height:36px;display:flex;align-items:center;gap:8px;padding-inline:14px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.titlebar i{width:11px;height:11px;border-radius:50%;background:var(--border-strong);display:inline-block}
+.titlebar span{margin-inline-start:auto;font-size:11px;color:var(--text-3)}
+.app{display:grid;grid-template-columns:232px 1fr;min-height:640px}
+@media (max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}}
+.sidebar{background:var(--surface-2);border-inline-end:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.sidebar .site{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);background:var(--surface);border-radius:var(--r-md);margin-block:0 12px}
+.sidebar .site b{display:block;font-size:13px}
+.sidebar .site small{color:var(--text-3);font-size:11px}
+.nav{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r-md);color:var(--text-2);font-weight:600;font-size:13px}
+.nav svg{width:18px;height:18px;flex:none}
+.nav.active{background:var(--brand-500);color:#fff}
+.nav .badge{margin-inline-start:auto;background:var(--danger);color:#fff;font-size:11px;font-weight:700;border-radius:999px;padding:1px 7px}
+.nav.active .badge{background:rgb(255 255 255/.25)}
+.sidebar .me{margin-top:auto;display:flex;gap:10px;align-items:center;padding:10px;font-size:12px;color:var(--text-2)}
+.avatar{width:30px;height:30px;border-radius:50%;background:var(--brand-100);color:var(--brand-600);display:grid;place-items:center;font-weight:700;font-size:12px;flex:none}
+.main{display:flex;flex-direction:column;min-width:0}
+.topbar{height:56px;display:flex;align-items:center;gap:12px;padding-inline:20px;border-bottom:1px solid var(--border)}
+.search{flex:1;max-width:360px;display:flex;align-items:center;gap:8px;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--r-md);padding:7px 12px;color:var(--text-3);font-size:13px}
+.search kbd{margin-inline-start:auto;font:inherit;font-size:11px;border:1px solid var(--border-strong);border-radius:4px;padding:0 5px}
+.icon-btn{width:36px;height:36px;border-radius:var(--r-md);border:1px solid var(--border);background:var(--surface);display:grid;place-items:center;position:relative;color:var(--text-2)}
+.icon-btn .dot{position:absolute;top:7px;inset-inline-end:7px;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid var(--surface)}
+.btn{border:0;border-radius:var(--r-md);padding:9px 14px;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:8px}
+.btn-primary{background:var(--brand-500);color:#fff}
+.btn-ghost{background:transparent;border:1px solid var(--border-strong);color:var(--text)}
+.content{padding:20px;display:grid;gap:16px;grid-template-columns:1fr 340px}
+@media (max-width:1100px){.content{grid-template-columns:1fr}}
+.col{display:grid;gap:16px;align-content:start;min-width:0}
+.ph{display:flex;align-items:end;justify-content:space-between;gap:12px;grid-column:1/-1}
+.ph h2{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.ph p{margin:2px 0 0;color:var(--text-2);font-size:13px}
+
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:700px){.kpis{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:14px 16px}
+.kpi .v{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.1;margin-top:6px}
+.kpi .d{font-size:12px;color:var(--text-2);margin-top:4px;display:flex;align-items:center;gap:6px}
+.kpi.warn{border-color:color-mix(in srgb,var(--warning) 45%,var(--border))}
+.kpi.warn .v{color:var(--warning)}
+.kpi.bad .v{color:var(--danger)}
+
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border)}
+.card-h h3{font-size:14px;font-weight:700}
+.card-h a{font-size:12px;color:var(--brand-500);font-weight:600;text-decoration:none}
+
+/* attention list */
+.att{list-style:none;margin:0;padding:0}
+.att li{display:grid;grid-template-columns:4px 1fr auto;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);align-items:center}
+.att li:last-child{border-bottom:0}
+.att .bar{height:100%;border-radius:2px;min-height:38px}
+.att b{font-size:13px;display:block}
+.att small{color:var(--text-2);font-size:12px}
+.att .act{display:flex;gap:6px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;border-radius:999px;padding:3px 9px;background:var(--surface-2);color:var(--text-2);white-space:nowrap}
+.pill::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.pill.delayed{color:var(--st-delayed);background:color-mix(in srgb,var(--st-delayed) 12%,transparent)}
+.pill.conflict{color:var(--danger);background:color-mix(in srgb,var(--danger) 12%,transparent)}
+.pill.ack{color:var(--st-ack);background:color-mix(in srgb,var(--st-ack) 12%,transparent)}
+.pill.hint{color:var(--brand-600);background:var(--brand-50)}
+.pill.enroute{color:var(--st-enroute);background:color-mix(in srgb,var(--st-enroute) 12%,transparent)}
+.pill.done{color:var(--st-completed);background:color-mix(in srgb,var(--st-completed) 12%,transparent)}
+.mini{font-size:11px;font-weight:700;padding:5px 9px;border-radius:var(--r-sm);border:1px solid var(--border-strong);background:var(--surface)}
+.mini.p{background:var(--brand-500);border-color:var(--brand-500);color:#fff}
+
+/* resource calendar */
+.cal{overflow-x:auto}
+.cal table{border-collapse:collapse;min-width:640px;width:100%;font-size:12px}
+.cal th,.cal td{border-bottom:1px solid var(--border);height:52px;padding:0}
+.cal th{font-weight:600;color:var(--text-3);text-align:start;padding-inline:16px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;height:34px}
+.cal th.t{text-align:center;padding:0;letter-spacing:0;font-weight:500;color:var(--text-3);border-inline-start:1px solid var(--border)}
+.cal td.d{padding-inline:16px;white-space:nowrap;font-weight:600;width:150px}
+.cal td.d small{display:block;color:var(--text-3);font-weight:500}
+.cal td.slot{border-inline-start:1px solid var(--border);position:relative;background-image:linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:50% 100%}
+.cal .row{position:absolute;inset:0;padding:6px 0;pointer-events:none}
+.ev{position:absolute;top:7px;bottom:7px;border-radius:6px;padding:4px 8px;font-size:11px;font-weight:700;line-height:1.25;color:var(--text);border-inline-start:3px solid var(--c);background:color-mix(in srgb,var(--c) 14%,var(--surface));overflow:hidden;white-space:nowrap;text-overflow:ellipsis;pointer-events:auto}
+.ev small{display:block;font-weight:500;color:var(--text-2)}
+.ev.conf{box-shadow:0 0 0 2px var(--danger) inset}
+.ev .cb{position:absolute;top:3px;inset-inline-end:4px;background:var(--danger);color:#fff;font-size:9px;border-radius:999px;padding:0 5px;font-weight:800}
+.now{position:absolute;top:0;bottom:0;width:2px;background:var(--danger);z-index:2}
+.now::before{content:"";position:absolute;top:-1px;inset-inline-start:-4px;width:10px;height:10px;border-radius:50%;background:var(--danger)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:10px 16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:6px;vertical-align:-1px}
+
+/* map */
+.map{position:relative;height:250px;background:var(--map-land);overflow:hidden}
+.map svg{position:absolute;inset:0;width:100%;height:100%}
+.pin{position:absolute;transform:translate(-50%,-100%);display:flex;flex-direction:column;align-items:center;gap:2px}
+.pin .head{width:26px;height:26px;border-radius:50%;background:var(--c);border:3px solid var(--surface);box-shadow:var(--shadow-md);display:grid;place-items:center;color:#fff;font-size:10px;font-weight:800}
+.pin .tag{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:2px 6px;font-size:10px;font-weight:700;white-space:nowrap;box-shadow:var(--shadow-sm)}
+.pin.live .head{animation:pulse 1.8s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 45%,transparent)}100%{box-shadow:0 0 0 14px transparent}}
+@media (prefers-reduced-motion:reduce){.pin.live .head{animation:none}}
+.drv{list-style:none;margin:0;padding:0}
+.drv li{display:flex;align-items:center;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);font-size:12px}
+.drv li:last-child{border-bottom:0}
+.drv b{display:block;font-size:13px}
+.drv small{color:var(--text-2)}
+.drv .eta{margin-inline-start:auto;text-align:end;color:var(--text-2)}
+.drv .eta b{font-size:12px}
+
+/* hint banner */
+.hint{display:flex;gap:12px;align-items:center;padding:12px 16px;background:var(--brand-50);border:1px solid var(--brand-100);border-radius:var(--r-lg);color:var(--brand-900)}
+:root[data-theme="dark"] .hint{background:color-mix(in srgb,var(--brand-500) 14%,var(--surface));border-color:color-mix(in srgb,var(--brand-500) 35%,var(--border));color:var(--text)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .hint{background:color-mix(in srgb,var(--brand-500) 14%,var(--surface));border-color:color-mix(in srgb,var(--brand-500) 35%,var(--border));color:var(--text)}}
+.hint svg{flex:none;color:var(--brand-500)}
+.hint b{display:block;font-size:13px}
+.hint small{font-size:12px;opacity:.85}
+.hint .btn{margin-inline-start:auto}
+
+/* ===== Phone frame ===== */
+.duo{display:grid;grid-template-columns:380px 1fr;gap:28px;align-items:start}
+@media (max-width:900px){.duo{grid-template-columns:1fr}}
+.phone{width:100%;max-width:380px;margin-inline:auto;background:var(--text);border-radius:44px;padding:12px;box-shadow:var(--shadow-lg)}
+:root[data-theme="dark"] .phone{background:#000}
+.screen{background:var(--bg);border-radius:34px;overflow:hidden;min-height:720px;display:flex;flex-direction:column;position:relative}
+.status{display:flex;justify-content:space-between;padding:12px 24px 0;font-size:12px;font-weight:700}
+.notch{width:110px;height:28px;background:var(--text);border-radius:0 0 18px 18px;margin:-12px auto 0}
+:root[data-theme="dark"] .notch{background:#000}
+.ptop{display:flex;align-items:center;justify-content:space-between;padding:8px 18px 4px}
+.ptop h3{font-size:20px;font-weight:800}
+.ptop small{display:block;color:var(--text-2);font-size:12px;font-weight:500}
+.share{display:flex;align-items:center;gap:8px;margin:6px 18px 0;padding:7px 12px;border-radius:999px;background:color-mix(in srgb,var(--st-progress) 14%,var(--surface));color:var(--st-completed);font-size:11px;font-weight:700}
+.share i{width:8px;height:8px;border-radius:50%;background:var(--st-progress);animation:pulse 1.8s infinite;--c:var(--st-progress)}
+.hero{margin:12px 18px 0;background:var(--surface);border:1px solid var(--border);border-inline-start:5px solid var(--cat-airport);border-radius:var(--r-lg);padding:14px;box-shadow:var(--shadow-sm)}
+.hero .row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.hero .cd{font-size:12px;font-weight:700;color:var(--cat-airport)}
+.hero h4{margin:8px 0 2px;font-size:17px;font-weight:800;line-height:1.2}
+.hero .meta{color:var(--text-2);font-size:12px}
+.stops{margin:12px 0;padding:0;list-style:none;display:grid;gap:8px;font-size:12px}
+.stops li{display:grid;grid-template-columns:14px 1fr auto;gap:10px;align-items:center}
+.stops i{width:10px;height:10px;border-radius:50%;border:2px solid var(--cat-airport);background:var(--surface);justify-self:center}
+.stops li:last-child i{background:var(--cat-airport)}
+.stops small{color:var(--text-3)}
+.flight{display:flex;gap:10px;align-items:center;background:var(--surface-2);border-radius:var(--r-md);padding:8px 10px;font-size:12px}
+.flight b{font-size:13px}
+.flight .late{margin-inline-start:auto;color:var(--st-delayed);font-weight:700}
+.big{width:100%;height:54px;border:0;border-radius:14px;background:var(--brand-500);color:#fff;font-size:16px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:10px;margin-top:12px}
+.big.done{background:var(--st-completed)}
+.sec{display:flex;gap:8px;margin-top:8px}
+.sec button{flex:1;height:42px;border-radius:12px;border:1px solid var(--border-strong);background:var(--surface);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px}
+.tl{margin:18px 18px 0;flex:1}
+.tl .eyebrow{margin-bottom:8px}
+.tl ol{list-style:none;margin:0;padding:0;position:relative}
+.tl ol::before{content:"";position:absolute;inset-inline-start:7px;top:8px;bottom:8px;width:2px;background:var(--border)}
+.tl li{display:grid;grid-template-columns:16px 1fr auto;gap:10px;align-items:center;padding-block:7px;font-size:13px;position:relative}
+.tl li i{width:12px;height:12px;border-radius:50%;border:2px solid var(--surface);background:var(--c);justify-self:center;box-shadow:0 0 0 2px var(--c)}
+.tl li b{display:block}
+.tl li small{color:var(--text-2);font-size:12px}
+.tl li .t{color:var(--text-3);font-size:12px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--border);background:var(--surface);padding:8px 8px 18px;margin-top:12px}
+.tabs button{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:700;color:var(--text-3);height:44px;border-radius:10px}
+.tabs button.on{color:var(--brand-500)}
+
+/* tokens strip */
+.tok{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw span{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text-2)}
+.sw i{width:22px;height:22px;border-radius:7px;display:inline-block}
+.type-sample{display:grid;gap:4px}
+.type-sample .a{font-size:28px;font-weight:800;letter-spacing:-.02em}
+.type-sample .b{font-size:16px;font-weight:600}
+.type-sample .c{font-size:13px;color:var(--text-2)}
+.ar{font-family:var(--font-arabic)}
+.la{font-family:var(--font-latin)}
+.note{font-size:12px;color:var(--text-3);margin-top:16px;max-width:70ch}
+.desc-list{margin:12px 0 0;display:grid;gap:10px;font-size:13px;color:var(--text-2)}
+.desc-list b{color:var(--text)}
+</style>
+</head>
+<body>
+
+
+<header class="page-head">
+  <div class="brand">
+    <div class="logo" aria-hidden="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3 19 8 5l4 9 4-9 5 14"/></svg></div>
+    <div><h1>Masar <span class="ar" style="font-weight:600;color:var(--text-2)">مسار</span></h1><p data-en="Design template · dispatcher console & driver app" data-ar="قالب التصميم · لوحة المنسق وتطبيق السائق">Design template · dispatcher console &amp; driver app</p></div>
+  </div>
+  <div class="controls">
+    <div class="seg" role="group" aria-label="Language">
+      <button id="lang-en" aria-pressed="true" onclick="setLang('en')">English</button>
+      <button id="lang-ar" aria-pressed="false" onclick="setLang('ar')" class="ar">العربية</button>
+    </div>
+    <div class="seg" role="group" aria-label="Theme">
+      <button id="th-light" aria-pressed="false" onclick="setTheme('light')" data-en="Light" data-ar="فاتح">Light</button>
+      <button id="th-dark" aria-pressed="false" onclick="setTheme('dark')" data-en="Dark" data-ar="داكن">Dark</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ DESKTOP ============ -->
+<section class="block">
+  <div class="block-head">
+    <h2 data-en="Dispatcher console — Dashboard" data-ar="لوحة المنسق — الرئيسية">Dispatcher console — Dashboard</h2>
+    <p data-en="Tauri desktop / web. Sidebar and slide-overs mirror in Arabic; category colour is a start-border tint, status is a pill, conflicts are red." data-ar="سطح المكتب (Tauri) والويب. الشريط الجانبي واللوحات المنزلقة تنعكس في العربية؛ لون الفئة حدّ جانبي، الحالة كبسولة، والتعارضات باللون الأحمر.">Tauri desktop / web. Sidebar and slide-overs mirror in Arabic; category colour is a start-border tint, status is a pill, conflicts are red.</p>
+  </div>
+  <div class="frame">
+    <div class="titlebar"><i></i><i></i><i></i><span>Masar — Al Rajhi Contracting · Riyadh HQ</span></div>
+    <div class="app">
+      <aside class="sidebar">
+        <div class="site"><div class="avatar" style="border-radius:8px">RH</div><div><b data-en="Riyadh HQ" data-ar="المقر الرئيسي – الرياض">Riyadh HQ</b><small data-en="All sites (4)" data-ar="جميع المواقع (4)">All sites (4)</small></div></div>
+        <a class="nav active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span data-en="Dashboard" data-ar="الرئيسية">Dashboard</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg><span data-en="Calendar" data-ar="التقويم">Calendar</span><span class="badge">3</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg><span data-en="Live map" data-ar="الخريطة الحية">Live map</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg><span data-en="Tasks" data-ar="المهام">Tasks</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-en="Drivers" data-ar="السائقون">Drivers</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/></svg><span data-en="Sites & airports" data-ar="المواقع والمطارات">Sites &amp; airports</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg><span data-en="Hours & reports" data-ar="الساعات والتقارير">Hours &amp; reports</span></a>
+        <a class="nav"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span data-en="Settings" data-ar="الإعدادات">Settings</span></a>
+        <div class="me"><div class="avatar">NA</div><div><b style="color:var(--text)">Nawaf A.</b><br><span data-en="Dispatcher · Riyadh HQ" data-ar="منسق · المقر الرئيسي">Dispatcher · Riyadh HQ</span></div></div>
+      </aside>
+      <div class="main">
+        <div class="topbar">
+          <div class="search"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span data-en="Search tasks, drivers, flights…" data-ar="ابحث في المهام والسائقين والرحلات…">Search tasks, drivers, flights…</span><kbd>⌘K</kbd></div>
+          <div style="margin-inline-start:auto;display:flex;gap:8px;align-items:center">
+            <button class="icon-btn" aria-label="Language"><span style="font-size:11px;font-weight:800" data-en="AR" data-ar="EN">AR</span></button>
+            <button class="icon-btn" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button>
+            <button class="btn btn-primary"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg><span data-en="New task" data-ar="مهمة جديدة">New task</span></button>
+          </div>
+        </div>
+        <div class="content">
+          <div class="ph">
+            <div><h2 data-en="Good morning, Nawaf" data-ar="صباح الخير، نوّاف">Good morning, Nawaf</h2><p data-en="Sunday 13 September · 4 sites · 9 drivers on duty" data-ar="الأحد 13 سبتمبر · 4 مواقع · 9 سائقين في الخدمة">Sunday 13 September · 4 sites · 9 drivers on duty</p></div>
+            <button class="btn btn-ghost"><span data-en="Today" data-ar="اليوم">Today</span> ▾</button>
+          </div>
+
+          <div class="col">
+            <div class="kpis">
+              <div class="kpi"><div class="eyebrow" data-en="Tasks today" data-ar="مهام اليوم">Tasks today</div><div class="v num">27</div><div class="d"><span data-en="8 airport · 11 routine · 5 delivery · 3 escort" data-ar="8 مطار · 11 يومية · 5 توصيل · 3 مرافقة">8 airport · 11 routine · 5 delivery · 3 escort</span></div></div>
+              <div class="kpi warn"><div class="eyebrow" data-en="Unacknowledged" data-ar="بانتظار التأكيد">Unacknowledged</div><div class="v num">4</div><div class="d"><span data-en="2 due within 2 h" data-ar="2 خلال ساعتين">2 due within 2 h</span></div></div>
+              <div class="kpi bad"><div class="eyebrow" data-en="Conflicts" data-ar="تعارضات">Conflicts</div><div class="v num">3</div><div class="d"><span data-en="1 double-booking · 2 far locations" data-ar="1 حجز مزدوج · 2 مواقع متباعدة">1 double-booking · 2 far locations</span></div></div>
+              <div class="kpi"><div class="eyebrow" data-en="Delayed now" data-ar="متأخر الآن">Delayed now</div><div class="v num">1</div><div class="d"><span data-en="SV 1234 · +40 min" data-ar="SV 1234 · +40 دقيقة">SV 1234 · +40 min</span></div></div>
+            </div>
+
+            <div class="hint">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2.5 19h19M9.5 3.5 21 10l-3.6 1.1-4.4 3.6-4.5-1.8L3 15.4l2.4-3.6L2.6 8.6l2.9.6z"/></svg>
+              <div><b data-en="Dammam Site already has a car to DMM at 14:20" data-ar="موقع الدمام لديه سيارة إلى مطار الدمام عند 14:20">Dammam Site already has a car to DMM at 14:20</b><small data-en="Your new arrival pickup (SV 5678, 14:00) is 20 min apart — share Khalid's trip instead of sending a second car." data-ar="مهمتك الجديدة (SV 5678، 14:00) تبعد 20 دقيقة فقط — شارك رحلة خالد بدلاً من إرسال سيارة ثانية.">Your new arrival pickup (SV 5678, 14:00) is 20 min apart — share Khalid's trip instead of sending a second car.</small></div>
+              <button class="btn btn-primary" data-en="Share trip" data-ar="مشاركة الرحلة">Share trip</button>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3 data-en="Drivers · today" data-ar="السائقون · اليوم">Drivers · today</h3><a href="#" data-en="Open calendar →" data-ar="→ فتح التقويم">Open calendar →</a></div>
+              <div class="cal"><table>
+                <thead><tr><th data-en="Driver" data-ar="السائق">Driver</th><th class="t num">08:00</th><th class="t num">10:00</th><th class="t num">12:00</th><th class="t num">14:00</th><th class="t num">16:00</th></tr></thead>
+                <tbody>
+                  <tr><td class="d">Ahmed S.<small data-en="Riyadh HQ · 6.5 h" data-ar="المقر الرئيسي · 6.5 س">Riyadh HQ · 6.5 h</small></td><td class="slot" colspan="5"><div class="row"><div class="ev" style="--c:var(--cat-routine);inset-inline-start:2%;width:22%"><span data-en="Office shuttle" data-ar="نقل الموظفين">Office shuttle</span><small class="num">08:00–10:00</small></div><div class="ev" style="--c:var(--cat-airport);inset-inline-start:48%;width:40%"><span>RUH · SV 1234</span><small class="num" data-en="12:45–16:10 · delayed +40" data-ar="12:45–16:10 · تأخير +40">12:45–16:10 · delayed +40</small></div><div class="now" style="inset-inline-start:52%"></div></div></td></tr>
+                  <tr><td class="d">Khalid M.<small data-en="Dammam Site · 5 h" data-ar="موقع الدمام · 5 س">Dammam Site · 5 h</small></td><td class="slot" colspan="5"><div class="row"><div class="ev" style="--c:var(--cat-delivery);inset-inline-start:10%;width:16%"><span data-en="Docs → Ministry" data-ar="مستندات ← الوزارة">Docs → Ministry</span><small class="num">09:00–10:30</small></div><div class="ev" style="--c:var(--cat-airport);inset-inline-start:60%;width:36%"><span>DMM · MS 691</span><small class="num">14:20–17:00</small></div></div></td></tr>
+                  <tr><td class="d">Yousef R.<small data-en="Jeddah Tower · 9.5 h" data-ar="برج جدة · 9.5 س">Jeddah Tower · 9.5 h</small></td><td class="slot" colspan="5"><div class="row"><div class="ev conf" style="--c:var(--cat-escort);inset-inline-start:24%;width:26%"><span data-en="Escort · Al Rajhi Bank" data-ar="مرافقة · مصرف الراجحي">Escort · Al Rajhi Bank</span><small class="num">10:30–13:00</small><span class="cb">2</span></div><div class="ev conf" style="--c:var(--cat-airport);inset-inline-start:44%;width:34%"><span>JED · XY 210</span><small class="num" data-en="12:30–15:40 · overlap" data-ar="12:30–15:40 · تداخل">12:30–15:40 · overlap</small></div></div></td></tr>
+                  <tr><td class="d">Fahad A.<small data-en="Riyadh HQ · 3 h" data-ar="المقر الرئيسي · 3 س">Riyadh HQ · 3 h</small></td><td class="slot" colspan="5"><div class="row"><div class="ev" style="--c:var(--cat-routine);inset-inline-start:2%;width:22%"><span data-en="Site rounds" data-ar="جولة المواقع">Site rounds</span><small class="num">08:00–10:00</small></div><div class="ev" style="--c:var(--cat-delivery);inset-inline-start:74%;width:14%"><span data-en="Docs → Chamber" data-ar="مستندات ← الغرفة">Docs → Chamber</span><small class="num">16:00–17:00</small></div></div></td></tr>
+                </tbody></table></div>
+              <div class="legend"><span><i style="background:var(--cat-routine)"></i><span data-en="Daily routine" data-ar="مهمة يومية">Daily routine</span></span><span><i style="background:var(--cat-airport)"></i><span data-en="Airport trip" data-ar="رحلة مطار">Airport trip</span></span><span><i style="background:var(--cat-delivery)"></i><span data-en="Document delivery" data-ar="توصيل مستندات">Document delivery</span></span><span><i style="background:var(--cat-escort)"></i><span data-en="Escort staff" data-ar="مرافقة موظف">Escort staff</span></span><span><i style="background:transparent;box-shadow:0 0 0 2px var(--danger) inset"></i><span data-en="Conflict" data-ar="تعارض">Conflict</span></span></div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h3 data-en="Upcoming airport trips · next 24 h" data-ar="رحلات المطار القادمة · 24 ساعة">Upcoming airport trips · next 24 h</h3><a href="#" data-en="All tasks →" data-ar="→ كل المهام">All tasks →</a></div>
+              <ul class="att">
+                <li><span class="bar" style="background:var(--cat-airport)"></span><div><b>DMM · MS 691 <span class="pill ack" style="margin-inline-start:6px" data-en="Shared · 2 sites" data-ar="مشتركة · موقعان">Shared · 2 sites</span></b><small data-en="Arrival 14:20 · Khalid M. · Dammam Site + Riyadh HQ passengers" data-ar="وصول 14:20 · خالد م. · ركاب موقع الدمام + المقر الرئيسي">Arrival 14:20 · Khalid M. · Dammam Site + Riyadh HQ passengers</small></div><span class="pill" style="color:var(--st-assigned)" data-en="Assigned" data-ar="معيّنة">Assigned</span></li>
+                <li><span class="bar" style="background:var(--cat-airport)"></span><div><b>JED · XY 210</b><small data-en="Departure 15:40 · Yousef R. · Jeddah Tower" data-ar="مغادرة 15:40 · يوسف ر. · برج جدة">Departure 15:40 · Yousef R. · Jeddah Tower</small></div><span class="pill conflict" data-en="2 conflicts" data-ar="تعارضان">2 conflicts</span></li>
+                <li><span class="bar" style="background:var(--cat-airport)"></span><div><b>RUH · QR 1146</b><small data-en="Tomorrow 06:10 · unassigned · Al Yasmin Site" data-ar="غداً 06:10 · بدون سائق · موقع الياسمين">Tomorrow 06:10 · unassigned · Al Yasmin Site</small></div><div class="act"><button class="mini p" data-en="Assign" data-ar="تعيين">Assign</button></div></li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="col">
+            <div class="card">
+              <div class="card-h"><h3 data-en="Needs attention" data-ar="يتطلب انتباهك">Needs attention</h3><span class="pill conflict num">5</span></div>
+              <ul class="att">
+                <li><span class="bar" style="background:var(--danger)"></span><div><b data-en="Yousef R. double-booked 12:30–13:00" data-ar="يوسف ر. محجوز مرتين 12:30–13:00">Yousef R. double-booked 12:30–13:00</b><small data-en="Escort · Bank overlaps JED · XY 210" data-ar="مرافقة · البنك تتداخل مع JED · XY 210">Escort · Bank overlaps JED · XY 210</small></div><div class="act"><button class="mini p" data-en="Reassign" data-ar="إعادة تعيين">Reassign</button></div></li>
+                <li><span class="bar" style="background:var(--st-delayed)"></span><div><b data-en="SV 1234 delayed +40 min" data-ar="SV 1234 متأخرة +40 دقيقة">SV 1234 delayed +40 min</b><small data-en="Ahmed S. · reported 13:31 from RUH" data-ar="أحمد س. · أبلغ 13:31 من مطار الرياض">Ahmed S. · reported 13:31 from RUH</small></div><span class="pill delayed" data-en="Delayed" data-ar="متأخر">Delayed</span></li>
+                <li><span class="bar" style="background:var(--warning)"></span><div><b data-en="Khalid M. hasn't acknowledged DMM trip" data-ar="خالد م. لم يؤكد رحلة الدمام">Khalid M. hasn't acknowledged DMM trip</b><small data-en="Starts 14:20 · deadline in 48 min" data-ar="تبدأ 14:20 · المهلة خلال 48 دقيقة">Starts 14:20 · deadline in 48 min</small></div><div class="act"><button class="mini" data-en="Call" data-ar="اتصال">Call</button><button class="mini" data-en="Remind" data-ar="تذكير">Remind</button></div></li>
+                <li><span class="bar" style="background:var(--warning)"></span><div><b data-en="Yousef R. at 9.5 h — over daily limit" data-ar="يوسف ر. 9.5 ساعة — تجاوز الحد اليومي">Yousef R. at 9.5 h — over daily limit</b><small data-en="Max 8 h · Jeddah Tower" data-ar="الحد 8 س · برج جدة">Max 8 h · Jeddah Tower</small></div><span class="pill" data-en="Over hours" data-ar="تجاوز">Over hours</span></li>
+                <li><span class="bar" style="background:var(--brand-400)"></span><div><b data-en="Escort · Al Rajhi Bank unassigned" data-ar="مرافقة · مصرف الراجحي بدون سائق">Escort · Al Rajhi Bank unassigned</b><small data-en="Tomorrow 10:00 · Riyadh HQ" data-ar="غداً 10:00 · المقر الرئيسي">Tomorrow 10:00 · Riyadh HQ</small></div><div class="act"><button class="mini p" data-en="Assign" data-ar="تعيين">Assign</button></div></li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="card-h"><h3 data-en="Live map" data-ar="الخريطة الحية">Live map</h3><span class="pill enroute"><span data-en="3 moving" data-ar="3 في الطريق">3 moving</span></span></div>
+              <div class="map" aria-hidden="true">
+                <svg viewBox="0 0 340 250" preserveAspectRatio="none">
+                  <rect width="340" height="250" fill="var(--map-land)"/>
+                  <path d="M0 170 Q60 150 120 175 T260 160 T340 180 V250 H0Z" fill="var(--map-water)"/>
+                  <g stroke="var(--map-road)" stroke-width="6" fill="none" stroke-linecap="round"><path d="M-10 60 C80 40 140 90 220 70 S320 30 360 50"/><path d="M40 -10 C60 70 30 140 70 260"/><path d="M180 -10 C170 80 240 120 210 260"/><path d="M-10 120 C100 110 200 150 350 120"/></g>
+                  <g stroke="var(--map-road)" stroke-width="2.5" fill="none"><path d="M0 30 H340M0 95 H340M0 210 H340M110 0 V250M290 0 V250"/></g>
+                  <path d="M118 78 C150 95 175 60 214 74" stroke="var(--st-enroute)" stroke-width="3" fill="none" stroke-dasharray="6 5"/>
+                </svg>
+                <div class="pin live" style="--c:var(--st-enroute);left:35%;top:33%"><div class="head">AS</div><div class="tag">Ahmed · RUH</div></div>
+                <div class="pin live" style="--c:var(--st-progress);left:63%;top:31%"><div class="head">KM</div><div class="tag">Khalid</div></div>
+                <div class="pin" style="--c:var(--st-delayed);left:82%;top:58%"><div class="head">YR</div><div class="tag">Yousef</div></div>
+                <div class="pin" style="--c:var(--text-3);left:20%;top:70%"><div class="head">FA</div><div class="tag">Fahad · idle</div></div>
+              </div>
+              <ul class="drv">
+                <li><div class="avatar" style="background:color-mix(in srgb,var(--st-enroute) 18%,transparent);color:var(--st-enroute)">AS</div><div><b>Ahmed S.</b><small data-en="En route → RUH Terminal 1" data-ar="في الطريق ← مطار الرياض صالة 1">En route → RUH Terminal 1</small></div><div class="eta"><b class="num" data-en="ETA 13:52" data-ar="الوصول 13:52">ETA 13:52</b><br><span class="num">18 km · 62 km/h</span></div></li>
+                <li><div class="avatar" style="background:color-mix(in srgb,var(--st-progress) 18%,transparent);color:var(--st-completed)">KM</div><div><b>Khalid M.</b><small data-en="With passenger · Ministry of Labor" data-ar="مع الراكب · وزارة العمل">With passenger · Ministry of Labor</small></div><div class="eta"><span class="num" data-en="last seen 30 s" data-ar="آخر ظهور 30 ث">last seen 30 s</span></div></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DRIVER PWA ============ -->
+<section class="block">
+  <div class="block-head">
+    <h2 data-en="Driver app — Today" data-ar="تطبيق السائق — اليوم">Driver app — Today</h2>
+    <p data-en="Installable PWA on the driver's phone. One primary action that changes with status (Acknowledge → Start → Arrived → Complete); Delayed is always one tap away." data-ar="تطبيق ويب قابل للتثبيت على هاتف السائق. زر رئيسي واحد يتغير مع الحالة (تأكيد ← بدء ← وصلت ← إنهاء)؛ وزر التأخير دائماً بضغطة واحدة.">Installable PWA on the driver's phone. One primary action that changes with status (Acknowledge → Start → Arrived → Complete); Delayed is always one tap away.</p>
+  </div>
+  <div class="duo">
+    <div class="phone">
+      <div class="screen">
+        <div class="status"><span class="num">13:34</span><span>●●● ᯤ ▮</span></div>
+        <div class="notch"></div>
+        <div class="ptop"><div><h3 data-en="Today" data-ar="اليوم">Today</h3><small data-en="Ahmed Saleh · Riyadh HQ" data-ar="أحمد صالح · المقر الرئيسي">Ahmed Saleh · Riyadh HQ</small></div><button class="icon-btn" aria-label="Notifications"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10 21a2 2 0 0 0 4 0"/></svg><span class="dot"></span></button></div>
+        <div class="share"><i></i><span data-en="Sharing location · updated 13:34" data-ar="مشاركة الموقع · آخر تحديث 13:34">Sharing location · updated 13:34</span></div>
+
+        <div class="hero">
+          <div class="row"><span class="cd" data-en="✈ AIRPORT · IN PROGRESS" data-ar="✈ رحلة مطار · جارية">✈ AIRPORT · IN PROGRESS</span><span class="pill delayed" data-en="Delayed +40" data-ar="تأخير +40">Delayed +40</span></div>
+          <h4 data-en="Pick up Eng. Sara Al-Otaibi" data-ar="استقبال م. سارة العتيبي">Pick up Eng. Sara Al-Otaibi</h4>
+          <div class="meta" data-en="Arrival · Saudia SV 1234 from Jeddah · Terminal 1" data-ar="وصول · السعودية SV 1234 من جدة · الصالة 1">Arrival · Saudia SV 1234 from Jeddah · Terminal 1</div>
+          <div class="flight" style="margin-top:10px"><b>SV 1234</b><span class="num" data-en="Sched 14:00" data-ar="المقرر 14:00">Sched 14:00</span><span class="late num" data-en="Now 14:40" data-ar="الآن 14:40">Now 14:40</span></div>
+          <ul class="stops">
+            <li><i></i><span data-en="Riyadh HQ, Olaya St." data-ar="المقر الرئيسي، شارع العليا">Riyadh HQ, Olaya St.</span><small class="num">12:45</small></li>
+            <li><i></i><span data-en="RUH Terminal 1 · Arrivals" data-ar="مطار الرياض صالة 1 · القادمون">RUH Terminal 1 · Arrivals</span><small class="num">13:52</small></li>
+            <li><i></i><span data-en="Al Yasmin Site office" data-ar="مكتب موقع الياسمين">Al Yasmin Site office</span><small class="num">15:40</small></li>
+          </ul>
+          <button class="big"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6 9 17l-5-5"/></svg><span data-en="Passenger picked up" data-ar="تم استلام الراكب">Passenger picked up</span></button>
+          <div class="sec"><button><span data-en="⏱ Delayed" data-ar="⏱ تأخير">⏱ Delayed</span></button><button><span data-en="🗺 Open in Maps" data-ar="🗺 فتح الخريطة">🗺 Open in Maps</span></button><button><span data-en="📞 Call" data-ar="📞 اتصال">📞 Call</span></button></div>
+        </div>
+
+        <div class="tl">
+          <div class="eyebrow" data-en="Timeline · 3 tasks · 6.5 h" data-ar="الجدول · 3 مهام · 6.5 س">Timeline · 3 tasks · 6.5 h</div>
+          <ol>
+            <li style="--c:var(--st-completed)"><i></i><div><b data-en="Office shuttle" data-ar="نقل الموظفين">Office shuttle</b><small data-en="Daily routine · completed 09:58" data-ar="مهمة يومية · اكتملت 09:58">Daily routine · completed 09:58</small></div><span class="t num">08:00</span></li>
+            <li style="--c:var(--st-delayed)"><i></i><div><b data-en="Pick up Eng. Sara — SV 1234" data-ar="استقبال م. سارة — SV 1234">Pick up Eng. Sara — SV 1234</b><small data-en="Airport · in progress, delayed" data-ar="مطار · جارية، متأخرة">Airport · in progress, delayed</small></div><span class="t num">12:45</span></li>
+            <li style="--c:var(--st-assigned)"><i></i><div><b data-en="Escort Mr. Hamad to SAB Bank" data-ar="مرافقة أ. حمد إلى بنك ساب">Escort Mr. Hamad to SAB Bank</b><small data-en="Escort · reminder at 16:30" data-ar="مرافقة · تذكير عند 16:30">Escort · reminder at 16:30</small></div><span class="t num">17:00</span></li>
+          </ol>
+        </div>
+
+        <div class="tabs">
+          <button class="on"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/></svg><span data-en="Today" data-ar="اليوم">Today</span></button>
+          <button><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg><span data-en="Week" data-ar="الأسبوع">Week</span></button>
+          <button><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span data-en="Hours" data-ar="الساعات">Hours</span></button>
+          <button><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span data-en="Me" data-ar="حسابي">Me</span></button>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="card">
+        <div class="card-h"><h3 data-en="Foundations" data-ar="الأساسيات">Foundations</h3></div>
+        <div style="padding:16px" class="tok">
+          <div><div class="eyebrow" data-en="Brand & surfaces" data-ar="العلامة والأسطح">Brand &amp; surfaces</div><div class="sw" style="margin-top:8px"><span><i style="background:var(--brand-500)"></i>brand-500</span><span><i style="background:var(--brand-100)"></i>brand-100</span><span><i style="background:var(--bg);border:1px solid var(--border)"></i>bg</span><span><i style="background:var(--surface);border:1px solid var(--border)"></i>surface</span><span><i style="background:var(--surface-2);border:1px solid var(--border)"></i>surface-2</span></div></div>
+          <div><div class="eyebrow" data-en="Task categories" data-ar="فئات المهام">Task categories</div><div class="sw" style="margin-top:8px"><span><i style="background:var(--cat-routine)"></i><span data-en="routine" data-ar="يومية">routine</span></span><span><i style="background:var(--cat-airport)"></i><span data-en="airport" data-ar="مطار">airport</span></span><span><i style="background:var(--cat-delivery)"></i><span data-en="delivery" data-ar="توصيل">delivery</span></span><span><i style="background:var(--cat-escort)"></i><span data-en="escort" data-ar="مرافقة">escort</span></span></div></div>
+          <div><div class="eyebrow" data-en="Status pills" data-ar="كبسولات الحالة">Status pills</div><div class="sw" style="margin-top:8px"><span class="pill" style="color:var(--st-assigned)" data-en="Assigned" data-ar="معيّنة">Assigned</span><span class="pill ack" data-en="Acknowledged" data-ar="مؤكدة">Acknowledged</span><span class="pill enroute" data-en="En route" data-ar="في الطريق">En route</span><span class="pill delayed" data-en="Delayed" data-ar="متأخرة">Delayed</span><span class="pill done" data-en="Completed" data-ar="مكتملة">Completed</span><span class="pill conflict" data-en="No-show" data-ar="لم يحضر">No-show</span></div></div>
+          <div><div class="eyebrow" data-en="Type pairing" data-ar="الخطوط">Type pairing</div><div class="type-sample" style="margin-top:8px"><div class="a la">Manrope 800 <span class="ar">مسار</span></div><div class="b ar">IBM Plex Sans Arabic 600 — رحلة مطار</div><div class="c la num">Manrope 400 · tabular 12:45–16:10 · 18.2 km</div></div></div>
+        </div>
+      </div>
+      <div class="desc-list">
+        <div><b data-en="Category = start border + 14 % tint." data-ar="الفئة = حدّ جانبي + صبغة 14٪.">Category = start border + 14 % tint.</b> <span data-en="Never a full fill, so status pills and conflict rings stay readable on top." data-ar="لا تعبئة كاملة أبداً، لتبقى كبسولات الحالة وحلقات التعارض مقروءة فوقها.">Never a full fill, so status pills and conflict rings stay readable on top.</span></div>
+        <div><b data-en="Conflicts are the only red." data-ar="التعارضات هي الأحمر الوحيد.">Conflicts are the only red.</b> <span data-en="Red ring on calendar blocks, red bar in the attention list, red badge in the sidebar — same meaning everywhere." data-ar="حلقة حمراء في التقويم، شريط أحمر في قائمة الانتباه، شارة حمراء في الشريط الجانبي — نفس المعنى في كل مكان.">Red ring on calendar blocks, red bar in the attention list, red badge in the sidebar — same meaning everywhere.</span></div>
+        <div><b data-en="RTL is a mirror, not a flip." data-ar="العربية انعكاس وليس قلباً.">RTL is a mirror, not a flip.</b> <span data-en="Sidebar moves to the right, time still reads left→right inside the calendar grid, symmetric icons stay put." data-ar="ينتقل الشريط الجانبي إلى اليمين، الوقت يُقرأ من اليسار إلى اليمين داخل شبكة التقويم، والأيقونات المتناظرة تبقى كما هي.">Sidebar moves to the right, time still reads left→right inside the calendar grid, symmetric icons stay put.</span></div>
+        <div><b data-en="Drivers get one big button." data-ar="السائق يحصل على زر كبير واحد.">Drivers get one big button.</b> <span data-en="54 px tall, label changes with status; secondary actions are 42 px ghosts underneath." data-ar="ارتفاعه 54 بكسل، ويتغير نصه مع الحالة؛ الأزرار الثانوية 42 بكسل أسفله.">54 px tall, label changes with status; secondary actions are 42 px ghosts underneath.</span></div>
+      </div>
+      <p class="note" data-en="Example data only. Tokens live in design/tokens.css; component spec in docs/DESIGN.md." data-ar="بيانات توضيحية فقط. الرموز في design/tokens.css؛ ومواصفات المكونات في docs/DESIGN.md.">Example data only. Tokens live in design/tokens.css; component spec in docs/DESIGN.md.</p>
+    </div>
+  </div>
+</section>
+
+<script>
+(function(){
+  var root=document.documentElement;
+  function apply(lang){
+    root.setAttribute('lang',lang);root.setAttribute('dir',lang==='ar'?'rtl':'ltr');
+    document.querySelectorAll('[data-en]').forEach(function(el){var v=el.getAttribute('data-'+lang);if(v!=null)el.textContent=v;});
+    document.getElementById('lang-en').setAttribute('aria-pressed',String(lang==='en'));
+    document.getElementById('lang-ar').setAttribute('aria-pressed',String(lang==='ar'));
+    // keep the calendar time axis LTR
+    document.querySelectorAll('.cal table').forEach(function(t){t.setAttribute('dir','ltr');});document.querySelectorAll('.cal td.d, .cal th:first-child').forEach(function(td){td.setAttribute('dir',lang==='ar'?'rtl':'ltr');});
+  }
+  window.setLang=function(l){apply(l);try{localStorage.setItem('masar-lang',l)}catch(e){}};
+  window.setTheme=function(t){root.setAttribute('data-theme',t);
+    document.getElementById('th-light').setAttribute('aria-pressed',String(t==='light'));
+    document.getElementById('th-dark').setAttribute('aria-pressed',String(t==='dark'));
+    try{localStorage.setItem('masar-theme',t)}catch(e){}};
+  var l='en',t=null;try{l=localStorage.getItem('masar-lang')||'en';t=localStorage.getItem('masar-theme')}catch(e){}
+  apply(l); if(t)window.setTheme(t); else{
+    var cur=root.getAttribute('data-theme');
+    if(cur)document.getElementById('th-'+cur).setAttribute('aria-pressed','true');
+  }
+})();
+</script>
+
+</body>
+</html>

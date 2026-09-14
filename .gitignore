@@ -1,0 +1,52 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+dist-ssr/
+build/
+*.local
+
+# Tauri
+apps/web/src-tauri/target/
+apps/web/src-tauri/gen/
+
+# env & secrets
+.env
+.env.*
+!.env.example
+
+# test & coverage
+coverage/
+playwright-report/
+test-results/
+blob-report/
+.playwright/
+
+# editors / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# logs
+logs/
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# supabase local
+supabase/.branches/
+supabase/.temp/
+
+# PWA generated
+apps/web/dev-dist/
+apps/web/public/sw.js
+apps/web/public/workbox-*.js

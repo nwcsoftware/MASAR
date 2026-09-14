@@ -1,0 +1,68 @@
+{
+  "common": {
+    "appName": "Masar",
+    "tagline": "Driver & trip management",
+    "loading": "Loading…",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search",
+    "searchHint": "Search tasks, drivers, sites…",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System",
+    "allSites": "All sites",
+    "retry": "Try again"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "calendar": "Calendar",
+    "liveMap": "Live Map",
+    "tasks": "Tasks",
+    "drivers": "Drivers",
+    "sites": "Sites",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "category": {
+      "routine": "Daily routine",
+      "airport": "Airport trip",
+      "delivery": "Document delivery",
+      "escort": "Staff escort"
+    },
+    "status": {
+      "draft": "Draft",
+      "scheduled": "Scheduled",
+      "assigned": "Assigned",
+      "acknowledged": "Acknowledged",
+      "en_route": "En route",
+      "in_progress": "In progress",
+      "delayed": "Delayed",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "no_show": "No show"
+    },
+    "count_one": "{{count}} task",
+    "count_other": "{{count}} tasks"
+  },
+  "drivers": {
+    "title": "Drivers",
+    "active": "Drivers active"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You are all caught up",
+    "acknowledge": "Acknowledge",
+    "decline": "Decline"
+  },
+  "errors": {
+    "generic": "Something went wrong.",
+    "offline": "You are offline. Changes will sync when you reconnect.",
+    "notFound": "Page not found",
+    "notFoundBody": "The page you are looking for does not exist."
+  }
+}

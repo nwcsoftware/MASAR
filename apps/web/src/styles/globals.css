@@ -1,0 +1,82 @@
+/* design/tokens.css is the single source of truth for colour/type/space.
+   It is imported first so Tailwind utilities can reference the vars. */
+@import '@design/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-bg text-fg antialiased;
+    font-family: var(--font-sans);
+  }
+
+  /* docs/DESIGN.md §2.2 — Arabic body copy gets a looser line-height */
+  [dir='rtl'] body {
+    line-height: 1.7;
+  }
+
+  /* Tabular numerals in tables (docs/DESIGN.md §2.2) */
+  table,
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* docs/DESIGN.md §8 — 2px focus ring, 2px offset, never removed */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* docs/DESIGN.md §2.5 — respect reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* docs/DESIGN.md §2.1 — category = 4px start-border + 10% tinted background.
+     Never a full fill: that would fight with the status pill. */
+  .cat-tint {
+    border-inline-start: 4px solid var(--cat-color);
+    background-color: color-mix(in srgb, var(--cat-color) 10%, var(--surface));
+  }
+
+  .cat-routine {
+    --cat-color: var(--cat-routine);
+  }
+  .cat-airport {
+    --cat-color: var(--cat-airport);
+  }
+  .cat-delivery {
+    --cat-color: var(--cat-delivery);
+  }
+  .cat-escort {
+    --cat-color: var(--cat-escort);
+  }
+}
+
+@layer utilities {
+  /* Tint any token colour by a percentage without hard-coding hex. */
+  .tint-10 {
+    background-color: color-mix(in srgb, var(--tint-color) 10%, var(--surface));
+  }
+
+  /* docs/DESIGN.md §4.2 — 44px minimum touch target on driver PWA */
+  .touch-target {
+    min-block-size: var(--touch-target);
+    min-inline-size: var(--touch-target);
+  }
+}

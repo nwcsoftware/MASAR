@@ -1,0 +1,21 @@
+{
+  "name": "masar",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@9.15.4",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @masar/web dev",
+    "build": "pnpm --filter @masar/web build",
+    "preview": "pnpm --filter @masar/web preview",
+    "tauri": "pnpm --filter @masar/web tauri",
+    "test": "pnpm --filter @masar/web test",
+    "e2e": "pnpm --filter @masar/web e2e",
+    "lint": "pnpm --filter @masar/web lint",
+    "typecheck": "pnpm --filter @masar/web typecheck",
+    "i18n:check": "pnpm --filter @masar/web i18n:check"
+  }
+}

@@ -1,0 +1,72 @@
+{
+  "common": {
+    "appName": "مسار",
+    "tagline": "إدارة السائقين والرحلات",
+    "loading": "جارٍ التحميل…",
+    "save": "حفظ",
+    "cancel": "إلغاء",
+    "close": "إغلاق",
+    "search": "بحث",
+    "searchHint": "ابحث عن مهام أو سائقين أو مواقع…",
+    "language": "اللغة",
+    "theme": "المظهر",
+    "themeLight": "فاتح",
+    "themeDark": "داكن",
+    "themeSystem": "النظام",
+    "allSites": "كل المواقع",
+    "retry": "حاول مرة أخرى"
+  },
+  "nav": {
+    "dashboard": "لوحة المعلومات",
+    "calendar": "التقويم",
+    "liveMap": "الخريطة المباشرة",
+    "tasks": "المهام",
+    "drivers": "السائقون",
+    "sites": "المواقع",
+    "reports": "التقارير",
+    "settings": "الإعدادات"
+  },
+  "tasks": {
+    "title": "المهام",
+    "category": {
+      "routine": "مهمة يومية",
+      "airport": "رحلة مطار",
+      "delivery": "توصيل مستندات",
+      "escort": "مرافقة موظفين"
+    },
+    "status": {
+      "draft": "مسودة",
+      "scheduled": "مجدولة",
+      "assigned": "مُسندة",
+      "acknowledged": "تم الاستلام",
+      "en_route": "في الطريق",
+      "in_progress": "قيد التنفيذ",
+      "delayed": "متأخرة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "no_show": "لم يحضر"
+    },
+    "count_zero": "لا مهام",
+    "count_one": "مهمة واحدة",
+    "count_two": "مهمتان",
+    "count_few": "{{count}} مهام",
+    "count_many": "{{count}} مهمة",
+    "count_other": "{{count}} مهمة"
+  },
+  "drivers": {
+    "title": "السائقون",
+    "active": "سائقون نشطون"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "empty": "لا توجد إشعارات جديدة",
+    "acknowledge": "تأكيد",
+    "decline": "رفض"
+  },
+  "errors": {
+    "generic": "حدث خطأ ما.",
+    "offline": "أنت غير متصل. ستتم المزامنة عند عودة الاتصال.",
+    "notFound": "الصفحة غير موجودة",
+    "notFoundBody": "الصفحة التي تبحث عنها غير موجودة."
+  }
+}
