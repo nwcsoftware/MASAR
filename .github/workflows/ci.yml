@@ -50,6 +50,23 @@ jobs:
           path: apps/web/playwright-report
           retention-days: 7
 
+  functions:
+    name: Edge Functions (deno check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check every function
+        run: |
+          for dir in supabase/functions/*/; do
+            [ -f "$dir/index.ts" ] || continue
+            echo "::group::$dir"
+            (cd "$dir" && deno check index.ts)
+            echo "::endgroup::"
+          done
+
   db:
     name: Supabase migration + seed + db lint
     runs-on: ubuntu-latest
