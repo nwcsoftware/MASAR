@@ -1,0 +1,473 @@
+/**
+ * Phase 0 mock data — the same company, people and day as supabase/seed.sql,
+ * typed as real database rows so query hooks can swap mock → Supabase without
+ * touching components. Times are relative to "today" in Asia/Riyadh (UTC+3,
+ * no DST), so the board always looks live.
+ */
+import type { Tables } from '@/lib/database.types';
+
+export type Company = Tables<'companies'>;
+export type CompanySettings = Tables<'company_settings'>;
+export type Profile = Tables<'profiles'>;
+export type Site = Tables<'sites'>;
+export type Airport = Tables<'airports'>;
+export type SiteAirport = Tables<'site_airports'>;
+export type Driver = Tables<'drivers'>;
+export type Vehicle = Tables<'vehicles'>;
+export type DriverAvailability = Tables<'driver_availability'>;
+export type DriverLocation = Tables<'driver_locations'>;
+export type Task = Tables<'tasks'>;
+export type TaskStop = Tables<'task_stops'>;
+export type TaskAssignment = Tables<'task_assignments'>;
+export type FlightDetails = Tables<'flight_details'>;
+export type TaskDelay = Tables<'task_delays'>;
+export type TaskEvent = Tables<'task_events'>;
+export type TaskConflict = Tables<'task_conflicts'>;
+export type TaskAttachment = Tables<'task_attachments'>;
+export type Notification = Tables<'notifications'>;
+export type Holiday = Tables<'holidays'>;
+export type DriverDaySummary = Tables<'driver_day_summary'>;
+
+// ---------------------------------------------------------------------------
+// time helpers
+// ---------------------------------------------------------------------------
+const RIYADH_OFFSET = '+03:00';
+
+function riyadhToday(): string {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Riyadh' }).format(new Date());
+}
+
+function addDays(isoDate: string, days: number): string {
+  const d = new Date(`${isoDate}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+const TODAY = riyadhToday();
+/** ISO timestamp for HH:MM on today + `day` in Riyadh. */
+export const at = (day: number, hhmm: string) => new Date(`${addDays(TODAY, day)}T${hhmm}:00${RIYADH_OFFSET}`).toISOString();
+export const dateKey = (day: number) => addDays(TODAY, day);
+const minutesAgo = (m: number) => new Date(Date.now() - m * 60_000).toISOString();
+const CREATED = at(-30, '09:00');
+
+// ---------------------------------------------------------------------------
+// ids (same as seed.sql)
+// ---------------------------------------------------------------------------
+export const COMPANY_ID = '00000000-0000-4000-8000-000000000001';
+const U = (n: string) => `10000000-0000-4000-8000-0000000000${n}`;
+const S = (n: number) => `20000000-0000-4000-8000-00000000000${n}`;
+const A = (n: number) => `30000000-0000-4000-8000-00000000000${n}`;
+const D = (n: number) => `40000000-0000-4000-8000-00000000000${n}`;
+const V = (n: number) => `50000000-0000-4000-8000-00000000000${n}`;
+const T = (n: number) => `60000000-0000-4000-8000-0000000000${String(n).padStart(2, '0')}`;
+
+export const IDS = {
+  users: { owner: U('01'), dispatcher: U('02'), dammam: U('03'), viewer: U('04'), ahmed: U('11'), khalid: U('12'), yousef: U('13'), fahad: U('14') },
+  sites: { rhq: S(1), yasmin: S(2), dammam: S(3), jeddah: S(4) },
+  airports: { ruh: A(1), dmm: A(2), jed: A(3) },
+  drivers: { ahmed: D(1), khalid: D(2), yousef: D(3), fahad: D(4) },
+  vehicles: { camry: V(1), hiace: V(2), h1: V(3), cruiser: V(4) },
+  tasks: Object.fromEntries(Array.from({ length: 14 }, (_, i) => [i + 1, T(i + 1)])) as Record<number, string>,
+} as const;
+
+// ---------------------------------------------------------------------------
+// tenancy
+// ---------------------------------------------------------------------------
+export const company: Company = {
+  id: COMPANY_ID,
+  name: 'Masar Demo Contracting',
+  name_ar: 'مسار للمقاولات (تجريبي)',
+  country_code: 'SA',
+  timezone: 'Asia/Riyadh',
+  default_language: 'en',
+  logo_url: null,
+  created_at: CREATED,
+  updated_at: CREATED,
+};
+
+export const companySettings: CompanySettings = {
+  company_id: COMPANY_ID,
+  reminder_offsets_min: [1440, 120, 30],
+  start_prompt_after_min: 5,
+  complete_prompt_after_min: 10,
+  ack_deadline_min: 120,
+  grace_min: 15,
+  no_show_after_min: 60,
+  far_location_km: 50,
+  airport_share_window_min: 90,
+  standard_day_min: 480,
+  weekly_max_min: 2880,
+  max_daily_driving_min: 600,
+  weekend_days: [5, 6],
+  offline_alert_after_min: 10,
+  location_interval_sec: 30,
+  eastern_arabic_digits: false,
+  flight_api_enabled: false,
+  updated_at: CREATED,
+};
+
+function profile(p: Pick<Profile, 'id' | 'role' | 'full_name' | 'full_name_ar' | 'email' | 'phone' | 'language'>): Profile {
+  return {
+    company_id: COMPANY_ID,
+    avatar_url: null,
+    is_active: true,
+    notif_in_app: true,
+    notif_push: true,
+    notif_email: false,
+    created_at: CREATED,
+    updated_at: CREATED,
+    ...p,
+  };
+}
+
+export const profiles: Profile[] = [
+  profile({ id: IDS.users.owner, role: 'owner', full_name: 'Majed Al-Harbi', full_name_ar: 'ماجد الحربي', email: 'owner@masar.dev', phone: '+966 50 100 0001', language: 'en' }),
+  profile({ id: IDS.users.dispatcher, role: 'dispatcher', full_name: 'Nawaf Al-Anazi', full_name_ar: 'نواف العنزي', email: 'dispatcher@masar.dev', phone: '+966 50 100 0002', language: 'en' }),
+  profile({ id: IDS.users.dammam, role: 'dispatcher', full_name: 'Huda Al-Dossary', full_name_ar: 'هدى الدوسري', email: 'dammam@masar.dev', phone: '+966 50 100 0003', language: 'ar' }),
+  profile({ id: IDS.users.viewer, role: 'viewer', full_name: 'Reem Al-Shehri', full_name_ar: 'ريم الشهري', email: 'viewer@masar.dev', phone: '+966 50 100 0004', language: 'en' }),
+  profile({ id: IDS.users.ahmed, role: 'driver', full_name: 'Ahmed Saleh', full_name_ar: 'أحمد صالح', email: 'ahmed@masar.dev', phone: '+966 55 200 0011', language: 'ar' }),
+  profile({ id: IDS.users.khalid, role: 'driver', full_name: 'Khalid Mansour', full_name_ar: 'خالد منصور', email: 'khalid@masar.dev', phone: '+966 55 200 0012', language: 'ar' }),
+  profile({ id: IDS.users.yousef, role: 'driver', full_name: 'Yousef Rashid', full_name_ar: 'يوسف راشد', email: 'yousef@masar.dev', phone: '+966 55 200 0013', language: 'en' }),
+  profile({ id: IDS.users.fahad, role: 'driver', full_name: 'Fahad Al-Qahtani', full_name_ar: 'فهد القحطاني', email: 'fahad@masar.dev', phone: '+966 55 200 0014', language: 'ar' }),
+];
+
+/** user_sites — empty list means "all sites" (auth_can_access_site). */
+export const userSites: Record<string, string[]> = {
+  [IDS.users.dispatcher]: [IDS.sites.rhq, IDS.sites.yasmin],
+  [IDS.users.dammam]: [IDS.sites.dammam],
+};
+
+// ---------------------------------------------------------------------------
+// sites & airports
+// ---------------------------------------------------------------------------
+function site(p: Pick<Site, 'id' | 'code' | 'name' | 'name_ar' | 'type' | 'address' | 'address_ar' | 'city' | 'lat' | 'lng' | 'contact_name' | 'contact_phone' | 'work_start' | 'work_end'>): Site {
+  return { company_id: COMPANY_ID, google_place_id: null, notes: null, is_active: true, created_at: CREATED, updated_at: CREATED, ...p };
+}
+
+export const sites: Site[] = [
+  site({ id: IDS.sites.rhq, code: 'RHQ', name: 'Riyadh HQ', name_ar: 'المقر الرئيسي – الرياض', type: 'office', address: 'Olaya St, Al Olaya, Riyadh', address_ar: 'شارع العليا، حي العليا، الرياض', city: 'Riyadh', lat: 24.6948, lng: 46.6857, contact_name: 'Nawaf Al-Anazi', contact_phone: '+966 50 100 0002', work_start: '07:30:00', work_end: '17:00:00' }),
+  site({ id: IDS.sites.yasmin, code: 'YAS', name: 'Al Yasmin Site', name_ar: 'موقع الياسمين', type: 'construction_site', address: 'Al Yasmin District, Riyadh', address_ar: 'حي الياسمين، الرياض', city: 'Riyadh', lat: 24.8236, lng: 46.6407, contact_name: 'Eng. Omar Fawzi', contact_phone: '+966 50 300 0001', work_start: '06:30:00', work_end: '16:30:00' }),
+  site({ id: IDS.sites.dammam, code: 'DMM', name: 'Dammam Site', name_ar: 'موقع الدمام', type: 'construction_site', address: 'King Saud St, Dammam', address_ar: 'شارع الملك سعود، الدمام', city: 'Dammam', lat: 26.4207, lng: 50.0888, contact_name: 'Huda Al-Dossary', contact_phone: '+966 50 100 0003', work_start: '06:30:00', work_end: '16:30:00' }),
+  site({ id: IDS.sites.jeddah, code: 'JED', name: 'Jeddah Tower', name_ar: 'برج جدة', type: 'construction_site', address: 'North Obhur, Jeddah', address_ar: 'أبحر الشمالية، جدة', city: 'Jeddah', lat: 21.735, lng: 39.085, contact_name: 'Eng. Faisal Nasser', contact_phone: '+966 50 300 0002', work_start: '06:30:00', work_end: '16:30:00' }),
+];
+
+function airport(p: Pick<Airport, 'id' | 'iata' | 'icao' | 'name' | 'name_ar' | 'city' | 'city_ar' | 'lat' | 'lng' | 'terminals'>): Airport {
+  return { company_id: COMPANY_ID, country_code: 'SA', google_place_id: null, is_international: true, source: 'manual', created_at: CREATED, ...p };
+}
+
+export const airports: Airport[] = [
+  airport({ id: IDS.airports.ruh, iata: 'RUH', icao: 'OERK', name: 'King Khalid International Airport', name_ar: 'مطار الملك خالد الدولي', city: 'Riyadh', city_ar: 'الرياض', lat: 24.9576, lng: 46.6988, terminals: ['1', '2', '3', '4', '5'] }),
+  airport({ id: IDS.airports.dmm, iata: 'DMM', icao: 'OEDF', name: 'King Fahd International Airport', name_ar: 'مطار الملك فهد الدولي', city: 'Dammam', city_ar: 'الدمام', lat: 26.4712, lng: 49.7979, terminals: [] }),
+  airport({ id: IDS.airports.jed, iata: 'JED', icao: 'OEJN', name: 'King Abdulaziz International Airport', name_ar: 'مطار الملك عبدالعزيز الدولي', city: 'Jeddah', city_ar: 'جدة', lat: 21.6796, lng: 39.1565, terminals: ['1', 'North'] }),
+];
+
+export const siteAirports: SiteAirport[] = [
+  { site_id: IDS.sites.rhq, airport_id: IDS.airports.ruh, is_default: true, distance_km: 39.6, drive_minutes: 34, default_buffer_min: 30, created_at: CREATED },
+  { site_id: IDS.sites.yasmin, airport_id: IDS.airports.ruh, is_default: true, distance_km: 24.4, drive_minutes: 21, default_buffer_min: 30, created_at: CREATED },
+  { site_id: IDS.sites.dammam, airport_id: IDS.airports.dmm, is_default: true, distance_km: 39.8, drive_minutes: 34, default_buffer_min: 30, created_at: CREATED },
+  { site_id: IDS.sites.jeddah, airport_id: IDS.airports.jed, is_default: true, distance_km: 12.6, drive_minutes: 15, default_buffer_min: 30, created_at: CREATED },
+];
+
+// ---------------------------------------------------------------------------
+// drivers & vehicles
+// ---------------------------------------------------------------------------
+function driver(p: Pick<Driver, 'id' | 'profile_id' | 'home_site_id' | 'employee_no' | 'full_name' | 'full_name_ar' | 'phone' | 'licence_no' | 'licence_expiry' | 'max_daily_driving_min' | 'shift_start' | 'shift_end' | 'current_status' | 'last_seen_at'>): Driver {
+  return { company_id: COMPANY_ID, photo_url: null, is_active: true, notes: null, created_at: CREATED, updated_at: CREATED, ...p };
+}
+
+export const drivers: Driver[] = [
+  driver({ id: IDS.drivers.ahmed, profile_id: IDS.users.ahmed, home_site_id: IDS.sites.rhq, employee_no: 'D-001', full_name: 'Ahmed Saleh', full_name_ar: 'أحمد صالح', phone: '+966 55 200 0011', licence_no: 'SA-1029384', licence_expiry: dateKey(400), max_daily_driving_min: null, shift_start: '07:00:00', shift_end: '17:00:00', current_status: 'delayed', last_seen_at: minutesAgo(0.5) }),
+  driver({ id: IDS.drivers.khalid, profile_id: IDS.users.khalid, home_site_id: IDS.sites.dammam, employee_no: 'D-002', full_name: 'Khalid Mansour', full_name_ar: 'خالد منصور', phone: '+966 55 200 0012', licence_no: 'SA-5647382', licence_expiry: dateKey(45), max_daily_driving_min: null, shift_start: '07:00:00', shift_end: '17:00:00', current_status: 'idle', last_seen_at: minutesAgo(2) }),
+  driver({ id: IDS.drivers.yousef, profile_id: IDS.users.yousef, home_site_id: IDS.sites.jeddah, employee_no: 'D-003', full_name: 'Yousef Rashid', full_name_ar: 'يوسف راشد', phone: '+966 55 200 0013', licence_no: 'SA-8899001', licence_expiry: dateKey(800), max_daily_driving_min: 300, shift_start: '07:00:00', shift_end: '17:00:00', current_status: 'in_progress', last_seen_at: minutesAgo(1) }),
+  driver({ id: IDS.drivers.fahad, profile_id: IDS.users.fahad, home_site_id: IDS.sites.rhq, employee_no: 'D-004', full_name: 'Fahad Al-Qahtani', full_name_ar: 'فهد القحطاني', phone: '+966 55 200 0014', licence_no: 'SA-1122334', licence_expiry: dateKey(220), max_daily_driving_min: null, shift_start: '06:00:00', shift_end: '15:00:00', current_status: 'idle', last_seen_at: minutesAgo(14) }),
+];
+
+function vehicle(p: Pick<Vehicle, 'id' | 'site_id' | 'plate_no' | 'make' | 'model' | 'year' | 'color' | 'seats' | 'odometer_km'>): Vehicle {
+  return { company_id: COMPANY_ID, is_active: true, notes: null, created_at: CREATED, updated_at: CREATED, ...p };
+}
+
+export const vehicles: Vehicle[] = [
+  vehicle({ id: IDS.vehicles.camry, site_id: IDS.sites.rhq, plate_no: '1234 RAB', make: 'Toyota', model: 'Camry', year: 2024, color: 'White', seats: 4, odometer_km: 38200 }),
+  vehicle({ id: IDS.vehicles.hiace, site_id: IDS.sites.rhq, plate_no: '5678 KSA', make: 'Toyota', model: 'Hiace', year: 2023, color: 'White', seats: 12, odometer_km: 71475 }),
+  vehicle({ id: IDS.vehicles.h1, site_id: IDS.sites.dammam, plate_no: '4321 DMM', make: 'Hyundai', model: 'H1', year: 2022, color: 'Silver', seats: 8, odometer_km: 102300 }),
+  vehicle({ id: IDS.vehicles.cruiser, site_id: IDS.sites.jeddah, plate_no: '8765 JED', make: 'Toyota', model: 'Land Cruiser', year: 2024, color: 'Black', seats: 7, odometer_km: 15800 }),
+];
+
+export const driverAvailability: DriverAvailability[] = [
+  { id: 'a0000000-0000-4000-8000-000000000001', driver_id: IDS.drivers.fahad, type: 'leave', starts_at: at(7, '00:00'), ends_at: at(10, '00:00'), note: 'Annual leave', created_by: IDS.users.owner, created_at: CREATED },
+];
+
+let locationSeq = 1;
+function location(driverId: string, lat: number, lng: number, minsAgo: number, taskId: string | null, speed: number, battery: number): DriverLocation {
+  return { id: locationSeq++, driver_id: driverId, company_id: COMPANY_ID, task_id: taskId, lat, lng, accuracy_m: 8, speed_kmh: speed, heading: 90, battery_pct: battery, recorded_at: minutesAgo(minsAgo) };
+}
+
+/** Latest ping per driver (v_driver_latest_location). */
+export const driverLocations: DriverLocation[] = [
+  location(IDS.drivers.ahmed, 24.955, 46.699, 0.5, T(2), 0, 76),
+  location(IDS.drivers.khalid, 26.425, 50.09, 2, null, 0, 54),
+  location(IDS.drivers.yousef, 21.5497, 39.1622, 1, T(6), 0, 63),
+  location(IDS.drivers.fahad, 24.695, 46.686, 14, null, 0, 91),
+];
+
+// ---------------------------------------------------------------------------
+// tasks (today = 1–10, tomorrow = 11–14)
+// ---------------------------------------------------------------------------
+type TaskSeed = Pick<Task, 'id' | 'site_id' | 'category' | 'status' | 'priority' | 'title' | 'description' | 'scheduled_start' | 'scheduled_end' | 'estimated_duration_min' | 'estimated_distance_km' | 'passengers'> &
+  Partial<Pick<Task, 'actual_start_at' | 'actual_end_at' | 'actual_distance_km' | 'recurrence_rule_id' | 'recurrence_date' | 'completion_notes' | 'odometer_start_km' | 'odometer_end_km'>>;
+
+function task(p: TaskSeed): Task {
+  return {
+    company_id: COMPANY_ID,
+    actual_start_at: null,
+    actual_end_at: null,
+    actual_distance_km: null,
+    odometer_start_km: null,
+    odometer_end_km: null,
+    requested_by: null,
+    created_by: IDS.users.dispatcher,
+    recurrence_rule_id: null,
+    recurrence_date: null,
+    remind_offsets_min: null,
+    cancel_reason: null,
+    completion_notes: null,
+    conflicts_overridden: false,
+    override_reason: null,
+    override_by: null,
+    metadata: {},
+    created_at: CREATED,
+    updated_at: CREATED,
+    ...p,
+  };
+}
+
+const ROUTINE_RULE = '70000000-0000-4000-8000-000000000001';
+
+export const tasks: Task[] = [
+  task({ id: T(1), site_id: IDS.sites.rhq, category: 'daily_routine', status: 'completed', priority: 'normal', title: 'Office shuttle', description: 'Morning staff shuttle HQ → Al Yasmin', scheduled_start: at(0, '08:00'), scheduled_end: at(0, '10:00'), estimated_duration_min: 120, estimated_distance_km: 24.5, passengers: [], actual_start_at: at(0, '08:02'), actual_end_at: at(0, '09:58'), actual_distance_km: 25, odometer_start_km: 71450, odometer_end_km: 71475, recurrence_rule_id: ROUTINE_RULE, recurrence_date: dateKey(0) }),
+  task({ id: T(2), site_id: IDS.sites.rhq, category: 'airport', status: 'delayed', priority: 'high', title: 'Pick up Eng. Sara Al-Otaibi', description: 'Arrival from Jeddah, take to Al Yasmin Site office', scheduled_start: at(0, '12:45'), scheduled_end: at(0, '16:10'), estimated_duration_min: 205, estimated_distance_km: 61, passengers: [{ name: 'Eng. Sara Al-Otaibi', phone: '+966 55 010 2030' }], actual_start_at: at(0, '12:47') }),
+  task({ id: T(3), site_id: IDS.sites.rhq, category: 'escort', status: 'acknowledged', priority: 'normal', title: 'Escort Mr. Hamad to SAB Bank', description: 'Wait and return', scheduled_start: at(0, '17:00'), scheduled_end: at(0, '18:00'), estimated_duration_min: 60, estimated_distance_km: 9, passengers: [{ name: 'Mr. Hamad Al-Mutairi', phone: '+966 50 400 1122' }] }),
+  task({ id: T(4), site_id: IDS.sites.dammam, category: 'document_delivery', status: 'completed', priority: 'normal', title: 'Documents to Ministry of Labor', description: 'Contract renewals — get stamped receipt', scheduled_start: at(0, '09:00'), scheduled_end: at(0, '10:30'), estimated_duration_min: 90, estimated_distance_km: 14, passengers: [], actual_start_at: at(0, '09:05'), actual_end_at: at(0, '10:20'), actual_distance_km: 14.6, completion_notes: 'Receipt photographed' }),
+  task({ id: T(5), site_id: IDS.sites.dammam, category: 'airport', status: 'assigned', priority: 'normal', title: 'DMM arrival · MS 691', description: 'Pick up visiting engineers from Cairo', scheduled_start: at(0, '14:20'), scheduled_end: at(0, '17:00'), estimated_duration_min: 160, estimated_distance_km: 72, passengers: [{ name: 'Eng. Mostafa Adel', phone: '+20 100 555 0101' }, { name: 'Eng. Rania Samir', phone: '+20 100 555 0102' }] }),
+  task({ id: T(6), site_id: IDS.sites.jeddah, category: 'escort', status: 'in_progress', priority: 'normal', title: 'Escort · Al Rajhi Bank', description: 'Accompany site accountant', scheduled_start: at(0, '10:30'), scheduled_end: at(0, '13:00'), estimated_duration_min: 150, estimated_distance_km: 22, passengers: [{ name: 'Mr. Tariq Hassan', phone: '+966 50 400 3344' }], actual_start_at: at(0, '10:32') }),
+  task({ id: T(7), site_id: IDS.sites.jeddah, category: 'airport', status: 'assigned', priority: 'high', title: 'JED departure · XY 210', description: 'Drop project manager for Riyadh flight', scheduled_start: at(0, '12:30'), scheduled_end: at(0, '15:40'), estimated_duration_min: 190, estimated_distance_km: 38, passengers: [{ name: 'Eng. Faisal Nasser', phone: '+966 50 300 0002' }] }),
+  task({ id: T(8), site_id: IDS.sites.rhq, category: 'daily_routine', status: 'completed', priority: 'normal', title: 'Site rounds', description: 'Pick up daily reports from Al Yasmin', scheduled_start: at(0, '08:00'), scheduled_end: at(0, '10:00'), estimated_duration_min: 120, estimated_distance_km: 26, passengers: [], actual_start_at: at(0, '07:58'), actual_end_at: at(0, '10:05'), actual_distance_km: 26.4 }),
+  task({ id: T(9), site_id: IDS.sites.rhq, category: 'document_delivery', status: 'acknowledged', priority: 'normal', title: 'Documents to Chamber of Commerce', description: 'Certificate of origin', scheduled_start: at(0, '16:00'), scheduled_end: at(0, '17:00'), estimated_duration_min: 60, estimated_distance_km: 11, passengers: [] }),
+  task({ id: T(10), site_id: IDS.sites.yasmin, category: 'airport', status: 'scheduled', priority: 'normal', title: 'Pick up consultant — EK 817', description: 'Arrival from Dubai', scheduled_start: at(0, '13:30'), scheduled_end: at(0, '15:45'), estimated_duration_min: 135, estimated_distance_km: 48, passengers: [{ name: 'Mr. David Lee', phone: '+971 50 123 4567' }] }),
+  task({ id: T(11), site_id: IDS.sites.yasmin, category: 'airport', status: 'scheduled', priority: 'normal', title: 'RUH arrival · QR 1146', description: 'Pick up new site engineer', scheduled_start: at(1, '05:10'), scheduled_end: at(1, '07:30'), estimated_duration_min: 140, estimated_distance_km: 48, passengers: [{ name: 'Eng. Karim Haddad', phone: '+974 55 111 2233' }] }),
+  task({ id: T(12), site_id: IDS.sites.rhq, category: 'escort', status: 'scheduled', priority: 'normal', title: 'Escort finance team to Riyad Bank', description: null, scheduled_start: at(1, '10:00'), scheduled_end: at(1, '11:30'), estimated_duration_min: 90, estimated_distance_km: 12, passengers: [{ name: 'Finance team (3)' }] }),
+  task({ id: T(13), site_id: IDS.sites.rhq, category: 'daily_routine', status: 'assigned', priority: 'normal', title: 'Office shuttle', description: 'Morning staff shuttle HQ → Al Yasmin', scheduled_start: at(1, '08:00'), scheduled_end: at(1, '10:00'), estimated_duration_min: 120, estimated_distance_km: 24.5, passengers: [], recurrence_rule_id: ROUTINE_RULE, recurrence_date: dateKey(1) }),
+  task({ id: T(14), site_id: IDS.sites.dammam, category: 'document_delivery', status: 'scheduled', priority: 'low', title: 'Permits to Dammam Municipality', description: null, scheduled_start: at(1, '09:30'), scheduled_end: at(1, '11:00'), estimated_duration_min: 90, estimated_distance_km: 9, passengers: [] }),
+];
+
+let stopSeq = 0;
+function stops(taskId: string, day: number, list: [string, string, number, number, string | null, string | null, string, number, number | null, number | null][]): TaskStop[] {
+  return list.map(([label, address, lat, lng, siteId, airportId, hhmm, dwell, km, mins], i) => ({
+    id: `80000000-0000-4000-8000-${String(++stopSeq).padStart(12, '0')}`,
+    task_id: taskId,
+    seq: i + 1,
+    label,
+    address,
+    lat,
+    lng,
+    google_place_id: null,
+    site_id: siteId,
+    airport_id: airportId,
+    planned_arrival_at: at(day, hhmm),
+    dwell_min: dwell,
+    leg_distance_km: km,
+    leg_duration_min: mins,
+    actual_arrival_at: null,
+    actual_departure_at: null,
+    contact_name: null,
+    contact_phone: null,
+    notes: null,
+  }));
+}
+
+const RHQ: [string, string, number, number, string, null] = ['Riyadh HQ', 'Olaya St', 24.6948, 46.6857, IDS.sites.rhq, null];
+const YAS: [string, string, number, number, string, null] = ['Al Yasmin Site', 'Al Yasmin', 24.8236, 46.6407, IDS.sites.yasmin, null];
+const DMS: [string, string, number, number, string, null] = ['Dammam Site', 'King Saud St', 26.4207, 50.0888, IDS.sites.dammam, null];
+const JTW: [string, string, number, number, string, null] = ['Jeddah Tower', 'North Obhur', 21.735, 39.085, IDS.sites.jeddah, null];
+
+export const taskStops: TaskStop[] = [
+  ...stops(T(1), 0, [[...RHQ, '08:00', 10, null, null], [...YAS, '08:40', 20, 24.5, 30]]),
+  ...stops(T(2), 0, [[...RHQ, '12:45', 0, null, null], ['RUH Terminal 1 · Arrivals', 'King Khalid Intl', 24.9576, 46.6988, null, IDS.airports.ruh, '13:30', 40, 36, 45], ['Al Yasmin Site office', 'Al Yasmin', 24.8236, 46.6407, IDS.sites.yasmin, null, '15:40', 0, 25, 30]]),
+  ...stops(T(3), 0, [[...RHQ, '17:00', 0, null, null], ['SAB Bank — Olaya', 'Olaya St, Riyadh', 24.711, 46.6745, null, null, '17:15', 30, 4.5, 15]]),
+  ...stops(T(4), 0, [[...DMS, '09:00', 0, null, null], ['Ministry of Labor', 'Dammam', 26.4334, 50.1036, null, null, '09:25', 30, 7, 25]]),
+  ...stops(T(5), 0, [[...DMS, '14:20', 0, null, null], ['DMM · Arrivals', 'King Fahd Intl', 26.4712, 49.7979, null, IDS.airports.dmm, '15:00', 45, 36, 40], [...DMS, '16:25', 0, 36, 40]]),
+  ...stops(T(6), 0, [[...JTW, '10:30', 0, null, null], ['Al Rajhi Bank — Tahlia', 'Tahlia St, Jeddah', 21.5497, 39.1622, null, null, '11:05', 90, 22, 35]]),
+  ...stops(T(7), 0, [[...JTW, '12:30', 0, null, null], ['JED North Terminal', 'King Abdulaziz Intl', 21.6796, 39.1565, null, IDS.airports.jed, '13:10', 20, 19, 40]]),
+  ...stops(T(8), 0, [[...RHQ, '08:00', 0, null, null], [...YAS, '08:40', 30, 26, 40]]),
+  ...stops(T(9), 0, [[...RHQ, '16:00', 0, null, null], ['Chamber of Commerce', 'King Fahd Rd, Riyadh', 24.727, 46.667, null, null, '16:20', 20, 5.5, 20]]),
+  ...stops(T(10), 0, [[...YAS, '13:30', 0, null, null], ['RUH Terminal 2 · Arrivals', 'King Khalid Intl', 24.9576, 46.6988, null, IDS.airports.ruh, '14:05', 45, 24, 35]]),
+  ...stops(T(11), 1, [[...YAS, '05:10', 0, null, null], ['RUH Terminal 1 · Arrivals', 'King Khalid Intl', 24.9576, 46.6988, null, IDS.airports.ruh, '05:45', 45, 24, 35]]),
+  ...stops(T(12), 1, [[...RHQ, '10:00', 0, null, null], ['Riyad Bank — King Fahd Rd', 'King Fahd Rd', 24.7136, 46.6753, null, null, '10:15', 45, 6, 15]]),
+  ...stops(T(13), 1, [[...RHQ, '08:00', 10, null, null], [...YAS, '08:40', 20, 24.5, 30]]),
+  ...stops(T(14), 1, [[...DMS, '09:30', 0, null, null], ['Dammam Municipality', 'Dammam', 26.4392, 50.1033, null, null, '09:50', 30, 4.5, 20]]),
+];
+
+function assignment(n: number, taskId: string, driverId: string, vehicleId: string | null, assignedBy: string, ack: string | null, eta: string | null = null): TaskAssignment {
+  return {
+    id: `90000000-0000-4000-8000-${String(n).padStart(12, '0')}`,
+    task_id: taskId,
+    driver_id: driverId,
+    vehicle_id: vehicleId,
+    is_primary: true,
+    assigned_by: assignedBy,
+    assigned_at: at(-1, '15:00'),
+    acknowledged_at: ack,
+    declined_at: null,
+    decline_reason: null,
+    eta_next_stop_at: eta,
+    eta_updated_at: eta ? minutesAgo(3) : null,
+  };
+}
+
+export const taskAssignments: TaskAssignment[] = [
+  assignment(1, T(1), IDS.drivers.ahmed, IDS.vehicles.hiace, IDS.users.dispatcher, at(-1, '18:10')),
+  assignment(2, T(2), IDS.drivers.ahmed, IDS.vehicles.camry, IDS.users.dispatcher, at(-1, '18:11'), at(0, '15:40')),
+  assignment(3, T(3), IDS.drivers.ahmed, IDS.vehicles.camry, IDS.users.dispatcher, at(0, '07:05')),
+  assignment(4, T(4), IDS.drivers.khalid, IDS.vehicles.h1, IDS.users.dammam, at(-1, '19:00')),
+  assignment(5, T(5), IDS.drivers.khalid, IDS.vehicles.h1, IDS.users.dammam, null),
+  assignment(6, T(6), IDS.drivers.yousef, IDS.vehicles.cruiser, IDS.users.owner, at(0, '06:50')),
+  assignment(7, T(7), IDS.drivers.yousef, null, IDS.users.owner, null),
+  assignment(8, T(8), IDS.drivers.fahad, IDS.vehicles.camry, IDS.users.dispatcher, at(-1, '17:30')),
+  assignment(9, T(9), IDS.drivers.fahad, null, IDS.users.dispatcher, at(0, '11:20')),
+  assignment(13, T(13), IDS.drivers.ahmed, IDS.vehicles.hiace, IDS.users.dispatcher, null),
+];
+
+function flight(taskId: string, airportId: string, direction: FlightDetails['direction'], airline: string, flightNo: string, terminal: string | null, scheduled: string, buffer: number, estimated: string | null = null, status = 'scheduled'): FlightDetails {
+  return { task_id: taskId, airport_id: airportId, direction, airline, flight_no: flightNo, terminal, scheduled_time: scheduled, estimated_time: estimated, actual_time: null, buffer_min: buffer, flight_status: status, provider_payload: null, updated_at: CREATED };
+}
+
+export const flightDetails: FlightDetails[] = [
+  flight(T(2), IDS.airports.ruh, 'arrival', 'Saudia', 'SV 1234', '1', at(0, '14:00'), 30, at(0, '14:40'), 'delayed'),
+  flight(T(5), IDS.airports.dmm, 'arrival', 'EgyptAir', 'MS 691', null, at(0, '15:00'), 10),
+  flight(T(7), IDS.airports.jed, 'departure', 'flynas', 'XY 210', 'North', at(0, '15:40'), 90),
+  flight(T(10), IDS.airports.ruh, 'arrival', 'Emirates', 'EK 817', '2', at(0, '14:30'), 30),
+  flight(T(11), IDS.airports.ruh, 'arrival', 'Qatar Airways', 'QR 1146', '1', at(1, '06:10'), 30),
+];
+
+export const taskDelays: TaskDelay[] = [
+  { id: 'b0000000-0000-4000-8000-000000000001', task_id: T(2), reported_by: IDS.users.ahmed, reason: 'flight_delayed', delay_min: 40, note: 'Saudia updated ETA', previous_status: 'en_route', new_estimated_start: at(0, '13:25'), resolved_at: null, created_at: at(0, '13:31') },
+];
+
+function conflict(n: number, taskId: string, otherTaskId: string | null, driverId: string, type: TaskConflict['type'], severity: TaskConflict['severity'], details: TaskConflict['details']): TaskConflict {
+  return { id: `c0000000-0000-4000-8000-${String(n).padStart(12, '0')}`, task_id: taskId, other_task_id: otherTaskId, driver_id: driverId, vehicle_id: null, type, severity, details, resolved_at: null, created_at: at(0, '07:00') };
+}
+
+export const taskConflicts: TaskConflict[] = [
+  conflict(1, T(6), T(7), IDS.drivers.yousef, 'driver_overlap', 'blocking', { title: 'JED departure · XY 210', site: 'Jeddah Tower', start: at(0, '12:30'), end: at(0, '15:40') }),
+  conflict(2, T(6), null, IDS.drivers.yousef, 'driver_over_hours', 'warning', { planned_min: 340, max_min: 300 }),
+  conflict(3, T(7), T(6), IDS.drivers.yousef, 'driver_overlap', 'blocking', { title: 'Escort · Al Rajhi Bank', site: 'Jeddah Tower', start: at(0, '10:30'), end: at(0, '13:00') }),
+  conflict(4, T(7), null, IDS.drivers.yousef, 'driver_over_hours', 'warning', { planned_min: 340, max_min: 300 }),
+  conflict(5, T(3), null, IDS.drivers.ahmed, 'outside_working_hours', 'info', { shift_start: '07:00:00', shift_end: '17:00:00' }),
+  conflict(6, T(9), null, IDS.drivers.fahad, 'outside_working_hours', 'info', { shift_start: '06:00:00', shift_end: '15:00:00' }),
+];
+
+let eventSeq = 0;
+function event(taskId: string, type: TaskEvent['type'], actor: string | null, from: TaskEvent['from_status'], to: TaskEvent['to_status'], when: string, payload: TaskEvent['payload'] = {}): TaskEvent {
+  return { id: `e0000000-0000-4000-8000-${String(++eventSeq).padStart(12, '0')}`, task_id: taskId, company_id: COMPANY_ID, type, actor_id: actor, from_status: from, to_status: to, lat: null, lng: null, payload, client_ts: when, created_at: when };
+}
+
+export const taskEvents: TaskEvent[] = [
+  event(T(2), 'created', IDS.users.dispatcher, null, 'scheduled', at(-1, '14:55')),
+  event(T(2), 'assigned', IDS.users.dispatcher, 'scheduled', 'assigned', at(-1, '15:00'), { driver_id: IDS.drivers.ahmed }),
+  event(T(2), 'acknowledged', IDS.users.ahmed, 'assigned', 'acknowledged', at(-1, '18:11')),
+  event(T(2), 'started', IDS.users.ahmed, 'acknowledged', 'en_route', at(0, '12:47')),
+  event(T(2), 'delayed', IDS.users.ahmed, 'en_route', 'delayed', at(0, '13:31'), { reason: 'flight_delayed', delay_min: 40 }),
+  ...tasks
+    .filter((t) => t.id !== T(2) && t.status !== 'scheduled')
+    .flatMap((t) => {
+      const a = taskAssignments.find((x) => x.task_id === t.id);
+      const actor = profiles.find((p) => drivers.find((d) => d.id === a?.driver_id)?.profile_id === p.id)?.id ?? null;
+      const list = [event(t.id, 'created', IDS.users.dispatcher, null, 'scheduled', at(-1, '14:30')), event(t.id, 'assigned', a?.assigned_by ?? null, 'scheduled', 'assigned', a?.assigned_at ?? at(-1, '15:00'))];
+      if (a?.acknowledged_at) list.push(event(t.id, 'acknowledged', actor, 'assigned', 'acknowledged', a.acknowledged_at));
+      if (t.actual_start_at) list.push(event(t.id, 'started', actor, 'acknowledged', 'en_route', t.actual_start_at));
+      if (t.status === 'in_progress') list.push(event(t.id, 'arrived', actor, 'en_route', 'in_progress', at(0, '11:04')));
+      if (t.actual_end_at) list.push(event(t.id, 'completed', actor, 'en_route', 'completed', t.actual_end_at));
+      return list;
+    }),
+];
+
+export const taskAttachments: TaskAttachment[] = [
+  { id: 'd0000000-0000-4000-8000-000000000001', task_id: T(4), storage_path: `${COMPANY_ID}/${T(4)}/receipt.jpg`, kind: 'photo', caption: 'Stamped receipt', uploaded_by: IDS.users.khalid, created_at: at(0, '10:18') },
+];
+
+// ---------------------------------------------------------------------------
+// notifications
+// ---------------------------------------------------------------------------
+let notificationSeq = 0;
+function notification(userId: string, type: Notification['type'], taskId: string | null, title: string, body: string | null, minsAgo: number, data: Notification['data'] = {}, read = false): Notification {
+  const created = minutesAgo(minsAgo);
+  return { id: `f0000000-0000-4000-8000-${String(++notificationSeq).padStart(12, '0')}`, company_id: COMPANY_ID, user_id: userId, type, task_id: taskId, title, body, data, actions: [], channels: ['in_app', 'push'], scheduled_for: created, sent_at: created, read_at: read ? created : null, acted_at: null, created_at: created };
+}
+
+export const notifications: Notification[] = [
+  // dispatcher (Riyadh HQ + Al Yasmin)
+  notification(IDS.users.dispatcher, 'task_delayed', T(2), 'SV 1234 delayed +40 min', 'Ahmed Saleh reported a flight delay', 3, { delay_min: 40, reason: 'flight_delayed' }),
+  notification(IDS.users.dispatcher, 'airport_share_hint', T(10), 'Share RUH trip with SV 1234', 'Ahmed Saleh is at RUH 30 min earlier', 12, { related_task_id: T(2), minutes_apart: 30 }),
+  notification(IDS.users.dispatcher, 'task_completed', T(1), 'Office shuttle completed', 'Ahmed Saleh · 09:58', 200, {}, true),
+  // owner sees everything
+  notification(IDS.users.owner, 'task_delayed', T(2), 'SV 1234 delayed +40 min', 'Ahmed Saleh reported a flight delay', 3, { delay_min: 40 }),
+  notification(IDS.users.owner, 'conflict_detected', T(7), 'Yousef Rashid double-booked', 'Escort · Al Rajhi Bank overlaps JED · XY 210', 25, { type: 'driver_overlap' }),
+  notification(IDS.users.owner, 'driver_not_acknowledged', T(5), 'Khalid Mansour has not acknowledged', 'DMM arrival · MS 691', 40, { driver_id: IDS.drivers.khalid }),
+  notification(IDS.users.dammam, 'driver_not_acknowledged', T(5), 'Khalid Mansour has not acknowledged', 'DMM arrival · MS 691', 40, { driver_id: IDS.drivers.khalid }),
+  // drivers
+  notification(IDS.users.ahmed, 'task_assigned', T(13), 'Office shuttle', null, 300),
+  notification(IDS.users.ahmed, 'task_reminder', T(3), 'Escort Mr. Hamad to SAB Bank', null, 20, { offset_min: 120 }),
+  notification(IDS.users.khalid, 'task_assigned', T(5), 'DMM arrival · MS 691', null, 380),
+  notification(IDS.users.yousef, 'task_assigned', T(7), 'JED departure · XY 210', null, 420),
+  notification(IDS.users.fahad, 'task_reminder', T(9), 'Documents to Chamber of Commerce', null, 50, { offset_min: 120 }, true),
+];
+
+// ---------------------------------------------------------------------------
+// hours: 13 days of history + today (driver_day_summary)
+// ---------------------------------------------------------------------------
+function weekday(isoDate: string): number {
+  return new Date(`${isoDate}T12:00:00Z`).getUTCDay();
+}
+
+function buildSummaries(): DriverDaySummary[] {
+  const rows: DriverDaySummary[] = [];
+  drivers.forEach((d, index) => {
+    for (let day = -13; day <= 0; day += 1) {
+      const date = dateKey(day);
+      const dow = weekday(date);
+      const isWeekend = companySettings.weekend_days.includes(dow);
+      if (isWeekend) continue;
+      const n = day + 20 + index;
+      const late = n % 3 === 0;
+      const driving = day === 0 ? [205, 75, 150, 127][index]! : 120 + 150 + (late ? 180 : 0) + (n % 4) * 10;
+      const working = day === 0 ? [360, 75, 150, 127][index]! : late ? 690 : 330 + (n % 4) * 10;
+      const km = day === 0 ? [25, 14.6, 0, 26.4][index]! : 63.5 + (n % 7) * 2 + (late ? 18 : 0);
+      const first = at(day, '08:00');
+      const second = (['airport', 'document_delivery', 'escort'] as const)[n % 3] ?? 'airport';
+      rows.push({
+        driver_id: d.id,
+        company_id: COMPANY_ID,
+        date,
+        first_start_at: first,
+        last_end_at: new Date(new Date(first).getTime() + working * 60_000).toISOString(),
+        tasks_count: day === 0 ? 1 : late ? 3 : 2,
+        tasks_by_category: day === 0 ? {} : { daily_routine: 1, [second]: 1 },
+        driving_min: driving,
+        working_min: working,
+        overtime_min: Math.max(working - companySettings.standard_day_min, 0),
+        distance_km: Math.round(km * 10) / 10,
+        is_weekend: false,
+        is_holiday: false,
+        computed_at: minutesAgo(5),
+      });
+    }
+  });
+  return rows;
+}
+
+export const driverDaySummaries: DriverDaySummary[] = buildSummaries();
+
+export const holidays: Holiday[] = [
+  { id: 'ab000000-0000-4000-8000-000000000001', company_id: COMPANY_ID, date: `${TODAY.slice(0, 4)}-02-22`, name: 'Founding Day', name_ar: 'يوم التأسيس' },
+  { id: 'ab000000-0000-4000-8000-000000000002', company_id: COMPANY_ID, date: `${TODAY.slice(0, 4)}-09-23`, name: 'Saudi National Day', name_ar: 'اليوم الوطني' },
+];

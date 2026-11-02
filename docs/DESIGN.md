@@ -24,6 +24,8 @@ This is the "nice design template" the project starts from. Phase 0 builds these
 | Warning | `--warning` | non-blocking conflicts, delays |
 | Surfaces | `--bg` / `--surface` / `--surface-2` | page / cards / inset panels |
 
+Text in amber/green/orange uses the contrast-safe `warning-fg` / `success-fg` / `delayed-fg` theme colours (token mixed toward `--text`); pills use `.tone-pill`, which does the same. Map illustration colours are `--map-land/road/water` (light + dark).
+
 Rules: category colour is applied as a **4 px start-border + 10 % tinted background** on cards and calendar blocks (never a full fill, which fights with status). Status is a **pill** with a dot. Conflicts add a **red/amber corner badge with count**.
 
 ### 2.2 Typography

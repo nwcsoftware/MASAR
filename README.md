@@ -1,4 +1,21 @@
-# Masar — Driver & Trip Management (project seed)
+# Masar — Driver & Trip Management
+
+## Getting started
+
+```bash
+pnpm i
+pnpm dev            # http://localhost:5173
+```
+
+**Without Supabase (demo mode).** With no `apps/web/.env.local`, the login screen offers four demo roles — owner, dispatcher, driver (phone app) and viewer — over the same sample day as `supabase/seed.sql`. Append `?mock=empty` or `?mock=error` to any URL to see that screen's empty/error state.
+
+**With Supabase.**
+- *Local* (needs Docker Desktop): `pnpm db:start && pnpm db:reset`, then copy the printed API URL and anon key into `apps/web/.env.local` (see `.env.example`). Sign in with any seed login, e.g. `dispatcher@masar.dev` / `Masar!2026`.
+- *Hosted*: create a project → `pnpm supabase link --project-ref <ref>` → `pnpm supabase db push` → enable `pg_cron` + `pg_net` → set the URL/anon key in `.env.local` → `pnpm supabase gen types typescript --linked > apps/web/src/lib/database.types.ts`.
+
+Checks: `pnpm lint && pnpm typecheck && pnpm i18n:check && pnpm test && pnpm e2e`. Desktop: `pnpm tauri dev`.
+
+## Project seed
 
 Drop this folder into an empty repo, open it in VS Code with Claude Code, and start with:
 

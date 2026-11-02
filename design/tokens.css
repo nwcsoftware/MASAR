@@ -57,6 +57,11 @@
   --ring:          var(--brand-400);
   --overlay:       rgb(15 23 42 / 0.45);
 
+  /* ---- Map illustration (Phase 0 placeholder map, empty states) ---- */
+  --map-land:  #eef1f7;
+  --map-road:  #ffffff;
+  --map-water: #dbe7f5;
+
   /* ---- Typography ---- */
   --font-sans:   "Manrope", "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-arabic: "IBM Plex Sans Arabic", "Noto Sans Arabic", "Manrope", system-ui, sans-serif;
@@ -123,6 +128,9 @@
   --text-2:        #a7b1c6;
   --text-3:        #6b768e;
   --overlay:       rgb(0 0 0 / 0.6);
+  --map-land:  #141c30;
+  --map-road:  #1f2a44;
+  --map-water: #0f1a33;
   --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.5);
   --shadow-md: 0 4px 12px rgb(0 0 0 / 0.5);

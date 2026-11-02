@@ -40,9 +40,11 @@ pnpm tauri dev           # desktop
 pnpm test                # vitest
 pnpm e2e                 # playwright (runs en + ar)
 pnpm lint && pnpm typecheck
-supabase start && supabase db reset     # local DB with migration + seed
-supabase functions serve                # edge functions locally
-supabase gen types typescript --local > apps/web/src/lib/database.types.ts
+pnpm i18n:check          # en/ar parity + every t('…') key exists
+# Supabase CLI is a workspace devDependency (needs Docker for local): use `pnpm supabase …`
+pnpm db:start && pnpm db:reset          # local DB with migration + seed (logins in supabase/seed.sql)
+pnpm supabase functions serve           # edge functions locally
+pnpm db:types                           # regenerate apps/web/src/lib/database.types.ts
 ```
 
 ## Conventions
@@ -51,7 +53,8 @@ supabase gen types typescript --local > apps/web/src/lib/database.types.ts
 - Regenerate `database.types.ts` after every migration; no `any` on Supabase rows.
 - Every user-facing string goes through `t()`; add the key to **both** `en.json` and `ar.json` in the same commit (CI fails on missing keys).
 - Only logical Tailwind utilities (`ms-`, `pe-`, `start-`, `text-start`). Directional icons get `rtl:-scale-x-100`.
-- Colours only via tokens/Tailwind theme (no hex in components).
+- Colours only via tokens/Tailwind theme (no hex in components). For coloured *text* use `text-warning-fg` / `text-success-fg` / `text-delayed-fg` (contrast-safe), and the `.tone-*` classes with `tone(var)` for status/category colour. Tailwind `/opacity` modifiers don't work on `var()` colours — use `color-mix` or `tint-12`.
+- Wrap English free text interpolated into translated sentences with `isolate()` (lib/format.ts) so it renders correctly inside Arabic.
 - Forms: zod schema in `features/<domain>/schema.ts`, shared with Edge Functions where relevant.
 - Driver actions must work offline: enqueue `{ taskId, action, payload, eventId }` in `lib/offline-queue.ts` (IndexedDB via `idb-keyval`), replay on `online`.
 - Google Maps keys: browser key restricted by referrer for Maps JS/Places; server key only in Edge Functions.
@@ -69,10 +72,18 @@ supabase gen types typescript --local > apps/web/src/lib/database.types.ts
 ## Phase 0 checklist (start here)
 - [x] Scaffold: `pnpm create vite` → add Tauri 2, Tailwind, shadcn, TanStack, i18next, Supabase client
 - [x] Import `design/tokens.css`; configure `tailwind.config.ts` per `docs/DESIGN.md` §3
-- [ ] `AppShell` with sidebar/topbar/slide-over; RTL + dark mode toggles working
-- [ ] Route groups `(auth)`, `(admin)`, `(driver)`; role-based redirect after login
-- [ ] All 12 screens from `DESIGN.md` §6 as shells with `EmptyState` and mock data
+- [x] `AppShell` with sidebar/topbar/slide-over; RTL + dark mode toggles working
+- [x] Route groups `(auth)`, `(admin)`, `(driver)`; role-based redirect after login
+- [x] All 12 screens from `DESIGN.md` §6 as shells with `EmptyState` and mock data
 - [ ] Supabase project linked; `supabase db reset` applies `0001_init.sql`; seed loaded
-- [ ] Auth flow (email/password + magic link), `profiles` loaded into a `useSession()` hook
-- [ ] PWA manifest + service worker (vite-plugin-pwa), installable driver route
-- [ ] CI: lint, typecheck, test, `supabase db lint`
+      — `supabase/config.toml` + `supabase/seed.sql` done and verified on Postgres 17 (PGlite);
+        `database.types.ts` generated from the migration. Still needs Docker (local) or a hosted project.
+- [x] Auth flow (email/password + magic link), `profiles` loaded into a `useSession()` hook
+- [x] PWA manifest + service worker (vite-plugin-pwa), installable driver route
+- [x] CI: lint, typecheck, test, `supabase db lint` (`.github/workflows/ci.yml`; no remote yet)
+
+## Demo mode & mock data (Phase 0)
+- No `VITE_SUPABASE_*` in `.env.local` → the login screen offers a role picker (owner / dispatcher / driver / viewer) with the seed's personas.
+- Domain screens read `src/mocks/` through `features/<domain>/queries.ts` while `MOCK_DOMAIN_DATA` (in `src/mocks/db.ts`) is `true`; mock rows are typed as real `Tables<'…'>` rows, so wiring Supabase is a `queryFn` change. Flip the flag when every feature is wired.
+- `?mock=empty` / `?mock=error` on any URL renders that screen's empty / error state.
+- `rpc_task_transition` is mirrored by `mockTransition` so driver actions work in demo mode — keep them in sync.

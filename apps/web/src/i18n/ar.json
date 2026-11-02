@@ -4,64 +4,726 @@
     "tagline": "إدارة السائقين والرحلات",
     "loading": "جارٍ التحميل…",
     "save": "حفظ",
+    "saving": "جارٍ الحفظ…",
+    "saved": "تم الحفظ",
     "cancel": "إلغاء",
     "close": "إغلاق",
+    "back": "رجوع",
+    "next": "التالي",
+    "continue": "متابعة",
+    "add": "إضافة",
+    "edit": "تعديل",
+    "remove": "حذف",
+    "all": "الكل",
     "search": "بحث",
-    "searchHint": "ابحث عن مهام أو سائقين أو مواقع…",
+    "searchHint": "ابحث في المهام والسائقين والرحلات…",
     "language": "اللغة",
     "theme": "المظهر",
     "themeLight": "فاتح",
     "themeDark": "داكن",
     "themeSystem": "النظام",
     "allSites": "كل المواقع",
-    "retry": "حاول مرة أخرى"
+    "retry": "حاول مرة أخرى",
+    "goHome": "العودة للرئيسية",
+    "comingSoon": "متاح في مرحلة لاحقة"
   },
   "nav": {
-    "dashboard": "لوحة المعلومات",
+    "main": "التنقل الرئيسي",
+    "open": "فتح القائمة",
+    "collapse": "طي الشريط الجانبي",
+    "expand": "توسيع الشريط الجانبي",
+    "skip": "تخطَّ إلى المحتوى",
+    "dashboard": "الرئيسية",
     "calendar": "التقويم",
-    "liveMap": "الخريطة المباشرة",
+    "liveMap": "الخريطة الحية",
     "tasks": "المهام",
     "drivers": "السائقون",
-    "sites": "المواقع",
-    "reports": "التقارير",
+    "sites": "المواقع والمطارات",
+    "reports": "الساعات والتقارير",
     "settings": "الإعدادات"
+  },
+  "roles": {
+    "owner": "المالك",
+    "admin": "مدير",
+    "dispatcher": "منسق",
+    "driver": "سائق",
+    "viewer": "مشاهد"
+  },
+  "user": {
+    "menu": "قائمة الحساب",
+    "profile": "ملفي الشخصي"
+  },
+  "units": {
+    "km": "{{value}} كم",
+    "minutes": "{{value}} د",
+    "hours": "{{value}} س",
+    "hoursShort": "{{value}} س"
+  },
+  "auth": {
+    "welcome": "مرحباً بعودتك",
+    "subtitle": "سجّل الدخول لتوزيع المهام ومتابعة السائقين.",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "signOut": "تسجيل الخروج",
+    "magicLink": "رابط سحري",
+    "sendMagicLink": "أرسل لي رابط الدخول",
+    "magicSentTitle": "تحقق من بريدك",
+    "magicSentBody": "أرسلنا رابط الدخول إلى {{email}}.",
+    "useDifferentEmail": "استخدم بريداً آخر",
+    "inviteOnly": "تُنشأ الحسابات بدعوة من مدير شركتك.",
+    "brandTitle": "تقويم واحد موثوق لكل سائق وكل موقع.",
+    "brandPoint1": "تنبيه فوري بالحجز المزدوج لحظة تعيين السائق.",
+    "brandPoint2": "موقعان يتجهان إلى المطار نفسه؟ شاركا السيارة.",
+    "brandPoint3": "ساعات القيادة والعمل الإضافي بدقة الدقيقة.",
+    "errors": {
+      "emailRequired": "أدخل بريدك الإلكتروني.",
+      "emailInvalid": "أدخل بريداً إلكترونياً صحيحاً.",
+      "passwordShort": "يجب ألا تقل كلمة المرور عن 8 أحرف.",
+      "passwordMismatch": "كلمتا المرور غير متطابقتين.",
+      "nameRequired": "أدخل اسمك الكامل."
+    }
+  },
+  "invite": {
+    "title": "قبول الدعوة",
+    "subtitle": "تمت دعوتك للانضمام إلى {{company}} على مسار.",
+    "fullName": "الاسم الكامل",
+    "confirm": "تأكيد كلمة المرور",
+    "submit": "إنشاء حسابي",
+    "doneTitle": "كل شيء جاهز"
+  },
+  "demo": {
+    "title": "وضع العرض التجريبي",
+    "subtitle": "استكشف مسار ببيانات تجريبية — دون حساب.",
+    "body": "لم يتم ربط Supabase بعد، لذا اختر دوراً لاستكشاف التطبيق بجدول اليوم التجريبي.",
+    "badge": "تجريبي",
+    "sampleData": "بيانات تجريبية",
+    "sampleDataHint": "تعرض الشاشات بيانات تجريبية حتى يتم ربط كل ميزة بقاعدة البيانات.",
+    "inviteNote": "الوضع التجريبي: لا يتم حفظ أي شيء.",
+    "roles": {
+      "owner": {
+        "title": "المالك",
+        "body": "ماجد — يرى كل المواقع والإعدادات والتقارير"
+      },
+      "dispatcher": {
+        "title": "منسق",
+        "body": "نواف — المقر الرئيسي وموقع الياسمين"
+      },
+      "driver": {
+        "title": "سائق",
+        "body": "أحمد — تطبيق الجوال، في منتصف رحلة برحلة طيران متأخرة"
+      },
+      "viewer": {
+        "title": "مشاهد",
+        "body": "ريم — لوحات وتقارير للقراءة فقط"
+      }
+    }
+  },
+  "dashboard": {
+    "goodMorning": "صباح الخير، {{name}}",
+    "goodAfternoon": "مساء الخير، {{name}}",
+    "goodEvening": "مساء الخير، {{name}}",
+    "subtitle": "{{date}} · {{sites}} مواقع · {{drivers}} سائقين في الخدمة",
+    "openCalendar": "فتح التقويم",
+    "openMap": "فتح الخريطة",
+    "allTasks": "كل المهام",
+    "driversToday": "السائقون · اليوم",
+    "upcomingAirport": "رحلات المطار القادمة · 24 ساعة",
+    "needsAttention": "يتطلب انتباهك",
+    "allClear": "لا شيء يستدعي الانتباه",
+    "allClearBody": "لا تعارضات أو تأخيرات أو مهام غير مؤكدة الآن.",
+    "noTasksToday": "لا مهام مجدولة اليوم",
+    "noTasksTodayBody": "ستظهر مهام اليوم هنا في صف لكل سائق.",
+    "noAirport": "لا رحلات مطار خلال 24 ساعة القادمة",
+    "kpi": {
+      "tasksToday": "مهام اليوم",
+      "unacknowledged": "بانتظار التأكيد",
+      "delayed": "متأخر الآن",
+      "driversActive": "سائقون نشطون",
+      "dueSoon_zero": "لا شيء خلال ساعتين",
+      "dueSoon_one": "واحدة خلال ساعتين",
+      "dueSoon_two": "اثنتان خلال ساعتين",
+      "dueSoon_few": "{{count}} خلال ساعتين",
+      "dueSoon_many": "{{count}} خلال ساعتين",
+      "dueSoon_other": "{{count}} خلال ساعتين",
+      "allClear": "تم تأكيد الجميع",
+      "onDuty_zero": "لا أحد في الخدمة",
+      "onDuty_one": "سائق واحد في الخدمة",
+      "onDuty_two": "سائقان في الخدمة",
+      "onDuty_few": "{{count}} سائقين في الخدمة",
+      "onDuty_many": "{{count}} سائقاً في الخدمة",
+      "onDuty_other": "{{count}} سائق في الخدمة"
+    }
+  },
+  "attention": {
+    "doubleBooked": "{{driver}} محجوز مرتين",
+    "overlaps": "{{a}} تتداخل مع {{b}}",
+    "delayed": "{{title}} متأخرة +{{minutes}} دقيقة",
+    "notAcknowledged": "{{driver}} لم يؤكد {{title}}",
+    "deadlineIn": "تبدأ {{time}} · مهلة التأكيد {{relative}}",
+    "deadlinePassed": "تبدأ {{time}} · انتهت مهلة التأكيد",
+    "overHours": "{{driver}} تجاوز الحد اليومي للقيادة",
+    "unassigned": "{{title}} بدون سائق",
+    "reassign": "إعادة تعيين",
+    "assign": "تعيين",
+    "call": "اتصال",
+    "open": "فتح"
+  },
+  "share": {
+    "title": "{{site}} لديه سيارة إلى {{airport}} عند {{time}}",
+    "body": "مهمتك {{flight}} تبعد {{minutes}} دقيقة فقط — شارك رحلة {{driver}} بدلاً من إرسال سيارة ثانية.",
+    "action": "مشاركة الرحلة"
+  },
+  "calendar": {
+    "driver": "السائق",
+    "view": "عرض التقويم",
+    "day": "يوم",
+    "week": "أسبوع",
+    "today": "اليوم",
+    "previous": "السابق",
+    "next": "التالي",
+    "empty": "لا مهام في هذه الفترة",
+    "emptyBody": "جرّب يوماً أو موقعاً أو فئة أخرى."
+  },
+  "map": {
+    "placeholder": "معاينة الخريطة · خرائط Google في المرحلة 4",
+    "searchDrivers": "ابحث عن سائق",
+    "noDrivers": "لا يوجد سائقون مطابقون",
+    "currentTask": "المهمة الحالية",
+    "nextTask": "المهمة التالية",
+    "noTask": "لا توجد مهمة مسندة الآن.",
+    "lastSeen": "آخر ظهور {{time}}",
+    "eta": "الوصول {{time}}",
+    "call": "اتصل بالسائق"
+  },
+  "driverStatus": {
+    "offline": "غير متصل",
+    "idle": "متاح",
+    "en_route": "في الطريق",
+    "in_progress": "قيد التنفيذ",
+    "delayed": "متأخر"
   },
   "tasks": {
     "title": "المهام",
-    "category": {
-      "routine": "مهمة يومية",
-      "airport": "رحلة مطار",
-      "delivery": "توصيل مستندات",
-      "escort": "مرافقة موظفين"
-    },
-    "status": {
-      "draft": "مسودة",
-      "scheduled": "مجدولة",
-      "assigned": "مُسندة",
-      "acknowledged": "تم الاستلام",
-      "en_route": "في الطريق",
-      "in_progress": "قيد التنفيذ",
-      "delayed": "متأخرة",
-      "completed": "مكتملة",
-      "cancelled": "ملغاة",
-      "no_show": "لم يحضر"
-    },
+    "subtitle": "كل رحلة وتوصيل ومرافقة عبر مواقعك.",
+    "new": "مهمة جديدة",
+    "unassigned": "بدون سائق",
+    "delayedBy": "تأخير +{{minutes}}",
+    "empty": "لا مهام بعد",
+    "emptyBody": "أنشئ أول مهمة من زر «مهمة جديدة».",
+    "emptyFiltered": "لا مهام تطابق عوامل التصفية",
+    "emptyFilteredBody": "أزل أحد عوامل التصفية أو وسّع نطاق التاريخ.",
     "count_zero": "لا مهام",
     "count_one": "مهمة واحدة",
     "count_two": "مهمتان",
     "count_few": "{{count}} مهام",
     "count_many": "{{count}} مهمة",
-    "count_other": "{{count}} مهمة"
+    "count_other": "{{count}} مهمة",
+    "category": {
+      "daily_routine": "مهمة يومية",
+      "airport": "رحلة مطار",
+      "document_delivery": "توصيل مستندات",
+      "escort": "مرافقة موظف"
+    },
+    "categoryShort": {
+      "daily_routine": "يومية",
+      "airport": "مطار",
+      "document_delivery": "توصيل",
+      "escort": "مرافقة"
+    },
+    "status": {
+      "draft": "مسودة",
+      "scheduled": "مجدولة",
+      "assigned": "مُسندة",
+      "acknowledged": "مؤكدة",
+      "en_route": "في الطريق",
+      "in_progress": "قيد التنفيذ",
+      "delayed": "متأخرة",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "declined": "مرفوضة",
+      "no_show": "لم يحضر"
+    },
+    "columns": {
+      "when": "الموعد",
+      "task": "المهمة",
+      "site": "الموقع",
+      "driver": "السائق",
+      "flight": "الرحلة",
+      "status": "الحالة",
+      "conflicts": "التعارضات"
+    },
+    "filters": {
+      "date": "نطاق التاريخ",
+      "category": "الفئة",
+      "status": "الحالة",
+      "driver": "السائق",
+      "allCategories": "كل الفئات",
+      "allStatuses": "كل الحالات",
+      "allDrivers": "كل السائقين",
+      "clear": "مسح عوامل التصفية"
+    },
+    "ranges": {
+      "today": "اليوم",
+      "tomorrow": "غداً",
+      "week": "الأيام السبعة القادمة",
+      "all": "كل التواريخ"
+    }
+  },
+  "taskDetail": {
+    "notFound": "المهمة غير موجودة",
+    "scheduled": "المجدول",
+    "actual": "الفعلي",
+    "driver": "السائق",
+    "vehicle": "المركبة",
+    "distance": "المسافة",
+    "actualKm": "{{value}} كم مقطوعة",
+    "site": "الموقع الطالب",
+    "passengers": "الركاب",
+    "acknowledged": "مؤكدة",
+    "notAcknowledged": "لم يؤكد بعد",
+    "dwell": "توقف {{value}} د",
+    "assign": "تعيين سائق",
+    "reassign": "إعادة تعيين",
+    "edit": "تعديل",
+    "cancelTask": "إلغاء المهمة",
+    "noStops": "لا توجد محطات بعد",
+    "noEvents": "لا يوجد نشاط بعد",
+    "noDelays": "لم يُبلَّغ عن تأخير",
+    "noAttachments": "لا توجد مرفقات",
+    "noAttachmentsBody": "تظهر هنا صور السائق والتوقيعات.",
+    "noConflicts": "لا توجد تعارضات",
+    "tabs": {
+      "details": "التفاصيل",
+      "stops": "المحطات",
+      "timeline": "السجل",
+      "delays": "التأخيرات",
+      "attachments": "المرفقات",
+      "conflicts": "التعارضات"
+    }
+  },
+  "events": {
+    "created": "أُنشئت",
+    "updated": "حُدِّثت",
+    "assigned": "تم تعيين السائق",
+    "unassigned": "تمت إزالة السائق",
+    "acknowledged": "أكدها السائق",
+    "declined": "رفضها السائق",
+    "reminder_sent": "أُرسل تذكير",
+    "started": "بدأت الرحلة",
+    "arrived": "الوصول / استلام الراكب",
+    "delayed": "تم الإبلاغ عن تأخير",
+    "resumed": "استُؤنفت",
+    "completed": "اكتملت",
+    "cancelled": "أُلغيت",
+    "no_show": "سُجلت كعدم حضور",
+    "conflict_overridden": "تم تجاوز التعارض",
+    "note_added": "أُضيفت ملاحظة",
+    "attachment_added": "أُضيف مرفق",
+    "location_snapshot": "سُجل الموقع"
+  },
+  "flight": {
+    "arrival": "وصول",
+    "departure": "مغادرة",
+    "scheduled": "المقرر {{time}}",
+    "estimated": "الآن {{time}}",
+    "now": "الآن {{time}}"
+  },
+  "delay": {
+    "open": "قائم",
+    "resolved": "انتهى",
+    "reason": {
+      "flight_delayed": "تأخر الرحلة",
+      "traffic": "زحام مروري",
+      "passenger_late": "تأخر الراكب",
+      "vehicle_issue": "مشكلة في المركبة",
+      "weather": "الطقس",
+      "other": "أخرى"
+    }
+  },
+  "conflicts": {
+    "count_zero": "لا تعارضات",
+    "count_one": "تعارض واحد",
+    "count_two": "تعارضان",
+    "count_few": "{{count}} تعارضات",
+    "count_many": "{{count}} تعارضاً",
+    "count_other": "{{count}} تعارض",
+    "legend": "تعارض",
+    "override": "تجاوز مع ذكر السبب",
+    "severity": {
+      "info": "للعلم",
+      "warning": "تحذير",
+      "blocking": "مانع — يجب حله قبل الرحلة"
+    },
+    "type": {
+      "driver_overlap": "تتداخل مع {{title}} ({{time}})",
+      "vehicle_overlap": "المركبة محجوزة أيضاً لـ {{title}} ({{time}})",
+      "driver_over_hours": "قيادة مخططة {{planned}} س — الحد {{max}} س",
+      "outside_working_hours": "خارج وردية السائق ({{start}}–{{end}})",
+      "driver_multi_location_same_day": "في نفس يوم {{title}} على بعد {{km}} كم",
+      "driver_unavailable": "السائق في إجازة أو غير متاح"
+    }
+  },
+  "wizard": {
+    "title": "مهمة جديدة",
+    "subtitle": "ما نوع هذه الرحلة؟",
+    "steps": "الخطوات",
+    "phaseNote": "بقية الخطوات تصل مع معالج المهام (المرحلة 2).",
+    "step": {
+      "category": "الفئة",
+      "details": "التفاصيل",
+      "stops": "المحطات",
+      "schedule": "الجدولة",
+      "assign": "السائق",
+      "review": "المراجعة"
+    },
+    "categoryHint": {
+      "daily_routine": "نقل متكرر أو مسار ثابت",
+      "airport": "استقبال أو توصيل لرحلة طيران",
+      "document_delivery": "توصيل أوراق مع إثبات التسليم",
+      "escort": "مرافقة موظف إلى موعد"
+    }
   },
   "drivers": {
     "title": "السائقون",
-    "active": "سائقون نشطون"
+    "subtitle": "الحالة وعبء اليوم والرخص في لمحة.",
+    "active": "سائقون نشطون",
+    "add": "إضافة سائق",
+    "empty": "لا يوجد سائقون بعد",
+    "emptyBody": "ادعُ السائقين من الإعدادات ← المستخدمون.",
+    "notFound": "السائق غير موجود",
+    "plannedToday": "المخطط اليوم",
+    "noMoreToday": "لا مزيد من المهام اليوم",
+    "licenceExpiring": "تنتهي الرخصة {{date}}",
+    "shift": "الوردية {{start}}–{{end}}",
+    "hours14": "ساعات القيادة · آخر 14 يوماً",
+    "upcoming": "القادمة",
+    "noUpcoming": "لا مهام قادمة",
+    "today": "اليوم",
+    "availability": "الإجازات والتوفر",
+    "noAvailability": "لا إجازات مخططة",
+    "licence": "الرخصة",
+    "expires": "تنتهي {{date}}",
+    "kpi": {
+      "plannedToday": "المخطط اليوم",
+      "cap": "الحد {{value}} س",
+      "thisWeek": "هذا الأسبوع",
+      "days_zero": "لا أيام عمل",
+      "days_one": "يوم عمل واحد",
+      "days_two": "يوما عمل",
+      "days_few": "{{count}} أيام عمل",
+      "days_many": "{{count}} يوم عمل",
+      "days_other": "{{count}} يوم عمل",
+      "overtime14": "العمل الإضافي · 14 يوماً",
+      "distance14": "المسافة · 14 يوماً"
+    }
+  },
+  "availability": {
+    "leave": "إجازة سنوية",
+    "sick": "إجازة مرضية",
+    "off_day": "يوم راحة",
+    "training": "تدريب",
+    "other": "غير متاح"
+  },
+  "hours": {
+    "driving": "القيادة",
+    "working": "العمل",
+    "overtime": "العمل الإضافي",
+    "distance": "المسافة",
+    "hoursOf": "{{value}} من {{cap}} س",
+    "overBy": "+{{value}} س تجاوز",
+    "standardDay": "يوم {{value}} س",
+    "chartLabel": "ساعات القيادة والعمل الإضافي يومياً"
+  },
+  "sites": {
+    "title": "المواقع والمطارات",
+    "subtitle": "مواقع الإنشاء والمكاتب والمطارات التي يستخدمها كل منها.",
+    "add": "موقع جديد",
+    "switch": "تبديل الموقع",
+    "mySites": "مواقعي",
+    "count_zero": "لا مواقع",
+    "count_one": "موقع واحد",
+    "count_two": "موقعان",
+    "count_few": "{{count}} مواقع",
+    "count_many": "{{count}} موقعاً",
+    "count_other": "{{count}} موقع",
+    "drivers_zero": "لا سائقين",
+    "drivers_one": "سائق واحد",
+    "drivers_two": "سائقان",
+    "drivers_few": "{{count}} سائقين",
+    "drivers_many": "{{count}} سائقاً",
+    "drivers_other": "{{count}} سائق",
+    "tasksToday_zero": "لا مهام اليوم",
+    "tasksToday_one": "مهمة واحدة اليوم",
+    "tasksToday_two": "مهمتان اليوم",
+    "tasksToday_few": "{{count}} مهام اليوم",
+    "tasksToday_many": "{{count}} مهمة اليوم",
+    "tasksToday_other": "{{count}} مهمة اليوم",
+    "empty": "لا مواقع بعد",
+    "emptyBody": "أضف موقعك الأول لبدء الجدولة.",
+    "notFound": "الموقع غير موجود",
+    "airports": "المطارات",
+    "airport": "المطار",
+    "distance": "المسافة",
+    "driveTime": "مدة القيادة",
+    "buffer": "الهامش الافتراضي",
+    "defaultAirport": "افتراضي",
+    "suggestAirports": "اقتراح مطارات",
+    "noAirports": "لا مطارات مرتبطة",
+    "noAirportsBody": "اقترح المطارات القريبة بالذكاء الاصطناعي ثم اختر ما يستخدمه هذا الموقع.",
+    "upcoming": "المهام القادمة",
+    "noUpcoming": "لا مهام قادمة لهذا الموقع",
+    "homeDrivers": "سائقو الموقع",
+    "noDrivers": "لا سائقين مقرهم هنا",
+    "vehicles": "المركبات",
+    "noVehicles": "لا مركبات مقرها هنا",
+    "workHours": "ساعات العمل {{start}}–{{end}}",
+    "type": {
+      "construction_site": "موقع إنشاء",
+      "office": "مكتب",
+      "warehouse": "مستودع",
+      "other": "أخرى"
+    }
+  },
+  "reports": {
+    "title": "الساعات والتقارير",
+    "subtitle": "القيادة والعمل الإضافي والمسافة · {{from}} – {{to}}",
+    "range": "الفترة",
+    "presets": {
+      "7d": "7 أيام",
+      "14d": "14 يوماً",
+      "30d": "30 يوماً"
+    },
+    "exportXlsx": "تصدير XLSX",
+    "byDriver": "القيادة مقابل العمل الإضافي لكل سائق",
+    "daily": "الإجمالي اليومي",
+    "table": "لكل سائق",
+    "empty": "لا ساعات مسجلة في هذه الفترة",
+    "emptyBody": "المهام المكتملة تغذي ملخصات أيام السائقين.",
+    "kpi": {
+      "driving": "القيادة",
+      "working": "العمل",
+      "overtime": "العمل الإضافي",
+      "distance": "المسافة",
+      "tasks_zero": "لا مهام",
+      "tasks_one": "مهمة واحدة",
+      "tasks_two": "مهمتان",
+      "tasks_few": "{{count}} مهام",
+      "tasks_many": "{{count}} مهمة",
+      "tasks_other": "{{count}} مهمة"
+    },
+    "columns": {
+      "driver": "السائق",
+      "site": "موقع السائق",
+      "days": "الأيام",
+      "tasks": "المهام",
+      "driving": "ساعات القيادة",
+      "working": "ساعات العمل",
+      "overtime": "ساعات إضافية",
+      "km": "كم"
+    }
+  },
+  "settings": {
+    "subtitle": "ملف الشركة وقواعد التذكير والعمل الإضافي والعطل والمستخدمون.",
+    "tabs": {
+      "company": "الشركة",
+      "rules": "القواعد",
+      "holidays": "العطل",
+      "users": "المستخدمون"
+    },
+    "company": {
+      "name": "اسم الشركة",
+      "nameAr": "اسم الشركة (بالعربية)",
+      "timezone": "المنطقة الزمنية",
+      "country": "رمز الدولة",
+      "language": "اللغة الافتراضية"
+    },
+    "rules": {
+      "reminders": "التذكيرات والتنبيهات",
+      "offsets": "تذكير السائق قبل البدء",
+      "removeOffset": "حذف التذكير",
+      "minutes": "دقائق",
+      "minutesBefore": "دقيقة قبل البدء",
+      "minutesAfter": "دقيقة بعد البدء",
+      "ackDeadline": "مهلة التأكيد",
+      "grace": "تنبيه عند عدم البدء",
+      "noShow": "اعتبار عدم الحضور بعد",
+      "shareWindow": "نافذة مشاركة المطار",
+      "shareWindowHint": "دقيقة قبل الرحلة وبعدها",
+      "farLocation": "تحذير المواقع المتباعدة",
+      "farLocationHint": "كم بين أول محطتين في نفس اليوم",
+      "overtime": "الساعات والعمل الإضافي",
+      "standardDay": "اليوم القياسي",
+      "weeklyMax": "الحد الأسبوعي",
+      "maxDriving": "أقصى قيادة يومياً",
+      "weekend": "أيام العطلة الأسبوعية"
+    },
+    "errors": {
+      "offsetMin": "يجب أن يكون التذكير قبل البدء بخمس دقائق على الأقل.",
+      "offsetMax": "لا يتجاوز التذكير 7 أيام قبل البدء.",
+      "offsetsRequired": "أضف تذكيراً واحداً على الأقل.",
+      "offsetsMax": "حتى 5 تذكيرات.",
+      "standardDay": "اليوم القياسي 60 دقيقة على الأقل.",
+      "noShowAfterGrace": "يجب أن يأتي عدم الحضور بعد تنبيه عدم البدء.",
+      "weeklyBelowDay": "لا يمكن أن يقل الحد الأسبوعي عن اليوم القياسي."
+    },
+    "holidays": {
+      "title": "عطل الشركة",
+      "empty": "لم تُضف عطل"
+    },
+    "users": {
+      "title": "المستخدمون والأدوار",
+      "invite": "دعوة مستخدم",
+      "empty": "لا مستخدمين بعد",
+      "name": "الاسم",
+      "role": "الدور",
+      "scope": "المواقع",
+      "language": "اللغة"
+    }
+  },
+  "onboarding": {
+    "exit": "الخروج من الإعداد",
+    "finish": "إنهاء الإعداد",
+    "progress": "تقدم الإعداد",
+    "stepOf": "الخطوة {{step}} من {{total}}",
+    "company": {
+      "short": "الشركة",
+      "title": "عرّفنا بشركتك",
+      "body": "يحدد هذا المنطقة الزمنية واللغة الافتراضية للجميع."
+    },
+    "site": {
+      "short": "الموقع الأول",
+      "title": "أضف موقعك الأول",
+      "body": "ضع الدبوس حيث يتجمع السائقون — نستخدمه للمسافات والمطارات.",
+      "name": "اسم الموقع",
+      "type": "نوع الموقع",
+      "address": "العنوان",
+      "addressHint": "ابحث بالعنوان (Google Places في المرحلة 1)",
+      "lat": "خط العرض",
+      "lng": "خط الطول",
+      "useLocation": "استخدم موقعي الحالي",
+      "mapCaption": "معاينة الدبوس",
+      "newSite": "موقع جديد"
+    },
+    "airports": {
+      "short": "المطارات",
+      "title": "المطارات القريبة من هذا الموقع",
+      "body": "اختر المطارات التي يستخدمها الموقع عادةً وحدد الافتراضي بنجمة.",
+      "suggested": "مقترحة حسب المسافة من دبوس الموقع"
+    },
+    "invite": {
+      "short": "الدعوة",
+      "title": "ادعُ فريقك",
+      "body": "يصل للمنسقين والسائقين والمشاهدين بريد للانضمام.",
+      "add": "إضافة آخر"
+    },
+    "errors": {
+      "companyName": "أدخل اسم الشركة.",
+      "siteName": "أدخل اسم الموقع.",
+      "lat": "يجب أن يكون خط العرض بين ‎-90 و 90.",
+      "lng": "يجب أن يكون خط الطول بين ‎-180 و 180."
+    }
+  },
+  "table": {
+    "columns": "الأعمدة",
+    "exportCsv": "تصدير CSV"
+  },
+  "driver": {
+    "today": "اليوم",
+    "tomorrow": "غداً",
+    "sharing": "مشاركة الموقع · آخر تحديث {{time}}",
+    "startsIn": "بعد {{minutes}} دقيقة",
+    "startedAgo": "كان موعدها {{time}}",
+    "timeline_zero": "الجدول · لا مهام",
+    "timeline_one": "الجدول · مهمة واحدة · {{hours}} س",
+    "timeline_two": "الجدول · مهمتان · {{hours}} س",
+    "timeline_few": "الجدول · {{count}} مهام · {{hours}} س",
+    "timeline_many": "الجدول · {{count}} مهمة · {{hours}} س",
+    "timeline_other": "الجدول · {{count}} مهمة · {{hours}} س",
+    "noTasks": "لا رحلات اليوم",
+    "noTasksBody": "ستظهر المهام الجديدة هنا — وسيصلك إشعار أيضاً.",
+    "allDone": "انتهت مهام اليوم",
+    "allDoneBody": "عمل رائع. رحلات الغد في تبويب الأسبوع.",
+    "maps": "الخريطة",
+    "openInMaps": "فتح في خرائط Google",
+    "call": "اتصال",
+    "weekEmpty": "لا شيء مجدول هذا الأسبوع",
+    "dayOff": "لا رحلات",
+    "hoursEmpty": "لا ساعات مسجلة بعد",
+    "last7": "آخر 7 أيام",
+    "install": "ثبّت مسار على هذا الجوال",
+    "tabs": {
+      "label": "تنقل السائق",
+      "today": "اليوم",
+      "week": "الأسبوع",
+      "hours": "الساعات",
+      "me": "حسابي"
+    },
+    "actions": {
+      "acknowledge": "تأكيد الاستلام",
+      "start": "بدء الرحلة",
+      "arrive_daily_routine": "وصلت",
+      "arrive_airport": "تم استلام الراكب",
+      "arrive_document_delivery": "وصلت إلى المستلم",
+      "arrive_escort": "وصلت",
+      "complete": "إنهاء",
+      "resume": "استئناف",
+      "delay": "تأخير"
+    },
+    "delay": {
+      "title": "الإبلاغ عن تأخير",
+      "reason": "السبب",
+      "minutes": "كم التأخير؟",
+      "newFlightTime": "الوقت المتوقع الجديد للرحلة: {{time}}",
+      "note": "ملاحظة (اختياري)",
+      "submit": "إبلاغ بالتأخير"
+    },
+    "complete": {
+      "title": "إنهاء الرحلة",
+      "odometer": "عداد المسافة (كم)",
+      "notes": "ملاحظات",
+      "photo": "صورة",
+      "takePhoto": "التقط صورة",
+      "signature": "توقيع المستلم",
+      "clear": "مسح",
+      "uploadNote": "تُرفع الصور والتوقيعات إلى التخزين الآمن في مرحلة لاحقة."
+    }
   },
   "notifications": {
     "title": "الإشعارات",
     "empty": "لا توجد إشعارات جديدة",
+    "markAllRead": "تحديد الكل كمقروء",
+    "unread_zero": "لا إشعارات غير مقروءة",
+    "unread_one": "إشعار واحد غير مقروء",
+    "unread_two": "إشعاران غير مقروءين",
+    "unread_few": "{{count}} إشعارات غير مقروءة",
+    "unread_many": "{{count}} إشعاراً غير مقروء",
+    "unread_other": "{{count}} إشعار غير مقروء",
     "acknowledge": "تأكيد",
-    "decline": "رفض"
+    "decline": "رفض",
+    "channels": "أبلغني عبر",
+    "channel": {
+      "notif_push": "الإشعارات الفورية",
+      "notif_in_app": "داخل التطبيق",
+      "notif_email": "البريد الإلكتروني"
+    },
+    "types": {
+      "task_assigned": "رحلة جديدة مسندة",
+      "task_reminder": "تذكير برحلة",
+      "task_start_prompt": "هل بدأت؟",
+      "task_complete_prompt": "هل انتهيت؟",
+      "task_updated": "تم تحديث الرحلة",
+      "task_cancelled": "أُلغيت الرحلة",
+      "driver_not_acknowledged": "لم يتم التأكيد",
+      "task_not_started": "لم تبدأ الرحلة",
+      "task_delayed": "تم الإبلاغ عن تأخير",
+      "task_completed": "اكتملت الرحلة",
+      "driver_no_show": "السائق لم يحضر",
+      "driver_offline": "السائق غير متصل",
+      "airport_share_hint": "مشاركة رحلة مطار",
+      "conflict_detected": "تم رصد تعارض",
+      "system": "مسار"
+    }
   },
   "errors": {
     "generic": "حدث خطأ ما.",

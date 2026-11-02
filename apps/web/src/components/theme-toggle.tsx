@@ -7,7 +7,7 @@ import { applyThemeToDocument, readStoredTheme, storeTheme, type Theme } from '@
 const ORDER: Theme[] = ['light', 'dark', 'system'];
 const ICONS = { light: Sun, dark: Moon, system: Monitor } as const;
 
-export function ThemeToggle() {
+export function ThemeToggle({ compact }: { compact?: boolean }) {
   const { t } = useTranslation();
   const [theme, setTheme] = useState<Theme>(() => readStoredTheme());
 
@@ -38,7 +38,7 @@ export function ThemeToggle() {
       title={`${t('common.theme')}: ${label}`}
     >
       <Icon aria-hidden="true" />
-      <span>{label}</span>
+      {!compact && <span>{label}</span>}
     </Button>
   );
 }

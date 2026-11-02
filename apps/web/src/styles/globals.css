@@ -68,10 +68,58 @@
   }
 }
 
+@layer components {
+  /* Coloured meaning (status, category, severity) driven by one --tone var.
+     Text is mixed toward --text so amber/teal pills keep ≥ 4.5:1 contrast
+     in light mode and lift in dark mode (docs/DESIGN.md §8). */
+  .tone-pill {
+    color: color-mix(in srgb, var(--tone) 68%, var(--text));
+    background-color: color-mix(in srgb, var(--tone) 13%, transparent);
+  }
+  .tone-text {
+    color: color-mix(in srgb, var(--tone) 75%, var(--text));
+  }
+  .tone-dot {
+    background-color: var(--tone);
+  }
+
+  /* Calendar block / task card: category start-border + 14 % tint (design/preview.html .ev) */
+  .tone-block {
+    border-inline-start: 3px solid var(--tone);
+    background-color: color-mix(in srgb, var(--tone) 14%, var(--surface));
+  }
+
+  .eyebrow {
+    @apply text-xs font-bold uppercase tracking-wider text-fg-3;
+  }
+  [dir='rtl'] .eyebrow {
+    letter-spacing: 0;
+  }
+}
+
 @layer utilities {
   /* Tint any token colour by a percentage without hard-coding hex. */
   .tint-10 {
     background-color: color-mix(in srgb, var(--tint-color) 10%, var(--surface));
+  }
+  .tint-12 {
+    background-color: color-mix(in srgb, var(--tint-color) 12%, transparent);
+  }
+
+  .animate-pulse-ring {
+    animation: pulseRing 1.8s var(--ease) infinite;
+  }
+  @keyframes pulseRing {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in srgb, var(--tone) 45%, transparent);
+    }
+    100% {
+      box-shadow: 0 0 0 14px transparent;
+    }
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* docs/DESIGN.md §4.2 — 44px minimum touch target on driver PWA */

@@ -4,35 +4,220 @@
     "tagline": "Driver & trip management",
     "loading": "Loading…",
     "save": "Save",
+    "saving": "Saving…",
+    "saved": "Saved",
     "cancel": "Cancel",
     "close": "Close",
+    "back": "Back",
+    "next": "Next",
+    "continue": "Continue",
+    "add": "Add",
+    "edit": "Edit",
+    "remove": "Remove",
+    "all": "All",
     "search": "Search",
-    "searchHint": "Search tasks, drivers, sites…",
+    "searchHint": "Search tasks, drivers, flights…",
     "language": "Language",
     "theme": "Theme",
     "themeLight": "Light",
     "themeDark": "Dark",
     "themeSystem": "System",
     "allSites": "All sites",
-    "retry": "Try again"
+    "retry": "Try again",
+    "goHome": "Go to home",
+    "comingSoon": "Available in a later phase"
   },
   "nav": {
+    "main": "Main navigation",
+    "open": "Open menu",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar",
+    "skip": "Skip to content",
     "dashboard": "Dashboard",
     "calendar": "Calendar",
-    "liveMap": "Live Map",
+    "liveMap": "Live map",
     "tasks": "Tasks",
     "drivers": "Drivers",
-    "sites": "Sites",
-    "reports": "Reports",
+    "sites": "Sites & airports",
+    "reports": "Hours & reports",
     "settings": "Settings"
+  },
+  "roles": {
+    "owner": "Owner",
+    "admin": "Admin",
+    "dispatcher": "Dispatcher",
+    "driver": "Driver",
+    "viewer": "Viewer"
+  },
+  "user": {
+    "menu": "Account menu",
+    "profile": "My profile"
+  },
+  "units": {
+    "km": "{{value}} km",
+    "minutes": "{{value}} min",
+    "hours": "{{value}} h",
+    "hoursShort": "{{value}} h"
+  },
+  "auth": {
+    "welcome": "Welcome back",
+    "subtitle": "Sign in to dispatch and track your drivers.",
+    "email": "Email",
+    "password": "Password",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "magicLink": "Magic link",
+    "sendMagicLink": "Email me a sign-in link",
+    "magicSentTitle": "Check your inbox",
+    "magicSentBody": "We sent a sign-in link to {{email}}.",
+    "useDifferentEmail": "Use a different email",
+    "inviteOnly": "Accounts are created by invitation from your company admin.",
+    "brandTitle": "One calendar of truth for every driver, every site.",
+    "brandPoint1": "Double-bookings flagged the moment you assign a driver.",
+    "brandPoint2": "Two sites heading to the same airport? Share the car.",
+    "brandPoint3": "Driving hours and overtime, exact to the minute.",
+    "errors": {
+      "emailRequired": "Enter your email address.",
+      "emailInvalid": "Enter a valid email address.",
+      "passwordShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match.",
+      "nameRequired": "Enter your full name."
+    }
+  },
+  "invite": {
+    "title": "Accept your invitation",
+    "subtitle": "You've been invited to join {{company}} on Masar.",
+    "fullName": "Full name",
+    "confirm": "Confirm password",
+    "submit": "Create my account",
+    "doneTitle": "You're all set"
+  },
+  "demo": {
+    "title": "Demo mode",
+    "subtitle": "Explore Masar with sample data — no account needed.",
+    "body": "Supabase isn't connected yet, so pick a role to explore the app with today's sample board.",
+    "badge": "Demo",
+    "sampleData": "Sample data",
+    "sampleDataHint": "Screens show sample data until each feature is connected to the database.",
+    "inviteNote": "Demo mode: nothing is saved.",
+    "roles": {
+      "owner": {
+        "title": "Owner",
+        "body": "Majed — sees every site, settings and reports"
+      },
+      "dispatcher": {
+        "title": "Dispatcher",
+        "body": "Nawaf — Riyadh HQ and Al Yasmin Site"
+      },
+      "driver": {
+        "title": "Driver",
+        "body": "Ahmed — the phone app, mid-trip with a delayed flight"
+      },
+      "viewer": {
+        "title": "Viewer",
+        "body": "Reem — read-only dashboards and reports"
+      }
+    }
+  },
+  "dashboard": {
+    "goodMorning": "Good morning, {{name}}",
+    "goodAfternoon": "Good afternoon, {{name}}",
+    "goodEvening": "Good evening, {{name}}",
+    "subtitle": "{{date}} · {{sites}} sites · {{drivers}} drivers on duty",
+    "openCalendar": "Open calendar",
+    "openMap": "Open map",
+    "allTasks": "All tasks",
+    "driversToday": "Drivers · today",
+    "upcomingAirport": "Upcoming airport trips · next 24 h",
+    "needsAttention": "Needs attention",
+    "allClear": "All clear",
+    "allClearBody": "No conflicts, delays or unacknowledged trips right now.",
+    "noTasksToday": "Nothing scheduled today",
+    "noTasksTodayBody": "Tasks for today will appear here as rows per driver.",
+    "noAirport": "No airport trips in the next 24 hours",
+    "kpi": {
+      "tasksToday": "Tasks today",
+      "unacknowledged": "Unacknowledged",
+      "delayed": "Delayed now",
+      "driversActive": "Drivers active",
+      "dueSoon_one": "{{count}} due within 2 h",
+      "dueSoon_other": "{{count}} due within 2 h",
+      "allClear": "All acknowledged",
+      "onDuty_one": "{{count}} on duty",
+      "onDuty_other": "{{count}} on duty"
+    }
+  },
+  "attention": {
+    "doubleBooked": "{{driver}} is double-booked",
+    "overlaps": "{{a}} overlaps {{b}}",
+    "delayed": "{{title}} delayed +{{minutes}} min",
+    "notAcknowledged": "{{driver}} hasn't acknowledged {{title}}",
+    "deadlineIn": "Starts {{time}} · acknowledge deadline {{relative}}",
+    "deadlinePassed": "Starts {{time}} · acknowledge deadline passed",
+    "overHours": "{{driver}} is over the daily driving limit",
+    "unassigned": "{{title}} has no driver",
+    "reassign": "Reassign",
+    "assign": "Assign",
+    "call": "Call",
+    "open": "Open"
+  },
+  "share": {
+    "title": "{{site}} already has a car to {{airport}} at {{time}}",
+    "body": "Your pickup {{flight}} is {{minutes}} min apart — share {{driver}}'s trip instead of sending a second car.",
+    "action": "Share trip"
+  },
+  "calendar": {
+    "driver": "Driver",
+    "view": "Calendar view",
+    "day": "Day",
+    "week": "Week",
+    "today": "Today",
+    "previous": "Previous",
+    "next": "Next",
+    "empty": "No tasks in this period",
+    "emptyBody": "Try another day, site or category."
+  },
+  "map": {
+    "placeholder": "Map preview · Google Maps in Phase 4",
+    "searchDrivers": "Search drivers",
+    "noDrivers": "No drivers match",
+    "currentTask": "Current task",
+    "nextTask": "Next task",
+    "noTask": "No task assigned right now.",
+    "lastSeen": "Last seen {{time}}",
+    "eta": "ETA {{time}}",
+    "call": "Call driver"
+  },
+  "driverStatus": {
+    "offline": "Offline",
+    "idle": "Idle",
+    "en_route": "En route",
+    "in_progress": "In progress",
+    "delayed": "Delayed"
   },
   "tasks": {
     "title": "Tasks",
+    "subtitle": "Every trip, delivery and escort across your sites.",
+    "new": "New task",
+    "unassigned": "Unassigned",
+    "delayedBy": "Delayed +{{minutes}}",
+    "empty": "No tasks yet",
+    "emptyBody": "Create the first task with New task.",
+    "emptyFiltered": "No tasks match these filters",
+    "emptyFilteredBody": "Clear a filter or widen the date range.",
+    "count_one": "{{count}} task",
+    "count_other": "{{count}} tasks",
     "category": {
-      "routine": "Daily routine",
+      "daily_routine": "Daily routine",
       "airport": "Airport trip",
-      "delivery": "Document delivery",
+      "document_delivery": "Document delivery",
       "escort": "Staff escort"
+    },
+    "categoryShort": {
+      "daily_routine": "routine",
+      "airport": "airport",
+      "document_delivery": "delivery",
+      "escort": "escort"
     },
     "status": {
       "draft": "Draft",
@@ -44,20 +229,457 @@
       "delayed": "Delayed",
       "completed": "Completed",
       "cancelled": "Cancelled",
+      "declined": "Declined",
       "no_show": "No show"
     },
-    "count_one": "{{count}} task",
-    "count_other": "{{count}} tasks"
+    "columns": {
+      "when": "When",
+      "task": "Task",
+      "site": "Site",
+      "driver": "Driver",
+      "flight": "Flight",
+      "status": "Status",
+      "conflicts": "Conflicts"
+    },
+    "filters": {
+      "date": "Date range",
+      "category": "Category",
+      "status": "Status",
+      "driver": "Driver",
+      "allCategories": "All categories",
+      "allStatuses": "All statuses",
+      "allDrivers": "All drivers",
+      "clear": "Clear filters"
+    },
+    "ranges": {
+      "today": "Today",
+      "tomorrow": "Tomorrow",
+      "week": "Next 7 days",
+      "all": "All dates"
+    }
+  },
+  "taskDetail": {
+    "notFound": "Task not found",
+    "scheduled": "Scheduled",
+    "actual": "Actual",
+    "driver": "Driver",
+    "vehicle": "Vehicle",
+    "distance": "Distance",
+    "actualKm": "{{value}} km driven",
+    "site": "Requesting site",
+    "passengers": "Passengers",
+    "acknowledged": "Acknowledged",
+    "notAcknowledged": "Not acknowledged",
+    "dwell": "{{value}} min stop",
+    "assign": "Assign driver",
+    "reassign": "Reassign",
+    "edit": "Edit",
+    "cancelTask": "Cancel task",
+    "noStops": "No stops yet",
+    "noEvents": "No activity yet",
+    "noDelays": "No delays reported",
+    "noAttachments": "No attachments",
+    "noAttachmentsBody": "Photos and signatures from the driver appear here.",
+    "noConflicts": "No conflicts",
+    "tabs": {
+      "details": "Details",
+      "stops": "Stops",
+      "timeline": "Timeline",
+      "delays": "Delays",
+      "attachments": "Attachments",
+      "conflicts": "Conflicts"
+    }
+  },
+  "events": {
+    "created": "Created",
+    "updated": "Updated",
+    "assigned": "Driver assigned",
+    "unassigned": "Driver removed",
+    "acknowledged": "Acknowledged by driver",
+    "declined": "Declined by driver",
+    "reminder_sent": "Reminder sent",
+    "started": "Trip started",
+    "arrived": "Arrived / picked up",
+    "delayed": "Delay reported",
+    "resumed": "Resumed",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "no_show": "Marked no-show",
+    "conflict_overridden": "Conflict overridden",
+    "note_added": "Note added",
+    "attachment_added": "Attachment added",
+    "location_snapshot": "Location recorded"
+  },
+  "flight": {
+    "arrival": "Arrival",
+    "departure": "Departure",
+    "scheduled": "Sched {{time}}",
+    "estimated": "Now {{time}}",
+    "now": "Now {{time}}"
+  },
+  "delay": {
+    "open": "Open",
+    "resolved": "Resolved",
+    "reason": {
+      "flight_delayed": "Flight delayed",
+      "traffic": "Traffic",
+      "passenger_late": "Passenger late",
+      "vehicle_issue": "Vehicle issue",
+      "weather": "Weather",
+      "other": "Other"
+    }
+  },
+  "conflicts": {
+    "count_one": "{{count}} conflict",
+    "count_other": "{{count}} conflicts",
+    "legend": "Conflict",
+    "override": "Override with reason",
+    "severity": {
+      "info": "For information",
+      "warning": "Warning",
+      "blocking": "Blocking — resolve before the trip"
+    },
+    "type": {
+      "driver_overlap": "Overlaps {{title}} ({{time}})",
+      "vehicle_overlap": "Vehicle also booked for {{title}} ({{time}})",
+      "driver_over_hours": "Planned {{planned}} h of driving — limit is {{max}} h",
+      "outside_working_hours": "Outside the driver's shift ({{start}}–{{end}})",
+      "driver_multi_location_same_day": "Same day as {{title}}, {{km}} km away",
+      "driver_unavailable": "Driver is on leave or unavailable"
+    }
+  },
+  "wizard": {
+    "title": "New task",
+    "subtitle": "What kind of trip is this?",
+    "steps": "Steps",
+    "phaseNote": "The remaining steps arrive with the task wizard (Phase 2).",
+    "step": {
+      "category": "Category",
+      "details": "Details",
+      "stops": "Stops",
+      "schedule": "Schedule",
+      "assign": "Driver",
+      "review": "Review"
+    },
+    "categoryHint": {
+      "daily_routine": "Recurring shuttle or fixed route",
+      "airport": "Pick up or drop off for a flight",
+      "document_delivery": "Deliver papers with proof of delivery",
+      "escort": "Accompany staff to an appointment"
+    }
   },
   "drivers": {
     "title": "Drivers",
-    "active": "Drivers active"
+    "subtitle": "Status, today's load and licences at a glance.",
+    "active": "Drivers active",
+    "add": "Add driver",
+    "empty": "No drivers yet",
+    "emptyBody": "Invite drivers from Settings → Users.",
+    "notFound": "Driver not found",
+    "plannedToday": "Planned today",
+    "noMoreToday": "Nothing more today",
+    "licenceExpiring": "Licence expires {{date}}",
+    "shift": "Shift {{start}}–{{end}}",
+    "hours14": "Driving hours · last 14 days",
+    "upcoming": "Upcoming",
+    "noUpcoming": "No upcoming tasks",
+    "today": "Today",
+    "availability": "Leave & availability",
+    "noAvailability": "No leave planned",
+    "licence": "Licence",
+    "expires": "Expires {{date}}",
+    "kpi": {
+      "plannedToday": "Planned today",
+      "cap": "Limit {{value}} h",
+      "thisWeek": "This week",
+      "days_one": "{{count}} working day",
+      "days_other": "{{count}} working days",
+      "overtime14": "Overtime · 14 days",
+      "distance14": "Distance · 14 days"
+    }
+  },
+  "availability": {
+    "leave": "Annual leave",
+    "sick": "Sick leave",
+    "off_day": "Day off",
+    "training": "Training",
+    "other": "Unavailable"
+  },
+  "hours": {
+    "driving": "Driving",
+    "working": "Working",
+    "overtime": "Overtime",
+    "distance": "Distance",
+    "hoursOf": "{{value}} of {{cap}} h",
+    "overBy": "+{{value}} h over",
+    "standardDay": "{{value}} h day",
+    "chartLabel": "Driving and overtime hours per day"
+  },
+  "sites": {
+    "title": "Sites & airports",
+    "subtitle": "Construction sites and offices, and the airports each one uses.",
+    "add": "New site",
+    "switch": "Switch site",
+    "mySites": "My sites",
+    "count_one": "{{count}} site",
+    "count_other": "{{count}} sites",
+    "drivers_one": "{{count}} driver",
+    "drivers_other": "{{count}} drivers",
+    "tasksToday_one": "{{count}} task today",
+    "tasksToday_other": "{{count}} tasks today",
+    "empty": "No sites yet",
+    "emptyBody": "Add your first site to start scheduling.",
+    "notFound": "Site not found",
+    "airports": "Airports",
+    "airport": "Airport",
+    "distance": "Distance",
+    "driveTime": "Drive time",
+    "buffer": "Default buffer",
+    "defaultAirport": "Default",
+    "suggestAirports": "Suggest airports",
+    "noAirports": "No airports linked",
+    "noAirportsBody": "Suggest nearby airports with AI, then pick the ones this site uses.",
+    "upcoming": "Upcoming tasks",
+    "noUpcoming": "No upcoming tasks for this site",
+    "homeDrivers": "Home drivers",
+    "noDrivers": "No drivers based here",
+    "vehicles": "Vehicles",
+    "noVehicles": "No vehicles based here",
+    "workHours": "Working hours {{start}}–{{end}}",
+    "type": {
+      "construction_site": "Construction site",
+      "office": "Office",
+      "warehouse": "Warehouse",
+      "other": "Other"
+    }
+  },
+  "reports": {
+    "title": "Hours & reports",
+    "subtitle": "Driving, overtime and distance · {{from}} – {{to}}",
+    "range": "Period",
+    "presets": {
+      "7d": "7 days",
+      "14d": "14 days",
+      "30d": "30 days"
+    },
+    "exportXlsx": "Export XLSX",
+    "byDriver": "Driving vs overtime by driver",
+    "daily": "Daily total",
+    "table": "Per driver",
+    "empty": "No hours recorded in this period",
+    "emptyBody": "Completed tasks feed driver day summaries.",
+    "kpi": {
+      "driving": "Driving",
+      "working": "Working",
+      "overtime": "Overtime",
+      "distance": "Distance",
+      "tasks_one": "{{count}} task",
+      "tasks_other": "{{count}} tasks"
+    },
+    "columns": {
+      "driver": "Driver",
+      "site": "Home site",
+      "days": "Days",
+      "tasks": "Tasks",
+      "driving": "Driving h",
+      "working": "Working h",
+      "overtime": "Overtime h",
+      "km": "km"
+    }
+  },
+  "settings": {
+    "subtitle": "Company profile, reminder and overtime rules, holidays and users.",
+    "tabs": {
+      "company": "Company",
+      "rules": "Rules",
+      "holidays": "Holidays",
+      "users": "Users"
+    },
+    "company": {
+      "name": "Company name",
+      "nameAr": "Company name (Arabic)",
+      "timezone": "Time zone",
+      "country": "Country code",
+      "language": "Default language"
+    },
+    "rules": {
+      "reminders": "Reminders & alerts",
+      "offsets": "Remind drivers before start",
+      "removeOffset": "Remove reminder",
+      "minutes": "minutes",
+      "minutesBefore": "minutes before start",
+      "minutesAfter": "minutes after start",
+      "ackDeadline": "Acknowledge deadline",
+      "grace": "Alert if not started",
+      "noShow": "Mark no-show after",
+      "shareWindow": "Airport share window",
+      "shareWindowHint": "minutes either side of the flight",
+      "farLocation": "Far-location warning",
+      "farLocationHint": "km between first stops on the same day",
+      "overtime": "Hours & overtime",
+      "standardDay": "Standard day",
+      "weeklyMax": "Weekly maximum",
+      "maxDriving": "Max driving per day",
+      "weekend": "Weekend days"
+    },
+    "errors": {
+      "offsetMin": "Reminders must be at least 5 minutes before start.",
+      "offsetMax": "Reminders can be at most 7 days before start.",
+      "offsetsRequired": "Add at least one reminder.",
+      "offsetsMax": "Up to 5 reminders.",
+      "standardDay": "A standard day is at least 60 minutes.",
+      "noShowAfterGrace": "No-show must come after the not-started alert.",
+      "weeklyBelowDay": "Weekly maximum can't be below a standard day."
+    },
+    "holidays": {
+      "title": "Company holidays",
+      "empty": "No holidays added"
+    },
+    "users": {
+      "title": "Users & roles",
+      "invite": "Invite user",
+      "empty": "No users yet",
+      "name": "Name",
+      "role": "Role",
+      "scope": "Sites",
+      "language": "Language"
+    }
+  },
+  "onboarding": {
+    "exit": "Exit setup",
+    "finish": "Finish setup",
+    "progress": "Setup progress",
+    "stepOf": "Step {{step}} of {{total}}",
+    "company": {
+      "short": "Company",
+      "title": "Tell us about your company",
+      "body": "This sets your time zone and default language for everyone."
+    },
+    "site": {
+      "short": "First site",
+      "title": "Add your first site",
+      "body": "Drop the pin where drivers report — we'll use it for distances and airports.",
+      "name": "Site name",
+      "type": "Site type",
+      "address": "Address",
+      "addressHint": "Search by address (Google Places in Phase 1)",
+      "lat": "Latitude",
+      "lng": "Longitude",
+      "useLocation": "Use my current location",
+      "mapCaption": "Pin preview",
+      "newSite": "New site"
+    },
+    "airports": {
+      "short": "Airports",
+      "title": "Airports near this site",
+      "body": "Tick the airports this site normally uses and star the default.",
+      "suggested": "Suggested by distance from the site pin"
+    },
+    "invite": {
+      "short": "Invite",
+      "title": "Invite your team",
+      "body": "Dispatchers, drivers and viewers get an email to join.",
+      "add": "Add another"
+    },
+    "errors": {
+      "companyName": "Enter the company name.",
+      "siteName": "Enter a site name.",
+      "lat": "Latitude must be between -90 and 90.",
+      "lng": "Longitude must be between -180 and 180."
+    }
+  },
+  "table": {
+    "columns": "Columns",
+    "exportCsv": "Export CSV"
+  },
+  "driver": {
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "sharing": "Sharing location · updated {{time}}",
+    "startsIn": "in {{minutes}} min",
+    "startedAgo": "was due {{time}}",
+    "timeline_one": "Timeline · {{count}} task · {{hours}} h",
+    "timeline_other": "Timeline · {{count}} tasks · {{hours}} h",
+    "noTasks": "No trips today",
+    "noTasksBody": "New assignments will show up here — you'll get a notification too.",
+    "allDone": "All done for today",
+    "allDoneBody": "Great work. Tomorrow's trips are under Week.",
+    "maps": "Maps",
+    "openInMaps": "Open in Google Maps",
+    "call": "Call",
+    "weekEmpty": "Nothing scheduled this week",
+    "dayOff": "No trips",
+    "hoursEmpty": "No hours recorded yet",
+    "last7": "Last 7 days",
+    "install": "Install Masar on this phone",
+    "tabs": {
+      "label": "Driver navigation",
+      "today": "Today",
+      "week": "Week",
+      "hours": "Hours",
+      "me": "Me"
+    },
+    "actions": {
+      "acknowledge": "Acknowledge",
+      "start": "Start trip",
+      "arrive_daily_routine": "Arrived",
+      "arrive_airport": "Passenger picked up",
+      "arrive_document_delivery": "Arrived at recipient",
+      "arrive_escort": "Arrived",
+      "complete": "Complete",
+      "resume": "Resume",
+      "delay": "Delayed"
+    },
+    "delay": {
+      "title": "Report a delay",
+      "reason": "Reason",
+      "minutes": "How late?",
+      "newFlightTime": "New estimated flight time: {{time}}",
+      "note": "Note (optional)",
+      "submit": "Report delay"
+    },
+    "complete": {
+      "title": "Complete trip",
+      "odometer": "Odometer (km)",
+      "notes": "Notes",
+      "photo": "Photo",
+      "takePhoto": "Take photo",
+      "signature": "Recipient signature",
+      "clear": "Clear",
+      "uploadNote": "Photos and signatures upload to secure storage in a later phase."
+    }
   },
   "notifications": {
     "title": "Notifications",
     "empty": "You are all caught up",
+    "markAllRead": "Mark all read",
+    "unread_one": "{{count}} unread notification",
+    "unread_other": "{{count}} unread notifications",
     "acknowledge": "Acknowledge",
-    "decline": "Decline"
+    "decline": "Decline",
+    "channels": "Notify me by",
+    "channel": {
+      "notif_push": "Push notifications",
+      "notif_in_app": "In-app",
+      "notif_email": "Email"
+    },
+    "types": {
+      "task_assigned": "New trip assigned",
+      "task_reminder": "Trip reminder",
+      "task_start_prompt": "Did you start?",
+      "task_complete_prompt": "Did you finish?",
+      "task_updated": "Trip updated",
+      "task_cancelled": "Trip cancelled",
+      "driver_not_acknowledged": "Not acknowledged",
+      "task_not_started": "Trip not started",
+      "task_delayed": "Delay reported",
+      "task_completed": "Trip completed",
+      "driver_no_show": "Driver no-show",
+      "driver_offline": "Driver offline",
+      "airport_share_hint": "Share an airport trip",
+      "conflict_detected": "Conflict detected",
+      "system": "Masar"
+    }
   },
   "errors": {
     "generic": "Something went wrong.",

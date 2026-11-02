@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test('app boots with design tokens applied', async ({ page }) => {
   await page.goto('/');
 
-  await expect(page.getByText(/Masar|مسار/)).toBeVisible();
+  // `/` redirects to /login when signed out; the wordmark appears in the brand panel and the form column
+  await expect(page.getByText(/Masar|مسار/).filter({ visible: true }).first()).toBeVisible();
 
   // tokens.css must be live: the body background is a token, not transparent.
   const background = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
