@@ -61,6 +61,7 @@ jobs:
       # Applies supabase/migrations/* and supabase/seed.sql to a throwaway Postgres.
       - run: supabase db start
       - run: supabase db lint --level error
+      - run: supabase test db # pgTAP — supabase/tests/*.test.sql
       - name: Seed sanity check
         run: |
           psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -c "

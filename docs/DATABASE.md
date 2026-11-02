@@ -188,8 +188,17 @@ supabase db reset          # applies 0001_init.sql
 ```
 `supabase/seed.sql` (verified against `0001_init.sql` on Postgres 17): one company, four sites (Riyadh HQ, Al Yasmin, Dammam, Jeddah Tower), airports RUH/DMM/JED, four drivers with logins, four vehicles, today's board mirroring `design/preview.html` (delayed SV 1234, Yousef double-booked and over hours, Khalid unacknowledged, two same-day RUH trips from different sites → share hint), tomorrow's open work, and ~13 days of completed history for reports. Status changes go through `rpc_task_transition` by impersonating each driver (`request.jwt.claims`). All logins use password `Masar!2026`: `owner@`, `dispatcher@`, `dammam@`, `viewer@`, `ahmed@`, `khalid@`, `yousef@`, `fahad@masar.dev`.
 
-### Known issue (fix in `0002`)
-`rpc_task_transition` sets `drivers.current_status` from the *transitioned task's* new status, so acknowledging a later task (`→ acknowledged` ⇒ `idle`) while another task is `en_route`/`delayed` resets the driver to `idle` on the live map. It should derive the status from the driver's most active open task instead. The seed orders its calls to avoid it.
+## 9a. Migration 0002 — Phase 1 setup & security fixes
+| Change | Why |
+|---|---|
+| `trg_profiles_guard` (before update on `profiles`) | `profiles_update_self` let a user change their **own** `role` / `company_id` (self-promotion, tenant hopping). Now only an admin of the same company may change another user's role/company/active flag; nobody changes their own; only owners grant/revoke `owner`. |
+| `trg_drivers_guard` (before update on `drivers`) | `drivers_self_update` allowed any column. Drivers may now change only `phone` / `photo_url`. |
+| `user_sites` policies rewritten + `auth_user_in_company()` | `user_sites_admin` had no company check. |
+| `companies_insert` dropped → `rpc_create_company(name, name_ar?, country_code?, timezone?, default_language?)` | Onboarding (FR-01): creates company + settings and makes the caller owner, once. Validates the time zone. |
+| `rpc_set_site_airports(site_id, airports jsonb)` | FR-03: upserts the company airport catalogue by IATA, replaces the site's links, keeps exactly one default. Security invoker (RLS applies). |
+| `rpc_task_transition` | Driver live status is now derived from the driver's most active open task (previously acknowledging a later trip reset an en-route/delayed driver to `idle`). |
+
+The guards key off `current_user`: client DML runs as `authenticated`, while `SECURITY DEFINER` RPCs, `service_role` Edge Functions and migrations are trusted. Covered by `supabase/tests/0002_security.test.sql` (pgTAP, 27 assertions; 14 of them fail against 0001 alone).
 
 ## 10. Future migrations (not in 0001)
 - `0002_audit_triggers.sql` — generic audit trigger on admin tables.

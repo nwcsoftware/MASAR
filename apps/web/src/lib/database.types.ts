@@ -1684,6 +1684,12 @@ export type Database = {
         Args: never
         Returns: Database["public"]["Enums"]["app_role"]
       }
+      auth_user_in_company: {
+        Args: {
+          p_user: string
+        }
+        Returns: boolean
+      }
       fn_check_task_conflicts: {
         Args: {
           p_task_id: string
@@ -1763,6 +1769,26 @@ export type Database = {
         Args: never
         Returns: undefined
       }
+      rpc_create_company: {
+        Args: {
+          p_name: string
+          p_name_ar?: string
+          p_country_code?: string
+          p_timezone?: string
+          p_default_language?: Database["public"]["Enums"]["app_language"]
+        }
+        Returns: {
+            country_code: string
+            created_at: string
+            default_language: Database["public"]["Enums"]["app_language"]
+            id: string
+            logo_url: string | null
+            name: string
+            name_ar: string | null
+            timezone: string
+            updated_at: string
+          }
+      }
       rpc_report_location: {
         Args: {
           p_lat: number
@@ -1775,6 +1801,21 @@ export type Database = {
           p_recorded_at?: string
         }
         Returns: undefined
+      }
+      rpc_set_site_airports: {
+        Args: {
+          p_site_id: string
+          p_airports: Json
+        }
+        Returns: {
+            airport_id: string
+            created_at: string
+            default_buffer_min: number
+            distance_km: number | null
+            drive_minutes: number | null
+            is_default: boolean
+            site_id: string
+          }[]
       }
       rpc_task_transition: {
         Args: {

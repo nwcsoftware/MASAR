@@ -351,7 +351,6 @@ declare
   c_fahad  constant uuid := '10000000-0000-4000-8000-000000000014';
 begin
   -- Ahmed: shuttle done; escort acknowledged; SV 1234 under way then flight delayed +40.
-  -- (Acknowledge resets the driver's live status to idle, so it must come before the delay.)
   perform pg_temp.act_as(c_ahmed);
   perform rpc_task_transition('60000000-0000-4000-8000-000000000003', 'acknowledge');
   perform rpc_task_transition('60000000-0000-4000-8000-000000000001', 'acknowledge');
