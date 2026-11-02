@@ -5,7 +5,7 @@ import { aggregateHours } from '@/features/reports/queries';
 import { homePathFor } from '@/features/auth/guards';
 import type { SessionUser } from '@/features/auth/session';
 import { companyRulesSchema } from '@/features/company/schema';
-import { siteStepSchema } from '@/features/onboarding/schema';
+import { SITE_DEFAULTS, siteSchema } from '@/features/sites/schema';
 import { licenceExpiresSoon } from '@/features/drivers/utils';
 import * as fx from '@/mocks/fixtures';
 
@@ -84,9 +84,9 @@ describe('homePathFor (role-based redirect)', () => {
 
 describe('schemas', () => {
   it('rejects out-of-range site coordinates (US-01)', () => {
-    const base = { name: 'Site', type: 'office' as const, lat: 24.7, lng: 46.7 };
-    expect(siteStepSchema.safeParse(base).success).toBe(true);
-    const bad = siteStepSchema.safeParse({ ...base, lat: 95 });
+    const base = { ...SITE_DEFAULTS, name: 'Site', lat: 24.7, lng: 46.7 };
+    expect(siteSchema.safeParse(base).success).toBe(true);
+    const bad = siteSchema.safeParse({ ...base, lat: 95 });
     expect(bad.success).toBe(false);
     expect(bad.error?.issues[0]?.message).toBe('onboarding.errors.lat');
   });

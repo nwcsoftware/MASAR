@@ -66,6 +66,23 @@ for (const file of walk(srcDir)) {
       unknown.set(`${prefix}.*`, file.slice(srcDir.length + 1));
   }
 }
+// Keys carried as data: zod messages in schema files and Edge Function error
+// codes ({ code: 'users.errors.…' }). Any quoted 'namespace.key' whose first
+// segment is a top-level namespace of en.json must resolve.
+const namespaces = Object.keys(enJson).join('|');
+const KEY_LITERAL = new RegExp(`['"]((?:${namespaces})\\.[a-zA-Z0-9_.]+)['"]`, 'g');
+const functionsDir = resolve(here, '..', '..', '..', 'supabase', 'functions');
+const dataFiles = [
+  ...walk(srcDir).filter((f) => /[\\/]schema\.ts$/.test(f) || /[\\/]features[\\/].*queries\.ts$/.test(f)),
+  ...walk(functionsDir),
+];
+for (const file of dataFiles) {
+  const text = readFileSync(file, 'utf8');
+  for (const [, key] of text.matchAll(KEY_LITERAL)) {
+    if (!en.has(key) && !enObjects.has(key)) unknown.set(key, file.replace(/^.*?(src|supabase)[\\/]/, '$1/'));
+  }
+}
+
 if (unknown.size) {
   problems.push(
     `Used in code but missing from en.json (${unknown.size}):\n${[...unknown]

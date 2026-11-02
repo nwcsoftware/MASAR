@@ -28,11 +28,13 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@design/*": ["../../design/*"]
+      "@design/*": ["../../design/*"],
+      "@shared/*": ["../../supabase/functions/_shared/*"],
+      "zod": ["./node_modules/zod"]
     },
 
     "types": ["vite/client", "node"]
   },
-  "include": ["src", "e2e", "scripts", "*.config.ts"],
+  "include": ["src", "e2e", "scripts", "*.config.ts", "../../supabase/functions/_shared/schemas.ts"],
   "exclude": ["node_modules", "dist", "src-tauri"]
 }

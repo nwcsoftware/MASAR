@@ -1,8 +1,10 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { IdCard, Plus, UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ConflictBadge } from '@/components/conflict-badge';
 import { DriverAvatar } from '@/components/driver-avatar';
+import { DriverFormSheet } from '@/components/drivers/driver-form-sheet';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { HoursBar } from '@/components/hours-bar';
@@ -85,15 +87,18 @@ function DriversPage() {
   const { profile } = useCurrentUser();
   const siteIds = useScopedSiteIds();
   const drivers = useDrivers(siteIds);
+  const navigate = useNavigate();
+  const [formOpen, setFormOpen] = useState(false);
 
   return (
     <Page>
+      <DriverFormSheet open={formOpen} onOpenChange={setFormOpen} onSaved={(driverId) => void navigate({ to: '/drivers/$driverId', params: { driverId } })} />
       <PageHeader
         title={t('drivers.title')}
         description={t('drivers.subtitle')}
         actions={
           isAdmin(profile.role) && (
-            <Button size="sm" disabled title={t('common.comingSoon')}>
+            <Button size="sm" onClick={() => setFormOpen(true)}>
               <Plus aria-hidden="true" />
               {t('drivers.add')}
             </Button>
@@ -112,7 +117,19 @@ function DriversPage() {
         </div>
       ) : !drivers.data.length ? (
         <Panel>
-          <EmptyState icon={UsersRound} title={t('drivers.empty')} body={t('drivers.emptyBody')} />
+          <EmptyState
+            icon={UsersRound}
+            title={t('drivers.empty')}
+            body={t('drivers.emptyBody')}
+            action={
+              isAdmin(profile.role) && (
+                <Button size="sm" onClick={() => setFormOpen(true)}>
+                  <Plus aria-hidden="true" />
+                  {t('drivers.add')}
+                </Button>
+              )
+            }
+          />
         </Panel>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

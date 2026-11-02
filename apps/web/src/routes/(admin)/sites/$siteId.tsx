@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeft, Building2, CalendarX2, Car, Clock, MapPin, Phone, Plane, Star, UserRound } from 'lucide-react';
+import { ArrowLeft, Building2, CalendarX2, Car, Clock, MapPin, Pencil, Phone, Plane, Star, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DriverAvatar } from '@/components/driver-avatar';
 import { EmptyState } from '@/components/empty-state';
@@ -13,6 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSite } from '@/features/sites/queries';
+import { SiteAirportsSheet, SiteFormSheet } from '@/components/sites/site-form-sheet';
+import { isAdmin, isStaff } from '@/features/auth/guards';
+import { useCurrentUser } from '@/features/auth/session';
 import { formatNumber } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
 
@@ -28,6 +32,9 @@ function SiteDetailPage() {
   const { siteId } = Route.useParams();
   const query = useSite(siteId);
   const site = query.data;
+  const { profile } = useCurrentUser();
+  const [editOpen, setEditOpen] = useState(false);
+  const [airportsOpen, setAirportsOpen] = useState(false);
 
   const back = (
     <Button asChild variant="ghost" size="sm" className="-ms-2">
@@ -58,15 +65,20 @@ function SiteDetailPage() {
 
   return (
     <Page>
+      <SiteFormSheet open={editOpen} onOpenChange={setEditOpen} site={site} />
+      <SiteAirportsSheet open={airportsOpen} onOpenChange={setAirportsOpen} site={site} />
       {back}
       <PageHeader
         eyebrow={`${site.code} · ${t(`sites.type.${site.type}`)}`}
         title={name(site)}
         description={name({ name: site.address ?? '', name_ar: site.address_ar })}
         actions={
-          <Button size="sm" variant="outline" disabled title={t('common.comingSoon')}>
-            {t('common.edit')}
-          </Button>
+          isAdmin(profile.role) && (
+            <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+              <Pencil aria-hidden="true" />
+              {t('common.edit')}
+            </Button>
+          )
         }
       />
 
@@ -75,10 +87,12 @@ function SiteDetailPage() {
           <Panel
             title={t('sites.airports')}
             action={
-              <Button size="sm" variant="outline" disabled title={t('common.comingSoon')}>
-                <Plane aria-hidden="true" />
-                {t('sites.suggestAirports')}
-              </Button>
+              isStaff(profile.role) && (
+                <Button size="sm" variant="outline" onClick={() => setAirportsOpen(true)}>
+                  <Plane aria-hidden="true" />
+                  {site.airports.length ? t('airports.manage') : t('sites.suggestAirports')}
+                </Button>
+              )
             }
           >
             {site.airports.length ? (

@@ -55,10 +55,10 @@ pnpm db:types                           # regenerate apps/web/src/lib/database.t
 - Only logical Tailwind utilities (`ms-`, `pe-`, `start-`, `text-start`). Directional icons get `rtl:-scale-x-100`.
 - Colours only via tokens/Tailwind theme (no hex in components). For coloured *text* use `text-warning-fg` / `text-success-fg` / `text-delayed-fg` (contrast-safe), and the `.tone-*` classes with `tone(var)` for status/category colour. Tailwind `/opacity` modifiers don't work on `var()` colours — use `color-mix` or `tint-12`.
 - Wrap English free text interpolated into translated sentences with `isolate()` (lib/format.ts) so it renders correctly inside Arabic.
-- Forms: zod schema in `features/<domain>/schema.ts`, shared with Edge Functions where relevant.
+- Forms: zod schema in `features/<domain>/schema.ts`; contracts shared with Edge Functions live in `supabase/functions/_shared/schemas.ts` (import as `@shared/schemas`). zod messages are i18n keys (the i18n check verifies them). Any custom component passed to `register()` must `forwardRef` (see `components/form.tsx`) — otherwise react-hook-form silently reads `undefined`.
 - Driver actions must work offline: enqueue `{ taskId, action, payload, eventId }` in `lib/offline-queue.ts` (IndexedDB via `idb-keyval`), replay on `online`.
 - Google Maps keys: browser key restricted by referrer for Maps JS/Places; server key only in Edge Functions.
-- Secrets in `.env.local` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_MAPS_BROWSER_KEY`); Edge Function secrets via `supabase secrets set` (`GOOGLE_MAPS_SERVER_KEY`, `ANTHROPIC_API_KEY`, `VAPID_*`).
+- Secrets in `.env.local` (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_GOOGLE_MAPS_BROWSER_KEY`); Edge Function secrets via `supabase secrets set` (`ANTHROPIC_API_KEY`, `GOOGLE_MAPS_SERVER_KEY`, `SITE_URL`, `VAPID_*`; template `supabase/functions/.env.example`).
 - Commits: conventional (`feat(tasks): conflict alert in assign step (FR-14)`).
 
 ## Definition of done (per feature)
@@ -82,8 +82,16 @@ pnpm db:types                           # regenerate apps/web/src/lib/database.t
 - [x] PWA manifest + service worker (vite-plugin-pwa), installable driver route
 - [x] CI: lint, typecheck, test, `supabase db lint` (`.github/workflows/ci.yml`; no remote yet)
 
-## Demo mode & mock data (Phase 0)
+## Data source (live vs demo)
+- `useLiveData()` (lib/data-source.ts): signed in through Supabase → every `features/<domain>/queries.ts` hook reads/writes real tables (RLS applies); demo mode → the in-memory store in `src/mocks` (same row types, `Tables<'…'>`). Writes use `useDualMutation({ live, mock, invalidate })`.
 - No `VITE_SUPABASE_*` in `.env.local` → the login screen offers a role picker (owner / dispatcher / driver / viewer) with the seed's personas.
-- Domain screens read `src/mocks/` through `features/<domain>/queries.ts` while `MOCK_DOMAIN_DATA` (in `src/mocks/db.ts`) is `true`; mock rows are typed as real `Tables<'…'>` rows, so wiring Supabase is a `queryFn` change. Flip the flag when every feature is wired.
-- `?mock=empty` / `?mock=error` on any URL renders that screen's empty / error state.
+- `?mock=empty` / `?mock=error` on any URL renders that screen's empty / error state (demo mode).
 - `rpc_task_transition` is mirrored by `mockTransition` so driver actions work in demo mode — keep them in sync.
+- Edge Functions: `ai-suggest-airports`, `invite-user` (`supabase/functions`, Deno; `deno check` in CI). Security tests: `supabase/tests/*.test.sql` (pgTAP, `pnpm db:test`).
+
+## Phase 1 — Setup (done, FR-01…05, FR-60/61)
+- [x] Migration `0002_phase1_setup.sql`: profile/driver column guards, company-scoped `user_sites`, `rpc_create_company`, `rpc_set_site_airports`, driver live-status fix — pgTAP suite
+- [x] Owner sign-up → onboarding (company → site → airports → invites), all persisted
+- [x] Sites CRUD + MapPicker (paste Maps link / coordinates / device location) + AirportPicker with AI suggestions
+- [x] Drivers CRUD + leave; vehicles; users (invite, role + site scope, deactivate); company profile, rules, holidays
+- [ ] Interactive Google map + Places search in MapPicker → with LiveMap in Phase 4 (needs `VITE_GOOGLE_MAPS_BROWSER_KEY`)

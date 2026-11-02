@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeft, CalendarOff, CalendarX2, IdCard, Phone, UserRoundX } from 'lucide-react';
+import { ArrowLeft, CalendarOff, CalendarX2, IdCard, Pencil, Phone, Plus, Trash2, UserRoundX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DriverAvatar } from '@/components/driver-avatar';
 import { EmptyState } from '@/components/empty-state';
@@ -14,7 +15,11 @@ import { TaskCard } from '@/components/task-card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useCompanySettings } from '@/features/company/queries';
-import { useDriver } from '@/features/drivers/queries';
+import { useDeleteAvailability, useDriver } from '@/features/drivers/queries';
+import { AvailabilityDialog } from '@/components/drivers/availability-dialog';
+import { DriverFormSheet } from '@/components/drivers/driver-form-sheet';
+import { isAdmin, isStaff } from '@/features/auth/guards';
+import { useCurrentUser } from '@/features/auth/session';
 import { formatDate, formatHours, formatNumber } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
 import { DRIVER_STATUS_COLOR } from '@/lib/task-meta';
@@ -34,6 +39,10 @@ function DriverDetailPage() {
   const query = useDriver(driverId);
   const settings = useCompanySettings();
   const driver = query.data;
+  const { profile } = useCurrentUser();
+  const removeLeave = useDeleteAvailability(driverId);
+  const [editOpen, setEditOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
 
   const back = (
     <Button asChild variant="ghost" size="sm" className="-ms-2">
@@ -87,6 +96,8 @@ function DriverDetailPage() {
 
   return (
     <Page>
+      <DriverFormSheet open={editOpen} onOpenChange={setEditOpen} driver={driver} />
+      <AvailabilityDialog driverId={driver.id} open={leaveOpen} onOpenChange={setLeaveOpen} />
       {back}
       <PageHeader
         title={
@@ -101,14 +112,22 @@ function DriverDetailPage() {
         }
         description={`${driver.employee_no} · ${driver.homeSite ? name(driver.homeSite) : '—'} · ${t('drivers.shift', { start: driver.shift_start?.slice(0, 5), end: driver.shift_end?.slice(0, 5) })}`}
         actions={
-          driver.phone && (
-            <Button asChild variant="outline" size="sm">
-              <a href={`tel:${driver.phone.replace(/\s/g, '')}`}>
-                <Phone aria-hidden="true" />
-                <span dir="ltr">{driver.phone}</span>
-              </a>
-            </Button>
-          )
+          <>
+            {driver.phone && (
+              <Button asChild variant="outline" size="sm">
+                <a href={`tel:${driver.phone.replace(/\s/g, '')}`}>
+                  <Phone aria-hidden="true" />
+                  <span dir="ltr">{driver.phone}</span>
+                </a>
+              </Button>
+            )}
+            {isAdmin(profile.role) && (
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                <Pencil aria-hidden="true" />
+                {t('common.edit')}
+              </Button>
+            )}
+          </>
         }
       />
 
@@ -140,16 +159,34 @@ function DriverDetailPage() {
           <Panel title={t('drivers.today')} bodyClassName="p-4">
             <HoursBar drivingMin={driver.plannedTodayMin} capMin={driver.maxDailyMin} />
           </Panel>
-          <Panel title={t('drivers.availability')} bodyClassName="p-4">
+          <Panel
+            title={t('drivers.availability')}
+            bodyClassName="p-4"
+            action={
+              isStaff(profile.role) && (
+                <Button variant="ghost" size="sm" onClick={() => setLeaveOpen(true)}>
+                  <Plus aria-hidden="true" />
+                  {t('common.add')}
+                </Button>
+              )
+            }
+          >
             {driver.availability.length ? (
               <ul className="space-y-2">
                 {driver.availability.map((a) => (
-                  <li key={a.id} className="rounded-md border border-border p-3 text-sm">
-                    <p className="font-semibold">{t(`availability.${a.type}`)}</p>
-                    <p className="tabular text-xs text-fg-2">
-                      {formatDate(a.starts_at, 'short')} – {formatDate(a.ends_at, 'short')}
-                      {a.note && ` · ${a.note}`}
-                    </p>
+                  <li key={a.id} className="flex items-start justify-between gap-2 rounded-md border border-border p-3 text-sm">
+                    <div>
+                      <p className="font-semibold">{t(`availability.${a.type}`)}</p>
+                      <p className="tabular text-xs text-fg-2">
+                        {formatDate(a.starts_at, 'short')} – {formatDate(a.ends_at, 'short')}
+                        {a.note && ` · ${a.note}`}
+                      </p>
+                    </div>
+                    {isStaff(profile.role) && (
+                      <Button variant="ghost" size="icon" className="size-8" onClick={() => removeLeave.mutate(a.id)} aria-label={t('common.remove')}>
+                        <Trash2 aria-hidden="true" />
+                      </Button>
+                    )}
                   </li>
                 ))}
               </ul>

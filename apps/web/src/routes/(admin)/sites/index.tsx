@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { useState } from 'react';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Building2, HardHat, MapPin, Plus, Star, Warehouse } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { MapCanvas } from '@/components/map-canvas';
 import { Page, Panel } from '@/components/page';
+import { SiteFormSheet } from '@/components/sites/site-form-sheet';
 import { PageHeader } from '@/components/page-header';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -40,7 +42,7 @@ function SiteRow({ site }: { site: SiteWithAirports }) {
             {name(site)} <span className="text-xs font-semibold text-fg-3">{site.code}</span>
           </span>
           <span className="block text-xs text-fg-2">
-            {t(`sites.type.${site.type}`)} · {site.city}
+            {[t(`sites.type.${site.type}`), site.city].filter(Boolean).join(' · ')}
           </span>
         </span>
         <span className="flex flex-wrap gap-1.5">
@@ -64,19 +66,20 @@ function SitesPage() {
   const name = useLocalizedName();
   const { profile } = useCurrentUser();
   const sites = useSites();
+  const navigate = useNavigate();
+  const [formOpen, setFormOpen] = useState(false);
 
   return (
     <Page>
+      <SiteFormSheet open={formOpen} onOpenChange={setFormOpen} onSaved={(siteId) => void navigate({ to: '/sites/$siteId', params: { siteId } })} />
       <PageHeader
         title={t('sites.title')}
         description={t('sites.subtitle')}
         actions={
           isAdmin(profile.role) && (
-            <Button asChild size="sm">
-              <Link to="/onboarding">
-                <Plus aria-hidden="true" />
-                {t('sites.add')}
-              </Link>
+            <Button size="sm" onClick={() => setFormOpen(true)}>
+              <Plus aria-hidden="true" />
+              {t('sites.add')}
             </Button>
           )
         }
@@ -95,7 +98,19 @@ function SitesPage() {
                 ))}
               </div>
             ) : !sites.data.length ? (
-              <EmptyState icon={Building2} title={t('sites.empty')} body={t('sites.emptyBody')} />
+              <EmptyState
+                icon={Building2}
+                title={t('sites.empty')}
+                body={t('sites.emptyBody')}
+                action={
+                  isAdmin(profile.role) && (
+                    <Button size="sm" onClick={() => setFormOpen(true)}>
+                      <Plus aria-hidden="true" />
+                      {t('sites.add')}
+                    </Button>
+                  )
+                }
+              />
             ) : (
               <ul className="divide-y divide-border">
                 {sites.data.map((site) => (

@@ -60,6 +60,10 @@ export default defineConfig({
     alias: {
       '@': path.resolve(import.meta.dirname, './src'),
       '@design': path.resolve(import.meta.dirname, '../../design'),
+      // contracts shared with the Edge Functions (supabase/functions/_shared)
+      '@shared': path.resolve(import.meta.dirname, '../../supabase/functions/_shared'),
+      // one zod instance for app code and the shared schemas
+      zod: path.resolve(import.meta.dirname, './node_modules/zod'),
     },
   },
   // Tauri expects a fixed port and fails if it is not available.

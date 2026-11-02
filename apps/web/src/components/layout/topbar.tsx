@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { isStaff } from '@/features/auth/guards';
 import { useCurrentUser } from '@/features/auth/session';
-import { MOCK_DOMAIN_DATA } from '@/mocks/db';
 
 /** docs/DESIGN.md §4.1 — search ⌘K · lang · theme · 🔔 · primary action. */
 export function Topbar({
@@ -68,9 +67,9 @@ export function Topbar({
       </form>
 
       <div className="ms-auto flex items-center gap-1.5">
-        {MOCK_DOMAIN_DATA && (
+        {user.mode === 'demo' && (
           <Badge variant="warning" className="hidden md:inline-flex" title={t('demo.sampleDataHint')}>
-            {user.mode === 'demo' ? t('demo.badge') : t('demo.sampleData')}
+            {t('demo.badge')}
           </Badge>
         )}
         <LanguageToggle compact />

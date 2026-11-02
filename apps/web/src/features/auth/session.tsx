@@ -34,7 +34,11 @@ interface SessionApi {
   isSupabase: boolean;
   signInWithPassword(email: string, password: string): Promise<void>;
   signInWithMagicLink(email: string): Promise<void>;
+  /** FR-01 owner sign-up; resolves `needsConfirmation` when Auth emails a confirmation link first */
+  signUp(input: { email: string; password: string; fullName: string; language: 'en' | 'ar' }): Promise<{ needsConfirmation: boolean }>;
   signInDemo(role: DemoRole): void;
+  /** re-read profile + company (after onboarding creates the company) */
+  refresh(): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -168,6 +172,24 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     if (error) throw error;
   }, []);
 
+  const signUp = useCallback(
+    async ({ email, password, fullName, language }: { email: string; password: string; fullName: string; language: 'en' | 'ar' }) => {
+      if (!supabase) throw new Error('Supabase is not configured');
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { full_name: fullName, language }, emailRedirectTo: `${window.location.origin}/onboarding` },
+      });
+      if (error) throw error;
+      return { needsConfirmation: !data.session };
+    },
+    [],
+  );
+
+  const refresh = useCallback(async () => {
+    await queryClient.invalidateQueries({ queryKey: ['session'] });
+  }, [queryClient]);
+
   const signInDemo = useCallback((role: DemoRole) => {
     const id = DEMO_USERS[role];
     try {
@@ -193,8 +215,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const api = useMemo<SessionApi>(
-    () => ({ session, isSupabase, signInWithPassword, signInWithMagicLink, signInDemo, signOut }),
-    [session, isSupabase, signInWithPassword, signInWithMagicLink, signInDemo, signOut],
+    () => ({ session, isSupabase, signInWithPassword, signInWithMagicLink, signUp, signInDemo, refresh, signOut }),
+    [session, isSupabase, signInWithPassword, signInWithMagicLink, signUp, signInDemo, refresh, signOut],
   );
 
   return <SessionContext.Provider value={api}>{children}</SessionContext.Provider>;

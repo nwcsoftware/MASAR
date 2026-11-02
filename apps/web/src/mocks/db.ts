@@ -9,12 +9,6 @@ import type { Enums, Json } from '@/lib/database.types';
 
 const clone = <T>(value: T): T => structuredClone(value);
 
-/**
- * Phase 0: every domain screen reads (and writes) this mock store, even when
- * signed in through Supabase — only auth/profile are live. Phases 1–4 wire
- * real queries feature by feature; flip this off once they all are.
- */
-export const MOCK_DOMAIN_DATA = true;
 
 export const mockDb = {
   company: clone(fx.company),
@@ -56,12 +50,12 @@ const LATENCY_MS = import.meta.env.MODE === 'test' ? 0 : 250;
  * Wraps a mock read so it behaves like a network call: async, a little
  * latency (so skeletons are visible), and honours ?mock=empty|error.
  */
-export async function mockQuery<T>(read: () => T, empty: T): Promise<T> {
+export async function mockQuery<T>(read: () => T | Promise<T>, empty: T): Promise<T> {
   await new Promise((resolve) => setTimeout(resolve, LATENCY_MS));
   const mode = mockMode();
   if (mode === 'error') throw new Error('Mock error (?mock=error)');
   if (mode === 'empty') return empty;
-  return clone(read());
+  return clone(await read());
 }
 
 type TaskStatus = Enums<'task_status'>;

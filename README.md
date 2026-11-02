@@ -13,7 +13,10 @@ pnpm dev            # http://localhost:5173
 - *Local* (needs Docker Desktop): `pnpm db:start && pnpm db:reset`, then copy the printed API URL and anon key into `apps/web/.env.local` (see `.env.example`). Sign in with any seed login, e.g. `dispatcher@masar.dev` / `Masar!2026`.
 - *Hosted*: create a project → `pnpm supabase link --project-ref <ref>` → `pnpm supabase db push` → enable `pg_cron` + `pg_net` → set the URL/anon key in `.env.local` → `pnpm supabase gen types typescript --linked > apps/web/src/lib/database.types.ts`.
 
-Checks: `pnpm lint && pnpm typecheck && pnpm i18n:check && pnpm test && pnpm e2e`. Desktop: `pnpm tauri dev`.
+- *Edge Functions* (AI airport suggestions, user invites): copy `supabase/functions/.env.example` → `supabase/functions/.env` and fill `ANTHROPIC_API_KEY` (and optionally `GOOGLE_MAPS_SERVER_KEY`); locally `pnpm supabase functions serve --env-file supabase/functions/.env`, hosted `pnpm supabase secrets set …` then `pnpm supabase functions deploy`.
+- New company: sign up from the login screen's **New company** tab → onboarding creates the company, first site and airports.
+
+Checks: `pnpm lint && pnpm typecheck && pnpm i18n:check && pnpm test && pnpm e2e`, database `pnpm db:test` (pgTAP). Desktop: `pnpm tauri dev`.
 
 ## Project seed
 

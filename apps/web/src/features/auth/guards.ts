@@ -8,8 +8,8 @@ export interface RouterContext {
 
 /** Where a signed-in user lands: drivers → PWA, owners without a company → onboarding. */
 export function homePathFor(user: SessionUser): '/driver' | '/onboarding' | '/dashboard' {
-  if (user.profile.role === 'driver') return '/driver';
   if (!user.profile.company_id) return '/onboarding';
+  if (user.profile.role === 'driver') return '/driver';
   return '/dashboard';
 }
 
@@ -31,14 +31,19 @@ export function requireConsoleUser(session: Session, location: ParsedLocation): 
 /** (driver) group: drivers only. */
 export function requireDriver(session: Session, location: ParsedLocation): SessionUser {
   const user = requireSignedIn(session, location);
-  if (user.profile.role !== 'driver') throw redirect({ to: homePathFor(user) });
+  if (user.profile.role !== 'driver' || !user.profile.company_id) throw redirect({ to: homePathFor(user) });
   return user;
 }
 
-/** Onboarding: signed-in owners/admins. */
+/**
+ * Onboarding: a new signup without a company (rpc_create_company makes them
+ * owner), or an owner/admin adding a site. A fresh profile's role is
+ * `viewer`, so checking the role alone would bounce new owners in a loop.
+ */
 export function requireOnboardingUser(session: Session, location: ParsedLocation): SessionUser {
   const user = requireSignedIn(session, location);
-  if (user.profile.role !== 'owner' && user.profile.role !== 'admin') throw redirect({ to: homePathFor(user) });
+  const canOnboard = !user.profile.company_id || user.profile.role === 'owner' || user.profile.role === 'admin';
+  if (!canOnboard) throw redirect({ to: homePathFor(user) });
   return user;
 }
 

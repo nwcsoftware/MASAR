@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useCurrentUser } from '@/features/auth/session';
+import { db, unwrap, useLiveData } from '@/lib/data-source';
 import { mockDb, mockQuery } from '@/mocks/db';
 import type { Driver, DriverDaySummary, Site } from '@/mocks/fixtures';
 
@@ -74,38 +75,55 @@ export function aggregateHours(summaries: DriverDaySummary[], drivers: Driver[],
   };
 }
 
+const EMPTY_REPORT: HoursReport = { rows: [], daily: [], totals: { drivingMin: 0, workingMin: 0, overtimeMin: 0, distanceKm: 0, tasks: 0 } };
+
+function scopeDrivers(drivers: Driver[], filters: HoursFilters): Driver[] {
+  return drivers.filter(
+    (d) =>
+      (!filters.driverIds?.length || filters.driverIds.includes(d.id)) &&
+      (!filters.siteIds?.length || (d.home_site_id !== null && filters.siteIds.includes(d.home_site_id))),
+  );
+}
+
 export function useHoursReport(filters: HoursFilters) {
   const { profile } = useCurrentUser();
-  const companyId = profile.company_id ?? '';
+  const live = useLiveData();
   return useQuery({
-    queryKey: reportKeys.hours(companyId, filters),
-    queryFn: () =>
-      mockQuery<HoursReport>(
-        () => {
-          const drivers = mockDb.drivers.filter(
-            (d) =>
-              (!filters.driverIds?.length || filters.driverIds.includes(d.id)) &&
-              (!filters.siteIds?.length || (d.home_site_id !== null && filters.siteIds.includes(d.home_site_id))),
-          );
+    queryKey: reportKeys.hours(profile.company_id ?? '', filters),
+    queryFn: async () => {
+      if (!live) {
+        return mockQuery<HoursReport>(() => {
+          const drivers = scopeDrivers(mockDb.drivers, filters);
           const summaries = mockDb.driverDaySummaries.filter(
             (s) => s.date >= filters.from && s.date <= filters.to && drivers.some((d) => d.id === s.driver_id),
           );
           return aggregateHours(summaries, drivers, mockDb.sites);
-        },
-        { rows: [], daily: [], totals: { drivingMin: 0, workingMin: 0, overtimeMin: 0, distanceKm: 0, tasks: 0 } },
-      ),
+        }, EMPTY_REPORT);
+      }
+      const [drivers, sites, summaries] = await Promise.all([
+        db().from('drivers').select('*'),
+        db().from('sites').select('*'),
+        db().from('driver_day_summary').select('*').gte('date', filters.from).lte('date', filters.to),
+      ]);
+      const scoped = scopeDrivers(unwrap(drivers) ?? [], filters);
+      const rows = (unwrap(summaries) ?? []).filter((s) => scoped.some((d) => d.id === s.driver_id));
+      return aggregateHours(rows, scoped, unwrap(sites) ?? []);
+    },
   });
 }
 
-/** Driver PWA "Hours" tab (FR-35). */
+/** Driver PWA "Hours" tab (FR-35). RLS: drivers read only their own summaries. */
 export function useMyDaySummaries(driverId: string | null, from: string, to: string) {
+  const live = useLiveData();
   return useQuery({
     queryKey: ['reports', 'me', driverId, from, to] as const,
     enabled: Boolean(driverId),
-    queryFn: () =>
-      mockQuery(
-        () => mockDb.driverDaySummaries.filter((s) => s.driver_id === driverId && s.date >= from && s.date <= to).sort((a, b) => a.date.localeCompare(b.date)),
-        [],
-      ),
+    queryFn: async () =>
+      live
+        ? (unwrap(await db().from('driver_day_summary').select('*').eq('driver_id', driverId!).gte('date', from).lte('date', to).order('date')) ?? [])
+        : mockQuery(
+            () => mockDb.driverDaySummaries.filter((s) => s.driver_id === driverId && s.date >= from && s.date <= to).sort((a, b) => a.date.localeCompare(b.date)),
+            [],
+          ),
   });
 }

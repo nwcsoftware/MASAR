@@ -25,7 +25,9 @@
     "allSites": "All sites",
     "retry": "Try again",
     "goHome": "Go to home",
-    "comingSoon": "Available in a later phase"
+    "comingSoon": "Available in a later phase",
+    "active": "Active",
+    "inactive": "Inactive"
   },
   "nav": {
     "main": "Main navigation",
@@ -82,7 +84,12 @@
       "passwordShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match.",
       "nameRequired": "Enter your full name."
-    }
+    },
+    "newCompany": "New company",
+    "createAccount": "Create account",
+    "signUpHint": "Next you'll set up your company, first site and airports.",
+    "confirmTitle": "Confirm your email",
+    "confirmBody": "We sent a confirmation link to {{email}}. Open it to continue setting up your company."
   },
   "invite": {
     "title": "Accept your invitation",
@@ -396,6 +403,29 @@
       "days_other": "{{count}} working days",
       "overtime14": "Overtime · 14 days",
       "distance14": "Distance · 14 days"
+    },
+    "edit": "Edit driver",
+    "formHint": "The driver's HR record. Their phone login is sent from Settings → Users.",
+    "nameAr": "Name (Arabic)",
+    "employeeNo": "Employee no.",
+    "phone": "Phone",
+    "homeSite": "Home site",
+    "licenceExpiry": "Licence expiry",
+    "shiftStart": "Shift starts",
+    "shiftEnd": "Shift ends",
+    "maxDaily": "Max driving per day (minutes)",
+    "maxDailyHint": "Leave empty to use the company limit.",
+    "addLeave": "Add leave",
+    "addLeaveHint": "Trips assigned during leave are flagged as conflicts.",
+    "leaveType": "Type",
+    "from": "From",
+    "to": "To",
+    "errors": {
+      "time": "Use a time like 07:30.",
+      "maxDaily": "Between 60 and 1440 minutes.",
+      "shiftOrder": "The end must be after the start.",
+      "date": "Choose a date.",
+      "dateOrder": "The end date can't be before the start."
     }
   },
   "availability": {
@@ -451,6 +481,25 @@
       "office": "Office",
       "warehouse": "Warehouse",
       "other": "Other"
+    },
+    "edit": "Edit site",
+    "formHint": "Where drivers report — used for distances, airports and conflict checks.",
+    "nameAr": "Site name (Arabic)",
+    "code": "Short code",
+    "codeHint": "Up to 8 letters, e.g. RHQ",
+    "city": "City",
+    "location": "Location",
+    "contactName": "Contact person",
+    "contactPhone": "Contact phone",
+    "workStart": "Work starts",
+    "workEnd": "Work ends",
+    "notes": "Notes",
+    "saveAndAirports": "Save and choose airports",
+    "errors": {
+      "code": "Use up to 8 letters, digits or dashes.",
+      "iata": "Enter a 3-letter IATA code.",
+      "buffer": "Buffer must be between 0 and 240 minutes.",
+      "airportName": "Enter the airport name."
     }
   },
   "reports": {
@@ -493,14 +542,17 @@
       "company": "Company",
       "rules": "Rules",
       "holidays": "Holidays",
-      "users": "Users"
+      "users": "Users",
+      "vehicles": "Vehicles"
     },
     "company": {
       "name": "Company name",
       "nameAr": "Company name (Arabic)",
       "timezone": "Time zone",
       "country": "Country code",
-      "language": "Default language"
+      "language": "Default language",
+      "easternDigits": "Eastern Arabic digits (٠١٢٣) in Arabic",
+      "timezoneHint": "IANA name, e.g. Asia/Riyadh"
     },
     "rules": {
       "reminders": "Reminders & alerts",
@@ -529,11 +581,19 @@
       "offsetsMax": "Up to 5 reminders.",
       "standardDay": "A standard day is at least 60 minutes.",
       "noShowAfterGrace": "No-show must come after the not-started alert.",
-      "weeklyBelowDay": "Weekly maximum can't be below a standard day."
+      "weeklyBelowDay": "Weekly maximum can't be below a standard day.",
+      "country": "Use a 2-letter country code, e.g. SA.",
+      "timezone": "Unknown time zone.",
+      "holidayName": "Enter the holiday name.",
+      "holidayExists": "There's already a holiday on that date."
     },
     "holidays": {
       "title": "Company holidays",
-      "empty": "No holidays added"
+      "empty": "No holidays added",
+      "add": "Add a holiday",
+      "date": "Date",
+      "name": "Name",
+      "nameAr": "Name (Arabic)"
     },
     "users": {
       "title": "Users & roles",
@@ -579,7 +639,8 @@
       "short": "Invite",
       "title": "Invite your team",
       "body": "Dispatchers, drivers and viewers get an email to join.",
-      "add": "Add another"
+      "add": "Add another",
+      "optional": "Optional — you can invite people later from Settings → Users."
     },
     "errors": {
       "companyName": "Enter the company name.",
@@ -685,6 +746,77 @@
     "generic": "Something went wrong.",
     "offline": "You are offline. Changes will sync when you reconnect.",
     "notFound": "Page not found",
-    "notFoundBody": "The page you are looking for does not exist."
+    "notFoundBody": "The page you are looking for does not exist.",
+    "forbidden": "You don't have permission to do that.",
+    "unauthorized": "Your session has expired. Sign in again.",
+    "invalidInput": "Some details are missing or invalid.",
+    "notConfigured": "This feature isn't configured on the server yet.",
+    "methodNotAllowed": "That action isn't allowed.",
+    "outOfRange": "That value is out of range."
+  },
+  "mapPicker": {
+    "paste": "Paste a Google Maps link or coordinates",
+    "pasteHint": "Share → Copy link in Google Maps, or right-click the map and copy the coordinates.",
+    "pasteError": "No coordinates found in that text.",
+    "use": "Use"
+  },
+  "airports": {
+    "suggesting": "Finding airports…",
+    "suggestAgain": "Suggest again",
+    "manage": "Manage airports",
+    "manual": "added manually",
+    "addManually": "Add an airport manually",
+    "name": "Airport name",
+    "save": "Save airports",
+    "skip": "Skip for now",
+    "errors": {
+      "aiDeclined": "The airport assistant couldn't answer this request. Add airports manually.",
+      "aiFailed": "Airport suggestions failed. Try again or add airports manually."
+    }
+  },
+  "vehicles": {
+    "title": "Vehicles",
+    "add": "Add vehicle",
+    "edit": "Edit vehicle",
+    "hint": "Vehicles can be assigned to trips; double bookings are flagged.",
+    "empty": "No vehicles yet",
+    "plate": "Plate",
+    "vehicle": "Vehicle",
+    "make": "Make",
+    "model": "Model",
+    "year": "Year",
+    "color": "Colour",
+    "seats": "Seats",
+    "odometer": "Odometer",
+    "site": "Based at",
+    "errors": {
+      "plate": "Enter the plate number.",
+      "seats": "Between 1 and 60 seats.",
+      "plateExists": "A vehicle with this plate already exists.",
+      "year": "Enter a year between 1980 and 2100."
+    }
+  },
+  "users": {
+    "inviteHint": "They'll get an email to set a password and join your company.",
+    "sendInvite": "Send invite",
+    "sending": "Sending…",
+    "invited": "Invitation sent to {{email}}",
+    "sent": "Sent",
+    "editAccess": "Edit role and sites",
+    "siteScope": "Sites",
+    "siteScopeHint": "Leave all unticked to give access to every site.",
+    "linkDriver": "Driver record",
+    "linkDriverHint": "Link an existing driver, or create a new record.",
+    "newDriverRecord": "Create a new driver record",
+    "linkedDriver": "Linked to driver record",
+    "you": "you",
+    "errors": {
+      "driverLinkRole": "Only drivers can be linked to a driver record.",
+      "unknownSite": "One of the sites doesn't belong to your company.",
+      "unknownDriver": "That driver record wasn't found.",
+      "driverLinked": "That driver record already has a login.",
+      "alreadyRegistered": "Someone with this email already has an account.",
+      "inviteFailed": "The invitation email couldn't be sent."
+    }
   }
 }

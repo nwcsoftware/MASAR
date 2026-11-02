@@ -2,30 +2,28 @@ import { forwardRef, useEffect, useState } from 'react';
 import { createFileRoute, redirect, useNavigate } from '@tanstack/react-router';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CalendarHeart, CircleCheck, Plus, UserPlus, UsersRound, X } from 'lucide-react';
+import { CircleCheck, Plus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { DriverAvatar } from '@/components/driver-avatar';
-import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { Page, Panel } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
+import { CompanyTab } from '@/components/settings/company-tab';
+import { HolidaysTab } from '@/components/settings/holidays-tab';
+import { UsersTab } from '@/components/settings/users-tab';
+import { VehiclesTab } from '@/components/settings/vehicles-tab';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { isAdmin } from '@/features/auth/guards';
-import { useCurrentUser } from '@/features/auth/session';
 import { companyRulesSchema, type CompanyRulesValues } from '@/features/company/schema';
-import { useCompanySettings, useCompanyUsers, useHolidays, useUpdateCompanyRules } from '@/features/company/queries';
-import { useSites } from '@/features/sites/queries';
-import { formatDate, formatHours, formatWeekday } from '@/lib/format';
-import { useLocalizedName } from '@/lib/i18n-data';
+import { useCompanySettings, useUpdateCompanyRules } from '@/features/company/queries';
+import { formatHours, formatWeekday } from '@/lib/format';
 
-const TABS = ['company', 'rules', 'holidays', 'users'] as const;
+const TABS = ['company', 'rules', 'holidays', 'vehicles', 'users'] as const;
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute('/(admin)/settings')({
@@ -52,37 +50,6 @@ const NumberField = forwardRef<HTMLInputElement, { id: string; label: string; hi
   },
 );
 NumberField.displayName = 'NumberField';
-
-function CompanyTab() {
-  const { t } = useTranslation();
-  const { company } = useCurrentUser();
-  if (!company) return null;
-  return (
-    <Panel bodyClassName="grid gap-4 p-5 sm:grid-cols-2">
-      <div className="space-y-1.5">
-        <Label htmlFor="company-name">{t('settings.company.name')}</Label>
-        <Input id="company-name" defaultValue={company.name} />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="company-name-ar">{t('settings.company.nameAr')}</Label>
-        <Input id="company-name-ar" defaultValue={company.name_ar ?? ''} dir="rtl" />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="company-tz">{t('settings.company.timezone')}</Label>
-        <Input id="company-tz" defaultValue={company.timezone} dir="ltr" />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="company-country">{t('settings.company.country')}</Label>
-        <Input id="company-country" defaultValue={company.country_code} dir="ltr" />
-      </div>
-      <div className="sm:col-span-2">
-        <Button disabled title={t('common.comingSoon')}>
-          {t('common.save')}
-        </Button>
-      </div>
-    </Panel>
-  );
-}
 
 function RulesTab() {
   const { t } = useTranslation();
@@ -203,105 +170,6 @@ function RulesTab() {
   );
 }
 
-function HolidaysTab() {
-  const { t } = useTranslation();
-  const name = useLocalizedName();
-  const holidays = useHolidays();
-  return (
-    <Panel
-      title={t('settings.holidays.title')}
-      action={
-        <Button size="sm" variant="outline" disabled title={t('common.comingSoon')}>
-          <Plus aria-hidden="true" />
-          {t('common.add')}
-        </Button>
-      }
-    >
-      {holidays.isPending ? (
-        <Skeleton className="m-4 h-24" />
-      ) : holidays.isError ? (
-        <ErrorState error={holidays.error} onRetry={() => void holidays.refetch()} />
-      ) : !holidays.data.length ? (
-        <EmptyState compact icon={CalendarHeart} title={t('settings.holidays.empty')} />
-      ) : (
-        <ul className="divide-y divide-border">
-          {holidays.data.map((h) => (
-            <li key={h.id} className="flex items-center justify-between px-4 py-3 text-sm">
-              <span className="font-semibold">{name(h)}</span>
-              <span className="tabular text-fg-2">{formatDate(`${h.date}T12:00:00Z`)}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </Panel>
-  );
-}
-
-function UsersTab() {
-  const { t } = useTranslation();
-  const name = useLocalizedName();
-  const users = useCompanyUsers();
-  const sites = useSites();
-  const siteName = (id: string) => {
-    const site = sites.data?.find((s) => s.id === id);
-    return site ? (site.code ?? name(site)) : id;
-  };
-  return (
-    <Panel
-      title={t('settings.users.title')}
-      action={
-        <Button size="sm" disabled title={t('common.comingSoon')}>
-          <UserPlus aria-hidden="true" />
-          {t('settings.users.invite')}
-        </Button>
-      }
-    >
-      {users.isPending ? (
-        <Skeleton className="m-4 h-40" />
-      ) : users.isError ? (
-        <ErrorState error={users.error} onRetry={() => void users.refetch()} />
-      ) : !users.data.length ? (
-        <EmptyState compact icon={UsersRound} title={t('settings.users.empty')} />
-      ) : (
-        <Table>
-          <TableHeader>
-            <TableRow className="hover:bg-transparent">
-              <TableHead>{t('settings.users.name')}</TableHead>
-              <TableHead>{t('settings.users.role')}</TableHead>
-              <TableHead>{t('settings.users.scope')}</TableHead>
-              <TableHead>{t('settings.users.language')}</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {users.data.map((u) => (
-              <TableRow key={u.id}>
-                <TableCell>
-                  <div className="flex items-center gap-2.5">
-                    <DriverAvatar name={u.full_name} className="size-7" />
-                    <div className="min-w-0">
-                      <p className="truncate font-semibold">{name(u, 'full_name')}</p>
-                      <p className="truncate text-xs text-fg-3" dir="ltr">
-                        {u.email}
-                      </p>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={u.role === 'owner' || u.role === 'admin' ? 'brand' : 'default'}>{t(`roles.${u.role}`)}</Badge>
-                </TableCell>
-                <TableCell className="text-xs text-fg-2">
-                  {u.role === 'driver' ? '—' : u.siteIds.length ? u.siteIds.map(siteName).join(', ') : t('common.allSites')}
-                </TableCell>
-                <TableCell className="text-xs uppercase text-fg-2">{u.language}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      )}
-    </Panel>
-  );
-}
-
 /** Screen 11 — company, reminders & overtime rules, holidays, users (FR-60/61). */
 function SettingsPage() {
   const { t } = useTranslation();
@@ -312,7 +180,7 @@ function SettingsPage() {
     <Page>
       <PageHeader title={t('nav.settings')} description={t('settings.subtitle')} />
       <Tabs value={tab} onValueChange={(v) => void navigate({ search: (prev) => ({ ...prev, tab: v === 'company' ? undefined : (v as Tab) }) })}>
-        <TabsList>
+        <TabsList className="max-w-full overflow-x-auto">
           {TABS.map((key) => (
             <TabsTrigger key={key} value={key}>
               {t(`settings.tabs.${key}`)}
@@ -327,6 +195,9 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="holidays">
           <HolidaysTab />
+        </TabsContent>
+        <TabsContent value="vehicles">
+          <VehiclesTab />
         </TabsContent>
         <TabsContent value="users">
           <UsersTab />
