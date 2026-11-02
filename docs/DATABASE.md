@@ -186,7 +186,10 @@ supabase start
 supabase db reset          # applies 0001_init.sql
 # enable pg_cron + pg_net in dashboard for hosted project, then run section 15 of the migration
 ```
-Suggested `supabase/seed.sql`: one company, two sites (Riyadh office + Dammam site), airports RUH/DMM, three drivers, one vehicle, a handful of tasks across categories including an overlapping pair and two same-day RUH trips from different sites (so the conflict and sharing UIs light up immediately).
+`supabase/seed.sql` (verified against `0001_init.sql` on Postgres 17): one company, four sites (Riyadh HQ, Al Yasmin, Dammam, Jeddah Tower), airports RUH/DMM/JED, four drivers with logins, four vehicles, today's board mirroring `design/preview.html` (delayed SV 1234, Yousef double-booked and over hours, Khalid unacknowledged, two same-day RUH trips from different sites → share hint), tomorrow's open work, and ~13 days of completed history for reports. Status changes go through `rpc_task_transition` by impersonating each driver (`request.jwt.claims`). All logins use password `Masar!2026`: `owner@`, `dispatcher@`, `dammam@`, `viewer@`, `ahmed@`, `khalid@`, `yousef@`, `fahad@masar.dev`.
+
+### Known issue (fix in `0002`)
+`rpc_task_transition` sets `drivers.current_status` from the *transitioned task's* new status, so acknowledging a later task (`→ acknowledged` ⇒ `idle`) while another task is `en_route`/`delayed` resets the driver to `idle` on the live map. It should derive the status from the driver's most active open task instead. The seed orders its calls to avoid it.
 
 ## 10. Future migrations (not in 0001)
 - `0002_audit_triggers.sql` — generic audit trigger on admin tables.
