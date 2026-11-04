@@ -85,6 +85,39 @@ export function companyDateKey(value: string | Date = new Date()): string {
   );
 }
 
+/** HH:MM of `value` in the company timezone (form inputs). */
+export function companyTimeKey(value: string | Date): string {
+  const minutes = companyMinutesOfDay(value);
+  return `${String(Math.floor(minutes / 60)).padStart(2, '0')}:${String(minutes % 60).padStart(2, '0')}`;
+}
+
+/** Offset (ms) of the company timezone from UTC at `instant`. */
+function zoneOffsetMs(instant: number): number {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    hourCycle: 'h23',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  }).formatToParts(new Date(instant));
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
+  return Date.UTC(get('year'), get('month') - 1, get('day'), get('hour'), get('minute'), get('second')) - Math.floor(instant / 1000) * 1000;
+}
+
+/** "2026-11-03" + "12:45" read as company wall-clock time → ISO instant. */
+export function companyDateTimeToIso(dateKey: string, hhmm: string): string {
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const [hh, mm] = hhmm.split(':').map(Number);
+  const wall = Date.UTC(y!, m! - 1, d!, hh!, mm!);
+  // two passes settle DST edges: the offset at the guess, then at the corrected instant
+  let instant = wall - zoneOffsetMs(wall);
+  instant = wall - zoneOffsetMs(instant);
+  return new Date(instant).toISOString();
+}
+
 /** Minutes since local midnight in the company timezone (for calendar positioning). */
 export function companyMinutesOfDay(value: string | Date): number {
   const parts = new Intl.DateTimeFormat('en-GB', { timeZone, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })

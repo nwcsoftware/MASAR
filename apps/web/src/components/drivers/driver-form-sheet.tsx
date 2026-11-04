@@ -3,12 +3,15 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
 import { Field, FormError, NativeSelect } from '@/components/form';
+import { GroupSelect } from '@/components/grade-badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useJobTitles } from '@/features/documents/queries';
 import { useSaveDriver } from '@/features/drivers/queries';
+import { useGradeGroups } from '@/features/grades/queries';
 import { driverSchema, type DriverValues } from '@/features/drivers/schema';
 import { useSites } from '@/features/sites/queries';
 import type { Driver } from '@/mocks/fixtures';
@@ -25,6 +28,11 @@ const DEFAULTS: DriverValues = {
   shift_start: '07:00',
   shift_end: '17:00',
   max_daily_driving_min: null,
+  grade: null,
+  serve_group_id: '',
+  job_title_id: '',
+  nationality: '',
+  english_rating: null,
   notes: '',
   is_active: true,
 };
@@ -41,6 +49,11 @@ function toValues(d: Driver): DriverValues {
     shift_start: (d.shift_start ?? '').slice(0, 5),
     shift_end: (d.shift_end ?? '').slice(0, 5),
     max_daily_driving_min: d.max_daily_driving_min,
+    grade: d.grade,
+    serve_group_id: d.serve_group_id ?? '',
+    job_title_id: d.job_title_id ?? '',
+    nationality: d.nationality ?? '',
+    english_rating: d.english_rating,
     notes: d.notes ?? '',
     is_active: d.is_active,
   };
@@ -66,6 +79,8 @@ export function DriverFormSheet({
   const name = useLocalizedName();
   const sites = useSites();
   const save = useSaveDriver();
+  const groups = useGradeGroups();
+  const jobs = useJobTitles();
   const form = useForm<DriverValues>({ resolver: zodResolver(driverSchema), defaultValues: DEFAULTS });
   const errors = form.formState.errors;
 
@@ -121,6 +136,31 @@ export function DriverFormSheet({
               ))}
             </NativeSelect>
           </Field>
+          <Field id="drv-job" label={t('documents.jobTitle')} hint={t('drivers.jobTitleHint')} className="sm:col-span-2">
+            <NativeSelect id="drv-job" {...form.register('job_title_id')}>
+              <option value="">—</option>
+              {(jobs.data?.titles ?? [])
+                .filter((j) => j.is_active || j.id === driver?.job_title_id)
+                .map((j) => (
+                  <option key={j.id} value={j.id}>
+                    {name(j)}
+                  </option>
+                ))}
+            </NativeSelect>
+          </Field>
+          <Field id="drv-nationality" label={t('drivers.nationality')}>
+            <Input id="drv-nationality" {...form.register('nationality')} />
+          </Field>
+          <Field id="drv-english" label={t('drivers.englishRating')} hint={t('drivers.englishRatingHint')} error={errors.english_rating?.message}>
+            <NativeSelect id="drv-english" {...form.register('english_rating', { setValueAs: (v: string) => (v === '' || v == null ? null : Number(v)) })}>
+              <option value="">—</option>
+              {[1, 2, 3, 4, 5].map((n) => (
+                <option key={n} value={n}>
+                  {'★'.repeat(n)}
+                </option>
+              ))}
+            </NativeSelect>
+          </Field>
           <Field id="drv-licence" label={t('drivers.licence')}>
             <Input id="drv-licence" dir="ltr" {...form.register('licence_no')} />
           </Field>
@@ -148,6 +188,22 @@ export function DriverFormSheet({
               {...form.register('max_daily_driving_min', { setValueAs: (v: string) => (v === '' || v === null ? null : Number(v)) })}
             />
           </Field>
+          {(groups.data ?? []).length > 0 && (
+            <>
+              <Field id="drv-grade" label={t('people.grade')} error={errors.grade?.message}>
+                <Input
+                  id="drv-grade"
+                  type="number"
+                  inputMode="numeric"
+                  className="tabular"
+                  {...form.register('grade', { setValueAs: (v: string) => (v === '' || v === null ? null : Number(v)) })}
+                />
+              </Field>
+              <Field id="drv-serve" label={t('drivers.serveGroup')} hint={t('drivers.serveGroupHint')}>
+                <GroupSelect id="drv-serve" groups={groups.data ?? []} emptyLabel={t('drivers.serveAny')} {...form.register('serve_group_id')} />
+              </Field>
+            </>
+          )}
           <Field id="drv-notes" label={t('sites.notes')} className="sm:col-span-2">
             <Textarea id="drv-notes" rows={2} {...form.register('notes')} />
           </Field>

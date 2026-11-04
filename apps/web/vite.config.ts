@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import { VitePWA } from 'vite-plugin-pwa';
@@ -7,10 +7,54 @@ import { VitePWA } from 'vite-plugin-pwa';
 const host = process.env.TAURI_DEV_HOST;
 const isTauri = Boolean(process.env.TAURI_ENV_PLATFORM);
 
+/**
+ * Demo mode has no Edge Functions, so the dev server reads tickets itself
+ * (FR-18, src/dev/read-ticket.ts) when ANTHROPIC_API_KEY is in .env.local or
+ * the environment. The key stays server-side; without one the app shows the
+ * sample ticket and says so.
+ */
+function devTicketReader(): Plugin {
+  return {
+    name: 'masar-dev-ticket-reader',
+    apply: 'serve',
+    configureServer(server) {
+      server.middlewares.use('/__dev/ai-parse-ticket', (req, res) => {
+        const send = (status: number, body: unknown) => {
+          res.statusCode = status;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(body));
+        };
+        if (req.method !== 'POST') return send(405, { code: 'errors.methodNotAllowed' });
+        const apiKey = process.env.ANTHROPIC_API_KEY || loadEnv(server.config.mode, server.config.envDir || process.cwd(), '').ANTHROPIC_API_KEY;
+        // 200, not an error status: the app falls back to its sample ticket without a console error
+        if (!apiKey) return send(200, { unavailable: true, code: 'ticketImport.errors.devNoKey' });
+
+        const chunks: Buffer[] = [];
+        req.on('data', (chunk: Buffer) => chunks.push(chunk));
+        req.on('end', async () => {
+          try {
+            const mod = (await server.ssrLoadModule('/src/dev/read-ticket.ts')) as typeof import('./src/dev/read-ticket');
+            try {
+              send(200, await mod.readTicket(JSON.parse(Buffer.concat(chunks).toString('utf8')), apiKey));
+            } catch (error) {
+              if (error instanceof mod.TicketReadError) return send(error.status, { code: error.code, message: error.message });
+              throw error;
+            }
+          } catch (error) {
+            server.config.logger.error(`[ai-parse-ticket] ${error instanceof Error ? (error.stack ?? error.message) : String(error)}`);
+            send(500, { code: 'ticketImport.errors.aiFailed' });
+          }
+        });
+      });
+    },
+  };
+}
+
 export default defineConfig({
   plugins: [
     tanstackRouter({ target: 'react', autoCodeSplitting: true }),
     react(),
+    devTicketReader(),
     // Driver PWA (PRD §3.1) — same build; Tauri ships its own shell, so no SW there.
     VitePWA({
       disable: isTauri,
@@ -40,6 +84,8 @@ export default defineConfig({
       },
       workbox: {
         navigateFallback: '/index.html',
+        // Web Push: show + open notifications (public/push-sw.js)
+        importScripts: ['push-sw.js'],
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         cleanupOutdatedCaches: true,
         runtimeCaching: [

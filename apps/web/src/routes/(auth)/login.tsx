@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { ArrowRight, Building2, Car, Eye, KeyRound, Mail, MailCheck, Radio, UserRound } from 'lucide-react';
+import { ArrowRight, Building2, Car, Eye, KeyRound, Mail, MailCheck, Radio, ShieldCheck, TicketsPlane, UserRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -123,82 +122,13 @@ function MagicLinkForm() {
   );
 }
 
-const signUpSchema = signInSchema.extend({
-  fullName: z.string().trim().min(2, 'auth.errors.nameRequired'),
-});
-type SignUpValues = z.infer<typeof signUpSchema>;
-
-/** FR-01 — an owner creates an account, then onboarding creates the company. */
-function SignUpForm() {
-  const { t, i18n } = useTranslation();
-  const { signUp } = useSessionApi();
-  const [sentTo, setSentTo] = useState<string | null>(null);
-  const [serverError, setServerError] = useState<string | null>(null);
-  const form = useForm<SignUpValues>({ resolver: zodResolver(signUpSchema), defaultValues: { fullName: '', email: '', password: '' } });
-  const errors = form.formState.errors;
-
-  if (sentTo) {
-    return (
-      <div role="status" className="flex flex-col items-center gap-3 rounded-lg border border-border bg-surface p-6 text-center">
-        <MailCheck className="size-8 text-success-fg" aria-hidden="true" />
-        <p className="font-bold">{t('auth.confirmTitle')}</p>
-        <p className="text-sm text-fg-2">{t('auth.confirmBody', { email: sentTo })}</p>
-      </div>
-    );
-  }
-
-  return (
-    <form
-      noValidate
-      className="space-y-4"
-      onSubmit={form.handleSubmit(async (values) => {
-        setServerError(null);
-        try {
-          const { needsConfirmation } = await signUp({
-            email: values.email,
-            password: values.password,
-            fullName: values.fullName,
-            language: i18n.language.startsWith('ar') ? 'ar' : 'en',
-          });
-          if (needsConfirmation) setSentTo(values.email);
-        } catch (error) {
-          setServerError(error instanceof Error ? error.message : t('errors.generic'));
-        }
-      })}
-    >
-      <div className="space-y-1.5">
-        <Label htmlFor="su-name">{t('invite.fullName')}</Label>
-        <Input id="su-name" autoComplete="name" aria-invalid={Boolean(errors.fullName)} {...form.register('fullName')} />
-        <FieldError message={errors.fullName?.message} />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="su-email">{t('auth.email')}</Label>
-        <Input id="su-email" type="email" autoComplete="email" dir="ltr" aria-invalid={Boolean(errors.email)} {...form.register('email')} />
-        <FieldError message={errors.email?.message} />
-      </div>
-      <div className="space-y-1.5">
-        <Label htmlFor="su-password">{t('auth.password')}</Label>
-        <Input id="su-password" type="password" autoComplete="new-password" dir="ltr" aria-invalid={Boolean(errors.password)} {...form.register('password')} />
-        <FieldError message={errors.password?.message} />
-      </div>
-      {serverError && (
-        <p role="alert" className="tint-12 rounded-md px-3 py-2 text-sm font-semibold text-danger [--tint-color:var(--danger)]">
-          {serverError}
-        </p>
-      )}
-      <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
-        {form.formState.isSubmitting ? t('common.loading') : t('auth.createAccount')}
-      </Button>
-      <p className="text-center text-xs text-fg-3">{t('auth.signUpHint')}</p>
-    </form>
-  );
-}
-
 const DEMO_ROLES: { role: DemoRole; icon: typeof UserRound }[] = [
+  { role: 'super', icon: ShieldCheck },
   { role: 'owner', icon: Building2 },
   { role: 'dispatcher', icon: Radio },
   { role: 'driver', icon: Car },
   { role: 'viewer', icon: Eye },
+  { role: 'passenger', icon: TicketsPlane },
 ];
 
 /** Demo mode: no Supabase keys yet — pick a seeded persona. The (auth) guard redirects once signed in. */
@@ -260,10 +190,6 @@ function LoginPage() {
               <Mail className="size-4" aria-hidden="true" />
               {t('auth.magicLink')}
             </TabsTrigger>
-            <TabsTrigger value="signup" className="flex-1">
-              <Building2 className="size-4" aria-hidden="true" />
-              {t('auth.newCompany')}
-            </TabsTrigger>
           </TabsList>
           <TabsContent value="password">
             <PasswordForm />
@@ -271,14 +197,16 @@ function LoginPage() {
           <TabsContent value="magic">
             <MagicLinkForm />
           </TabsContent>
-          <TabsContent value="signup">
-            <SignUpForm />
-          </TabsContent>
         </Tabs>
       ) : (
         <DemoPicker />
       )}
 
+      <p className="text-center text-sm">
+        <Link to="/register" className="font-semibold text-brand-500 hover:underline">
+          {t('passenger.register.link')}
+        </Link>
+      </p>
       <p className="text-center text-xs text-fg-3">{t('auth.inviteOnly')}</p>
     </div>
   );

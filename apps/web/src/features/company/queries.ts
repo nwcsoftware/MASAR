@@ -3,7 +3,7 @@ import { inviteUserInput, inviteUserOutput, type InviteUserInput, type InviteUse
 import { useCurrentUser, useSessionApi } from '@/features/auth/session';
 import { AppError, db, invokeFunction, unwrap, useDualMutation, useLiveData } from '@/lib/data-source';
 import { mockDb, mockQuery } from '@/mocks/db';
-import type { Company, CompanySettings, Holiday, Profile, Vehicle } from '@/mocks/fixtures';
+import type { CompanySettings, Holiday, Profile, Vehicle } from '@/mocks/fixtures';
 import type { CompanyProfileValues, CompanyRulesValues, HolidayValues, UserAccessValues, VehicleValues } from './schema';
 
 export const companyKeys = {
@@ -39,7 +39,7 @@ export function useCompanyUsers() {
       if (!live) {
         return mockQuery(
           () =>
-            mockDb.profiles.map((p) => ({
+            mockDb.profiles.filter((p) => p.role !== 'passenger').map((p) => ({
               ...p,
               siteIds: mockDb.userSites[p.id] ?? [],
               driverId: mockDb.drivers.find((d) => d.profile_id === p.id)?.id ?? null,
@@ -54,7 +54,8 @@ export function useCompanyUsers() {
       ]);
       const sites = unwrap(scopes) ?? [];
       const driverRows = unwrap(drivers) ?? [];
-      return (unwrap(profiles) ?? []).map((p) => ({
+      // passengers are managed under Staff, not as console users
+      return (unwrap(profiles) ?? []).filter((p) => p.role !== 'passenger').map((p) => ({
         ...p,
         siteIds: sites.filter((s) => s.user_id === p.id).map((s) => s.site_id),
         driverId: driverRows.find((d) => d.profile_id === p.id)?.id ?? null,
@@ -92,33 +93,6 @@ export function useVehicles() {
 // ---------------------------------------------------------------------------
 function useCompanyId() {
   return useCurrentUser().profile.company_id ?? '';
-}
-
-/** FR-01 — onboarding: create the company and become its owner (rpc_create_company). */
-export function useCreateCompany() {
-  const { refresh } = useSessionApi();
-  return useDualMutation<CompanyProfileValues, Company>({
-    live: async (values) => {
-      const company = unwrap(
-        await db().rpc('rpc_create_company', {
-          p_name: values.name,
-          p_name_ar: values.name_ar || undefined,
-          p_country_code: values.country_code,
-          p_timezone: values.timezone,
-          p_default_language: values.default_language,
-        }),
-      );
-      if (!company) throw new AppError('rpc_create_company returned no row');
-      await refresh();
-      return company;
-    },
-    // Demo personas already belong to the demo company; onboarding just updates it.
-    mock: (values) => {
-      Object.assign(mockDb.company, { name: values.name, name_ar: values.name_ar || null, timezone: values.timezone });
-      return mockDb.company;
-    },
-    invalidate: () => [['session']],
-  });
 }
 
 export function useUpdateCompany() {
@@ -203,12 +177,12 @@ export function useSaveVehicle() {
   const companyId = useCompanyId();
   return useDualMutation<{ id?: string; values: VehicleValues }, void>({
     live: async ({ id, values }) => {
-      const row = { company_id: companyId, ...values, site_id: values.site_id || null, make: values.make || null, model: values.model || null, color: values.color || null, notes: values.notes || null };
+      const row = { company_id: companyId, ...values, site_id: values.site_id || null, grade_group_id: values.grade_group_id || null, make: values.make || null, model: values.model || null, color: values.color || null, notes: values.notes || null };
       unwrap(id ? await db().from('vehicles').update(row).eq('id', id) : await db().from('vehicles').insert(row));
     },
     mock: ({ id, values }) => {
       const now = new Date().toISOString();
-      const row = { ...values, site_id: values.site_id || null, make: values.make || null, model: values.model || null, color: values.color || null, notes: values.notes || null };
+      const row = { ...values, site_id: values.site_id || null, grade_group_id: values.grade_group_id || null, make: values.make || null, model: values.model || null, color: values.color || null, notes: values.notes || null };
       if (mockDb.vehicles.some((v) => v.plate_no === values.plate_no && v.id !== id)) throw new AppError('duplicate', 'vehicles.errors.plateExists');
       if (id) {
         const existing = mockDb.vehicles.find((v) => v.id === id);
@@ -270,6 +244,11 @@ export function useInviteUser() {
             licence_expiry: null,
             photo_url: null,
             max_daily_driving_min: null,
+            grade: null,
+            serve_group_id: null,
+            job_title_id: null,
+            nationality: null,
+            english_rating: null,
             shift_start: '07:00:00',
             shift_end: '17:00:00',
             current_status: 'offline',

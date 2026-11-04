@@ -2,7 +2,11 @@ import { Link } from '@tanstack/react-router';
 import {
   Building2,
   CalendarDays,
+  ClipboardList,
   ChartColumn,
+  Contact,
+  FileBadge,
+  Star,
   LayoutDashboard,
   ListTodo,
   MapPin,
@@ -21,14 +25,18 @@ import { useCurrentUser } from '@/features/auth/session';
 import { isAdmin } from '@/features/auth/guards';
 import { cn } from '@/lib/utils';
 
-type NavTo = '/dashboard' | '/calendar' | '/map' | '/tasks' | '/drivers' | '/sites' | '/reports' | '/settings';
+type NavTo = '/dashboard' | '/calendar' | '/map' | '/tasks' | '/requests' | '/drivers' | '/documents' | '/staff' | '/ratings' | '/sites' | '/reports' | '/settings';
 
-const NAV: { to: NavTo; icon: LucideIcon; key: string; adminOnly?: boolean; badge?: 'conflicts' }[] = [
+const NAV: { to: NavTo; icon: LucideIcon; key: string; adminOnly?: boolean; badge?: 'conflicts' | 'documents' | 'requests' }[] = [
   { to: '/dashboard', icon: LayoutDashboard, key: 'nav.dashboard' },
   { to: '/calendar', icon: CalendarDays, key: 'nav.calendar', badge: 'conflicts' },
   { to: '/map', icon: MapPin, key: 'nav.liveMap' },
   { to: '/tasks', icon: ListTodo, key: 'nav.tasks' },
+  { to: '/requests', icon: ClipboardList, key: 'nav.requests', badge: 'requests' },
   { to: '/drivers', icon: UsersRound, key: 'nav.drivers' },
+  { to: '/documents', icon: FileBadge, key: 'nav.documents', badge: 'documents' },
+  { to: '/staff', icon: Contact, key: 'nav.staff' },
+  { to: '/ratings', icon: Star, key: 'nav.ratings', adminOnly: true },
   { to: '/sites', icon: Building2, key: 'nav.sites' },
   { to: '/reports', icon: ChartColumn, key: 'nav.reports' },
   { to: '/settings', icon: Settings, key: 'nav.settings', adminOnly: true },
@@ -39,11 +47,17 @@ export function Sidebar({
   collapsed,
   onToggle,
   conflictCount,
+  documentCount = 0,
+  requestCount = 0,
   onNavigate,
 }: {
   collapsed: boolean;
   onToggle?: () => void;
   conflictCount: number;
+  /** expired + missing driver documents (0005) */
+  documentCount?: number;
+  /** pending passenger trip requests (0007) */
+  requestCount?: number;
   onNavigate?: () => void;
 }) {
   const { t } = useTranslation();
@@ -78,7 +92,10 @@ export function Sidebar({
 
       {NAV.filter((item) => !item.adminOnly || isAdmin(profile.role)).map((item) => {
         const label = t(item.key);
-        const badge = item.badge === 'conflicts' && conflictCount > 0 ? conflictCount : null;
+        const count = item.badge === 'conflicts' ? conflictCount : item.badge === 'documents' ? documentCount : item.badge === 'requests' ? requestCount : 0;
+        const badge = count > 0 ? count : null;
+        const badgeLabel =
+          item.badge === 'documents' ? t('documents.needAction', { count }) : item.badge === 'requests' ? t('requests.pendingCount', { count }) : t('conflicts.count', { count });
         const link = (
           <Link
             key={item.to}
@@ -96,14 +113,14 @@ export function Sidebar({
                 {!collapsed && <span className="flex-1 truncate">{label}</span>}
                 {badge !== null &&
                   (collapsed ? (
-                    <span className="absolute end-2 top-1.5 size-2 rounded-full bg-danger" aria-label={t('conflicts.count', { count: badge })} />
+                    <span className="absolute end-2 top-1.5 size-2 rounded-full bg-danger" aria-label={badgeLabel} />
                   ) : (
                     <span
                       className={cn(
                         'tabular rounded-full px-1.5 text-[11px] font-bold leading-[18px]',
                         isActive ? 'bg-[color-mix(in_srgb,var(--text-on-brand)_25%,transparent)] text-fg-on-brand' : 'bg-danger text-fg-on-brand',
                       )}
-                      aria-label={t('conflicts.count', { count: badge })}
+                      aria-label={badgeLabel}
                     >
                       {badge}
                     </span>

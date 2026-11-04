@@ -3,11 +3,15 @@ import { useTranslation } from 'react-i18next';
 import { Sidebar } from '@/components/layout/sidebar';
 import { Topbar } from '@/components/layout/topbar';
 import { TaskSheetContext } from '@/components/layout/task-sheet-context';
-import { NewTaskDialog } from '@/components/new-task-dialog';
+import { TaskWizardContext, type WizardRequest } from '@/components/layout/task-wizard-context';
+import { SosAlerts } from '@/components/layout/sos-alerts';
 import { OfflineBanner } from '@/components/offline-banner';
 import { TaskDetailSheet } from '@/components/task-detail-sheet';
+import { TaskWizard } from '@/components/task-wizard/task-wizard';
 import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { useScopedSiteIds } from '@/features/sites/site-scope';
+import { useCompliance } from '@/features/documents/use-compliance';
+import { useTripRequests } from '@/features/passenger/queries';
 import { useTasks } from '@/features/tasks/queries';
 import { at } from '@/mocks/fixtures';
 
@@ -45,8 +49,10 @@ export function AppShell({
   const { t } = useTranslation();
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [newTaskOpen, setNewTaskOpen] = useState(false);
+  const [wizard, setWizard] = useState<WizardRequest | null>(null);
   const conflictCount = useConflictCount();
+  const documentCount = useCompliance().items.filter((i) => i.status === 'expired' || i.status === 'missing').length;
+  const requestCount = (useTripRequests().data ?? []).filter((r) => r.status === 'pending').length;
 
   const toggle = () => {
     setCollapsed((value) => {
@@ -61,6 +67,7 @@ export function AppShell({
 
   return (
     <TaskSheetContext.Provider value={onTaskChange}>
+      <TaskWizardContext.Provider value={(request) => setWizard(request ?? {})}>
       <div className="flex h-dvh overflow-hidden bg-bg">
         <a
           href="#main"
@@ -69,25 +76,27 @@ export function AppShell({
           {t('nav.skip')}
         </a>
         <div className="hidden shrink-0 lg:block">
-          <Sidebar collapsed={collapsed} onToggle={toggle} conflictCount={conflictCount} />
+          <Sidebar collapsed={collapsed} onToggle={toggle} conflictCount={conflictCount} documentCount={documentCount} requestCount={requestCount} />
         </div>
         <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
           <SheetContent side="start" className="w-auto p-0" hideClose>
             <SheetTitle className="sr-only">{t('nav.main')}</SheetTitle>
-            <Sidebar collapsed={false} conflictCount={conflictCount} onNavigate={() => setDrawerOpen(false)} />
+            <Sidebar collapsed={false} conflictCount={conflictCount} documentCount={documentCount} requestCount={requestCount} onNavigate={() => setDrawerOpen(false)} />
           </SheetContent>
         </Sheet>
 
         <div className="flex min-w-0 flex-1 flex-col">
-          <Topbar onMenu={() => setDrawerOpen(true)} onNewTask={() => setNewTaskOpen(true)} onOpenTask={onTaskChange} />
+          <Topbar onMenu={() => setDrawerOpen(true)} onNewTask={() => setWizard({})} onOpenTask={onTaskChange} />
           <OfflineBanner />
+          <SosAlerts />
           <main id="main" className="min-h-0 flex-1 overflow-y-auto">
             {children}
           </main>
         </div>
       </div>
       <TaskDetailSheet taskId={taskId} onClose={() => onTaskChange(undefined)} />
-      <NewTaskDialog open={newTaskOpen} onOpenChange={setNewTaskOpen} />
+      <TaskWizard request={wizard} onClose={() => setWizard(null)} onSaved={onTaskChange} />
+      </TaskWizardContext.Provider>
     </TaskSheetContext.Provider>
   );
 }

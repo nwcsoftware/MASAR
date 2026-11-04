@@ -10,6 +10,7 @@ import { MapCanvas } from '@/components/map-canvas';
 import { Page, Panel } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { TaskCard } from '@/components/task-card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -90,12 +91,12 @@ function SiteDetailPage() {
               isStaff(profile.role) && (
                 <Button size="sm" variant="outline" onClick={() => setAirportsOpen(true)}>
                   <Plane aria-hidden="true" />
-                  {site.airports.length ? t('airports.manage') : t('sites.suggestAirports')}
+                  {site.allAirports.length ? t('airports.manage') : t('sites.suggestAirports')}
                 </Button>
               )
             }
           >
-            {site.airports.length ? (
+            {site.allAirports.length ? (
               <Table>
                 <TableHeader>
                   <TableRow className="hover:bg-transparent">
@@ -103,11 +104,12 @@ function SiteDetailPage() {
                     <TableHead>{t('sites.distance')}</TableHead>
                     <TableHead>{t('sites.driveTime')}</TableHead>
                     <TableHead>{t('sites.buffer')}</TableHead>
+                    <TableHead>{t('airports.status')}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {site.airports.map((sa) => (
-                    <TableRow key={sa.airport_id}>
+                  {site.allAirports.map((sa) => (
+                    <TableRow key={sa.airport_id} className={sa.is_active ? undefined : 'text-fg-2'}>
                       <TableCell>
                         <div className="flex items-center gap-2 font-semibold">
                           {sa.is_default && <Star className="size-3.5 fill-current text-warning-fg" aria-label={t('sites.defaultAirport')} />}
@@ -117,6 +119,9 @@ function SiteDetailPage() {
                       <TableCell className="tabular">{sa.distance_km != null ? t('units.km', { value: formatNumber(Number(sa.distance_km)) }) : '—'}</TableCell>
                       <TableCell className="tabular">{sa.drive_minutes != null ? t('units.minutes', { value: sa.drive_minutes }) : '—'}</TableCell>
                       <TableCell className="tabular">{t('units.minutes', { value: sa.default_buffer_min })}</TableCell>
+                      <TableCell>
+                        <Badge variant={sa.is_active ? 'success' : 'default'}>{sa.is_active ? t('airports.active') : t('airports.inactive')}</Badge>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

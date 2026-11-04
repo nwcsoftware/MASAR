@@ -1,27 +1,37 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CalendarClock, Car, ExternalLink, FileText, MapPin, Paperclip, Phone, Plane, UserRound } from 'lucide-react';
+import { CalendarClock, Car, ExternalLink, FileText, Link2, MapPin, Phone, Plane, UserRound } from 'lucide-react';
 import { CategoryBadge } from '@/components/category-badge';
-import { ConflictAlert } from '@/components/conflict-alert';
+import { ConflictAlert, OverrideForm, OverriddenNote } from '@/components/conflict-alert';
 import { ConflictBadge } from '@/components/conflict-badge';
 import { DriverAvatar } from '@/components/driver-avatar';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
+import { Field as FormField, FormError } from '@/components/form';
+import { useOpenTask } from '@/components/layout/task-sheet-context';
+import { useOpenWizard } from '@/components/layout/task-wizard-context';
+import { GradeBadge } from '@/components/grade-badge';
+import { ShareTripHint } from '@/components/share-trip-hint';
+import { TripDocumentsTab } from '@/components/trip-documents-tab';
 import { StatusPill } from '@/components/status-pill';
 import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { isAdmin, isStaff } from '@/features/auth/guards';
+import { canShareWith, readPassengers } from '@/features/grades/rules';
 import { useCurrentUser } from '@/features/auth/session';
-import { useTask } from '@/features/tasks/queries';
-import { primaryAssignment, type TaskDetail } from '@/features/tasks/types';
-import { formatDate, formatDateTime, formatNumber, formatTime, formatTimeRange } from '@/lib/format';
+import { useOverrideConflicts, useShareTrip, useSimilarAirportTrips, useTask, useTaskTransition } from '@/features/tasks/queries';
+import { EDITABLE_STATUSES, primaryAssignment, sharedHostId, type TaskDetail } from '@/features/tasks/types';
+import { readTicketMeta } from '@/features/tasks/ticket';
+import { formatDate, formatDateTime, formatNumber, formatTime, formatTimeRange, isolate } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
 import { mapsLink } from '@/lib/maps';
-import { categoryColorVar, statusColorVar } from '@/lib/task-meta';
+import { categoryColorVar, statusColorVar, TERMINAL_STATUSES } from '@/lib/task-meta';
 import { cn, tone } from '@/lib/utils';
 
-type Passenger = { name?: string; phone?: string; note?: string };
 
 function Field({ icon: Icon, label, children }: { icon: typeof MapPin; label: string; children: React.ReactNode }) {
   return (
@@ -35,14 +45,59 @@ function Field({ icon: Icon, label, children }: { icon: typeof MapPin; label: st
   );
 }
 
-function DetailsTab({ task }: { task: TaskDetail }) {
+/** FR-15: this task rides in another site's car. */
+function SharedRideNote({ hostId }: { hostId: string }) {
+  const { t } = useTranslation();
+  const openTask = useOpenTask();
+  const host = useTask(hostId);
+  const driver = host.data ? primaryAssignment(host.data)?.driver : null;
+  return (
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-[color-mix(in_srgb,var(--brand-500)_30%,var(--border))] bg-[color-mix(in_srgb,var(--brand-500)_8%,var(--surface))] px-4 py-3">
+      <Link2 className="size-5 shrink-0 text-brand-500" aria-hidden="true" />
+      <p className="min-w-0 flex-1 text-sm text-fg">
+        {host.data
+          ? t('share.ridesWith', { title: isolate(host.data.title), driver: isolate(driver?.full_name ?? t('tasks.unassigned')) })
+          : t('common.loading')}
+      </p>
+      <Button size="sm" variant="outline" onClick={() => openTask(hostId)}>
+        {t('share.openHost')}
+      </Button>
+    </div>
+  );
+}
+
+/** FR-15 / US-04 on an unassigned airport task: offer another site's trip. */
+function ShareHintForTask({ task }: { task: TaskDetail }) {
+  const similar = useSimilarAirportTrips(task);
+  const share = useShareTrip();
+  const groups = [...new Set(readPassengers(task.passengers).flatMap((p) => (p.group_code ? [p.group_code] : [])))];
+  const trip = similar.data?.find((s) => s.site_id !== task.site_id && canShareWith(groups, s));
+  if (!trip) return null;
+  return (
+    <div className="space-y-2">
+      <ShareTripHint
+        trip={trip}
+        flightNo={task.flight?.flight_no ?? null}
+        airportCode={task.flight?.airport?.iata ?? ''}
+        onShare={share.isPending ? undefined : () => share.mutate({ taskId: task.id, hostTaskId: trip.task_id })}
+      />
+      <FormError error={share.error} />
+    </div>
+  );
+}
+
+function DetailsTab({ task, staff }: { task: TaskDetail; staff: boolean }) {
   const { t } = useTranslation();
   const name = useLocalizedName();
   const assignment = primaryAssignment(task);
-  const passengers = (Array.isArray(task.passengers) ? task.passengers : []) as Passenger[];
+  const passengers = readPassengers(task.passengers);
+  const hostId = sharedHostId(task);
+  const ticket = readTicketMeta(task.metadata);
 
   return (
     <div className="space-y-5">
+      {hostId && <SharedRideNote hostId={hostId} />}
+      {!hostId && staff && task.category === 'airport' && !assignment && EDITABLE_STATUSES.includes(task.status) && <ShareHintForTask task={task} />}
       {task.description && <p className="text-sm text-fg-2">{task.description}</p>}
 
       {task.flight && (
@@ -57,6 +112,20 @@ function DetailsTab({ task }: { task: TaskDetail }) {
           {task.flight.estimated_time && task.flight.estimated_time !== task.flight.scheduled_time && (
             <span className="tabular ms-auto font-bold text-delayed-fg">
               {t('flight.estimated', { time: formatTime(task.flight.estimated_time) })}
+            </span>
+          )}
+          {ticket && (ticket.other?.iata || ticket.booking_ref) && (
+            <span className="tabular basis-full text-xs text-fg-2">
+              {[
+                ticket.other?.iata &&
+                  t(task.flight.direction === 'arrival' ? 'flight.fromAt' : 'flight.toAt', {
+                    iata: isolate(ticket.other.iata),
+                    time: [ticket.other.date && formatDate(`${ticket.other.date}T12:00:00Z`, 'short'), ticket.other.time].filter(Boolean).join(' '),
+                  }),
+                ticket.booking_ref && t('ticketImport.bookingRef', { ref: isolate(ticket.booking_ref) }),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
             </span>
           )}
         </div>
@@ -84,6 +153,8 @@ function DetailsTab({ task }: { task: TaskDetail }) {
                 <span className="text-xs font-semibold text-warning-fg">{t('taskDetail.notAcknowledged')}</span>
               )}
             </span>
+          ) : hostId ? (
+            <span className="font-semibold text-brand-500">{t('share.shared')}</span>
           ) : (
             <span className="font-semibold text-warning-fg">{t('tasks.unassigned')}</span>
           )}
@@ -108,7 +179,12 @@ function DetailsTab({ task }: { task: TaskDetail }) {
           <ul className="divide-y divide-border rounded-md border border-border">
             {passengers.map((p, i) => (
               <li key={i} className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
-                <span className="font-semibold">{p.name}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate font-semibold" dir="auto">
+                    {p.name}
+                  </span>
+                  <GradeBadge code={p.group_code} grade={p.grade} visitor={p.visitor} />
+                </span>
                 {p.phone && (
                   <a href={`tel:${p.phone.replace(/\s/g, '')}`} className="tabular inline-flex items-center gap-1 text-brand-500 hover:underline" dir="ltr">
                     <Phone className="size-3.5" aria-hidden="true" />
@@ -205,21 +281,63 @@ function DelaysTab({ task }: { task: TaskDetail }) {
   );
 }
 
-function AttachmentsTab({ task }: { task: TaskDetail }) {
+/** Cancel with a reason (rpc_task_transition 'cancel', staff only). */
+function CancelTaskButton({ task }: { task: TaskDetail }) {
   const { t } = useTranslation();
-  if (!task.attachments.length)
-    return <EmptyState compact icon={Paperclip} title={t('taskDetail.noAttachments')} body={t('taskDetail.noAttachmentsBody')} />;
+  const transition = useTaskTransition();
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
   return (
-    <ul className="grid grid-cols-2 gap-3">
-      {task.attachments.map((a) => (
-        <li key={a.id} className="flex flex-col gap-2 rounded-md border border-border p-3">
-          <div className="grid aspect-video place-items-center rounded bg-surface-2 text-fg-3">
-            <FileText className="size-6" aria-hidden="true" />
-          </div>
-          <span className="truncate text-xs font-semibold">{a.caption ?? a.storage_path.split('/').at(-1)}</span>
-        </li>
-      ))}
-    </ul>
+    <>
+      <Button size="sm" variant="ghost" className="text-danger" onClick={() => setOpen(true)}>
+        {t('taskDetail.cancelTask')}
+      </Button>
+      <Dialog
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          if (!next) transition.reset();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t('taskDetail.cancelTitle')}</DialogTitle>
+            <DialogDescription>{t('taskDetail.cancelBody', { title: isolate(task.title) })}</DialogDescription>
+          </DialogHeader>
+          <FormField id="cancel-reason" label={t('taskDetail.cancelReason')}>
+            <Textarea id="cancel-reason" rows={2} value={reason} onChange={(e) => setReason(e.target.value)} />
+          </FormField>
+          <FormError error={transition.error} />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              {t('taskDetail.keepTask')}
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={!reason.trim() || transition.isPending}
+              onClick={() => transition.mutate({ taskId: task.id, action: 'cancel', payload: { reason: reason.trim() } }, { onSuccess: () => setOpen(false) })}
+            >
+              {t('taskDetail.cancelTask')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+function ConflictsTab({ task, admin }: { task: TaskDetail; admin: boolean }) {
+  const { t } = useTranslation();
+  const override = useOverrideConflicts();
+  if (!task.conflicts.length) return <EmptyState compact icon={FileText} title={t('taskDetail.noConflicts')} />;
+  const blocking = task.conflicts.some((c) => c.severity === 'blocking');
+  return (
+    <ConflictAlert conflicts={task.conflicts}>
+      {task.conflicts_overridden && <OverriddenNote reason={task.override_reason} />}
+      {admin && blocking && !task.conflicts_overridden && EDITABLE_STATUSES.includes(task.status) && (
+        <OverrideForm id="override-reason" pending={override.isPending} error={override.error} onSubmit={(reason) => override.mutate({ taskId: task.id, reason })} />
+      )}
+    </ConflictAlert>
   );
 }
 
@@ -230,6 +348,7 @@ export function TaskDetailSheet({ taskId, onClose }: { taskId: string | undefine
   const query = useTask(taskId);
   const task = query.data;
   const staff = isStaff(user.profile.role);
+  const openWizard = useOpenWizard();
 
   return (
     <Sheet open={Boolean(taskId)} onOpenChange={(open) => !open && onClose()}>
@@ -262,17 +381,19 @@ export function TaskDetailSheet({ taskId, onClose }: { taskId: string | undefine
               <SheetDescription className="tabular">
                 {formatDate(task.scheduled_start, 'long')} · {formatTimeRange(task.scheduled_start, task.scheduled_end)}
               </SheetDescription>
-              {staff && (
+              {staff && !TERMINAL_STATUSES.includes(task.status) && (
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Button size="sm" disabled title={t('common.comingSoon')}>
-                    {primaryAssignment(task) ? t('taskDetail.reassign') : t('taskDetail.assign')}
-                  </Button>
-                  <Button size="sm" variant="outline" disabled title={t('common.comingSoon')}>
-                    {t('taskDetail.edit')}
-                  </Button>
-                  <Button size="sm" variant="ghost" className="text-danger" disabled title={t('common.comingSoon')}>
-                    {t('taskDetail.cancelTask')}
-                  </Button>
+                  {EDITABLE_STATUSES.includes(task.status) && !sharedHostId(task) && (
+                    <Button size="sm" onClick={() => openWizard({ taskId: task.id, step: 'assign' })}>
+                      {primaryAssignment(task) ? t('taskDetail.reassign') : t('taskDetail.assign')}
+                    </Button>
+                  )}
+                  {EDITABLE_STATUSES.includes(task.status) && (
+                    <Button size="sm" variant="outline" onClick={() => openWizard({ taskId: task.id })}>
+                      {t('taskDetail.edit')}
+                    </Button>
+                  )}
+                  <CancelTaskButton task={task} />
                 </div>
               )}
             </SheetHeader>
@@ -286,7 +407,9 @@ export function TaskDetailSheet({ taskId, onClose }: { taskId: string | undefine
                 <TabsTrigger value="delays">
                   {t('taskDetail.tabs.delays')} {task.delays.length > 0 && <span className="tabular text-fg-3">{task.delays.length}</span>}
                 </TabsTrigger>
-                <TabsTrigger value="attachments">{t('taskDetail.tabs.attachments')}</TabsTrigger>
+                <TabsTrigger value="attachments">
+                  {t('taskDetail.tabs.documents')} {task.attachments.length > 0 && <span className="tabular text-fg-3">{task.attachments.length}</span>}
+                </TabsTrigger>
                 <TabsTrigger value="conflicts">
                   {t('taskDetail.tabs.conflicts')}
                   {task.conflicts.length > 0 && <ConflictBadge conflicts={task.conflicts} variant="corner" />}
@@ -294,7 +417,7 @@ export function TaskDetailSheet({ taskId, onClose }: { taskId: string | undefine
               </TabsList>
               <div className="min-h-0 flex-1 overflow-y-auto p-5">
                 <TabsContent value="details" className="mt-0">
-                  <DetailsTab task={task} />
+                  <DetailsTab task={task} staff={staff} />
                 </TabsContent>
                 <TabsContent value="stops" className="mt-0">
                   <StopsTab task={task} />
@@ -306,14 +429,10 @@ export function TaskDetailSheet({ taskId, onClose }: { taskId: string | undefine
                   <DelaysTab task={task} />
                 </TabsContent>
                 <TabsContent value="attachments" className="mt-0">
-                  <AttachmentsTab task={task} />
+                  <TripDocumentsTab task={task} staff={staff} />
                 </TabsContent>
                 <TabsContent value="conflicts" className="mt-0">
-                  {task.conflicts.length ? (
-                    <ConflictAlert conflicts={task.conflicts} canOverride={isAdmin(user.profile.role)} />
-                  ) : (
-                    <EmptyState compact icon={FileText} title={t('taskDetail.noConflicts')} />
-                  )}
+                  <ConflictsTab task={task} admin={isAdmin(user.profile.role)} />
                 </TabsContent>
               </div>
             </Tabs>

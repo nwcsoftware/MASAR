@@ -196,6 +196,11 @@ function driverRow(values: DriverValues, companyId: string): DriverFields & Tabl
     shift_start: values.shift_start || null,
     shift_end: values.shift_end || null,
     max_daily_driving_min: values.max_daily_driving_min ?? null,
+    grade: values.grade ?? null,
+    serve_group_id: values.serve_group_id || null,
+    job_title_id: values.job_title_id || null,
+    nationality: values.nationality || null,
+    english_rating: values.english_rating ?? null,
     notes: values.notes || null,
     is_active: values.is_active,
   };

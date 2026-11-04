@@ -18,6 +18,8 @@ export interface SessionUser {
   driverId: string | null;
   /** user_sites scope; empty = all sites (auth_can_access_site) */
   siteIds: string[];
+  /** platform super admin (0008): manages companies, belongs to none */
+  isPlatformAdmin: boolean;
 }
 
 export type Session =
@@ -26,7 +28,7 @@ export type Session =
   | { status: 'signed-out' }
   | { status: 'signed-in'; mode: 'supabase' | 'demo'; user: SessionUser };
 
-export type DemoRole = 'owner' | 'dispatcher' | 'driver' | 'viewer';
+export type DemoRole = 'super' | 'owner' | 'dispatcher' | 'driver' | 'viewer' | 'passenger';
 
 interface SessionApi {
   session: Session;
@@ -34,9 +36,11 @@ interface SessionApi {
   isSupabase: boolean;
   signInWithPassword(email: string, password: string): Promise<void>;
   signInWithMagicLink(email: string): Promise<void>;
-  /** FR-01 owner sign-up; resolves `needsConfirmation` when Auth emails a confirmation link first */
-  signUp(input: { email: string; password: string; fullName: string; language: 'en' | 'ar' }): Promise<{ needsConfirmation: boolean }>;
+  /** passenger sign-up (0006); resolves `needsConfirmation` when Auth emails a confirmation link first */
+  signUp(input: { email: string; password: string; fullName: string; language: 'en' | 'ar'; redirectTo?: string }): Promise<{ needsConfirmation: boolean }>;
   signInDemo(role: DemoRole): void;
+  /** demo passenger sign-up (0006): sign in as the profile just created */
+  signInDemoUser(userId: string): void;
   /** re-read profile + company (after onboarding creates the company) */
   refresh(): Promise<void>;
   signOut(): Promise<void>;
@@ -46,10 +50,12 @@ const SessionContext = createContext<SessionApi | null>(null);
 
 const DEMO_STORAGE_KEY = 'masar.demoUser';
 export const DEMO_USERS: Record<DemoRole, string> = {
+  super: '10000000-0000-4000-8000-000000000099',
   owner: '10000000-0000-4000-8000-000000000001',
   dispatcher: '10000000-0000-4000-8000-000000000002',
   driver: '10000000-0000-4000-8000-000000000011',
   viewer: '10000000-0000-4000-8000-000000000004',
+  passenger: '10000000-0000-4000-8000-000000000021',
 };
 
 function readDemoUser(): string | null {
@@ -61,6 +67,8 @@ function readDemoUser(): string | null {
 }
 
 function demoSessionUser(userId: string): SessionUser | null {
+  const admin = mockDb.platformAdmins.find((p) => p.id === userId);
+  if (admin) return { id: admin.id, email: admin.email, profile: admin, company: null, driverId: null, siteIds: [], isPlatformAdmin: true };
   const profile = mockDb.profiles.find((p) => p.id === userId);
   if (!profile) return null;
   return {
@@ -70,6 +78,7 @@ function demoSessionUser(userId: string): SessionUser | null {
     company: mockDb.company,
     driverId: mockDb.drivers.find((d) => d.profile_id === profile.id)?.id ?? null,
     siteIds: mockDb.userSites[profile.id] ?? [],
+    isPlatformAdmin: false,
   };
 }
 
@@ -78,16 +87,19 @@ async function loadSupabaseUser(userId: string, email: string | null): Promise<S
   const { data: profile, error } = await supabase.from('profiles').select('*').eq('id', userId).single();
   if (error) throw error;
 
-  const [company, driver, scopes] = await Promise.all([
+  const [company, driver, scopes, platform] = await Promise.all([
     profile.company_id
       ? supabase.from('companies').select('*').eq('id', profile.company_id).maybeSingle()
       : Promise.resolve({ data: null, error: null }),
     supabase.from('drivers').select('id').eq('profile_id', userId).maybeSingle(),
     supabase.from('user_sites').select('site_id').eq('user_id', userId),
+    // RLS: a user only sees their own platform_admins row (0008)
+    supabase.from('platform_admins').select('user_id').eq('user_id', userId).maybeSingle(),
   ]);
   if (company.error) throw company.error;
   if (driver.error) throw driver.error;
   if (scopes.error) throw scopes.error;
+  if (platform.error) throw platform.error;
 
   return {
     id: userId,
@@ -96,6 +108,7 @@ async function loadSupabaseUser(userId: string, email: string | null): Promise<S
     company: company.data,
     driverId: driver.data?.id ?? null,
     siteIds: (scopes.data ?? []).map((row) => row.site_id),
+    isPlatformAdmin: Boolean(platform.data),
   };
 }
 
@@ -106,8 +119,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   // Supabase auth user (id + email) or the demo user; undefined while Supabase restores its session.
   const [authUser, setAuthUser] = useState<{ id: string; email: string | null } | null | undefined>(() => {
     if (isSupabase) return undefined;
+    // a demo sign-up lives only in memory: after a reload its id is unknown → signed out
     const id = readDemoUser();
-    return id ? { id, email: null } : null;
+    return id && (mockDb.profiles.some((p) => p.id === id) || mockDb.platformAdmins.some((p) => p.id === id)) ? { id, email: null } : null;
   });
 
   useEffect(() => {
@@ -173,12 +187,12 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = useCallback(
-    async ({ email, password, fullName, language }: { email: string; password: string; fullName: string; language: 'en' | 'ar' }) => {
+    async ({ email, password, fullName, language, redirectTo = '/register' }: { email: string; password: string; fullName: string; language: 'en' | 'ar'; redirectTo?: string }) => {
       if (!supabase) throw new Error('Supabase is not configured');
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName, language }, emailRedirectTo: `${window.location.origin}/onboarding` },
+        options: { data: { full_name: fullName, language }, emailRedirectTo: `${window.location.origin}${redirectTo}` },
       });
       if (error) throw error;
       return { needsConfirmation: !data.session };
@@ -190,8 +204,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     await queryClient.invalidateQueries({ queryKey: ['session'] });
   }, [queryClient]);
 
-  const signInDemo = useCallback((role: DemoRole) => {
-    const id = DEMO_USERS[role];
+  const signInDemoUser = useCallback((id: string) => {
     try {
       localStorage.setItem(DEMO_STORAGE_KEY, id);
     } catch {
@@ -199,6 +212,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
     setAuthUser({ id, email: null });
   }, []);
+  const signInDemo = useCallback((role: DemoRole) => signInDemoUser(DEMO_USERS[role]), [signInDemoUser]);
 
   const signOut = useCallback(async () => {
     if (supabase) {
@@ -215,8 +229,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, [queryClient]);
 
   const api = useMemo<SessionApi>(
-    () => ({ session, isSupabase, signInWithPassword, signInWithMagicLink, signUp, signInDemo, refresh, signOut }),
-    [session, isSupabase, signInWithPassword, signInWithMagicLink, signUp, signInDemo, refresh, signOut],
+    () => ({ session, isSupabase, signInWithPassword, signInWithMagicLink, signUp, signInDemo, signInDemoUser, refresh, signOut }),
+    [session, isSupabase, signInWithPassword, signInWithMagicLink, signUp, signInDemo, signInDemoUser, refresh, signOut],
   );
 
   return <SessionContext.Provider value={api}>{children}</SessionContext.Provider>;

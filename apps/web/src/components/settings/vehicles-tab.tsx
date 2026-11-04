@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { Field, FormError, NativeSelect } from '@/components/form';
+import { GradeBadge, GroupSelect } from '@/components/grade-badge';
 import { Panel } from '@/components/page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,18 +17,20 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useSaveVehicle, useVehicles } from '@/features/company/queries';
 import { vehicleSchema, type VehicleValues } from '@/features/company/schema';
+import { useGradeGroups } from '@/features/grades/queries';
 import { useSites } from '@/features/sites/queries';
 import type { Vehicle } from '@/mocks/fixtures';
 import { formatNumber } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
 
-const DEFAULTS: VehicleValues = { plate_no: '', make: '', model: '', year: null, color: '', seats: 4, site_id: '', odometer_km: 0, is_active: true, notes: '' };
+const DEFAULTS: VehicleValues = { plate_no: '', make: '', model: '', year: null, color: '', seats: 4, site_id: '', grade_group_id: '', odometer_km: 0, is_active: true, notes: '' };
 
 function VehicleSheet({ open, onOpenChange, vehicle }: { open: boolean; onOpenChange: (open: boolean) => void; vehicle?: Vehicle }) {
   const { t } = useTranslation();
   const name = useLocalizedName();
   const sites = useSites();
   const save = useSaveVehicle();
+  const groups = useGradeGroups();
   const form = useForm<VehicleValues>({ resolver: zodResolver(vehicleSchema), defaultValues: DEFAULTS });
   const errors = form.formState.errors;
 
@@ -43,6 +46,7 @@ function VehicleSheet({ open, onOpenChange, vehicle }: { open: boolean; onOpenCh
             color: vehicle.color ?? '',
             seats: vehicle.seats ?? 4,
             site_id: vehicle.site_id ?? '',
+            grade_group_id: vehicle.grade_group_id ?? '',
             odometer_km: vehicle.odometer_km ?? 0,
             is_active: vehicle.is_active,
             notes: vehicle.notes ?? '',
@@ -99,6 +103,11 @@ function VehicleSheet({ open, onOpenChange, vehicle }: { open: boolean; onOpenCh
               ))}
             </NativeSelect>
           </Field>
+          {(groups.data ?? []).length > 0 && (
+            <Field id="veh-group" label={t('vehicles.gradeGroup')} hint={t('vehicles.gradeGroupHint')} className="sm:col-span-2">
+              <GroupSelect id="veh-group" groups={groups.data ?? []} emptyLabel={t('vehicles.anyGroup')} {...form.register('grade_group_id')} />
+            </Field>
+          )}
           {vehicle && (
             <label className="flex items-center gap-3 text-sm font-semibold sm:col-span-2">
               <Switch checked={form.watch('is_active')} onCheckedChange={(v) => form.setValue('is_active', v, { shouldDirty: true })} />
@@ -126,6 +135,7 @@ export function VehiclesTab() {
   const name = useLocalizedName();
   const vehicles = useVehicles();
   const sites = useSites();
+  const groups = useGradeGroups();
   const [editing, setEditing] = useState<Vehicle | undefined>();
   const [open, setOpen] = useState(false);
   const siteName = (id: string | null) => {
@@ -163,6 +173,7 @@ export function VehiclesTab() {
               <TableHead>{t('vehicles.plate')}</TableHead>
               <TableHead>{t('vehicles.vehicle')}</TableHead>
               <TableHead>{t('vehicles.seats')}</TableHead>
+              <TableHead>{t('vehicles.gradeGroup')}</TableHead>
               <TableHead>{t('vehicles.site')}</TableHead>
               <TableHead>{t('vehicles.odometer')}</TableHead>
               <TableHead />
@@ -179,6 +190,9 @@ export function VehiclesTab() {
                   {!v.is_active && <Badge className="ms-2">{t('common.inactive')}</Badge>}
                 </TableCell>
                 <TableCell className="tabular">{v.seats}</TableCell>
+                <TableCell>
+                  {v.grade_group_id ? <GradeBadge code={groups.data?.find((g) => g.id === v.grade_group_id)?.code} /> : <span className="text-fg-3">—</span>}
+                </TableCell>
                 <TableCell>{siteName(v.site_id)}</TableCell>
                 <TableCell className="tabular">{t('units.km', { value: formatNumber(v.odometer_km ?? 0, 0) })}</TableCell>
                 <TableCell className="text-end">

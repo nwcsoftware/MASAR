@@ -29,6 +29,22 @@ export async function getCaller(req: Request): Promise<Caller> {
   return { id: userData.user.id, role: profile.role, company_id: profile.company_id, db };
 }
 
+/** Platform super admin (migration 0008) — belongs to no company, so getCaller() would refuse them. */
+export async function getPlatformAdmin(req: Request): Promise<{ id: string }> {
+  const authorization = req.headers.get('Authorization');
+  if (!authorization) throw new HttpError(401, 'errors.unauthorized');
+  const db = createClient(requireEnv('SUPABASE_URL'), requireEnv('SUPABASE_ANON_KEY'), {
+    global: { headers: { Authorization: authorization } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: userData, error: userError } = await db.auth.getUser();
+  if (userError || !userData.user) throw new HttpError(401, 'errors.unauthorized');
+  // RLS: a user only sees their own platform_admins row
+  const { data, error } = await db.from('platform_admins').select('user_id').eq('user_id', userData.user.id).maybeSingle();
+  if (error || !data) throw new HttpError(403, 'errors.forbidden');
+  return { id: userData.user.id };
+}
+
 export function requireRole(caller: Caller, roles: Caller['role'][]) {
   if (!roles.includes(caller.role)) throw new HttpError(403, 'errors.forbidden');
 }

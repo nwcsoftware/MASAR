@@ -16,13 +16,15 @@ import { StatusPill } from '@/components/status-pill';
 import { DriverAvatar } from '@/components/driver-avatar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isStaff } from '@/features/auth/guards';
+import { canShareWith, readPassengers } from '@/features/grades/rules';
 import { useCurrentUser } from '@/features/auth/session';
 import { deriveAttention, type AttentionItem } from '@/features/dashboard/attention';
 import { useDrivers } from '@/features/drivers/queries';
 import { useScopedSiteIds } from '@/features/sites/site-scope';
 import { useSites } from '@/features/sites/queries';
-import { useSimilarAirportTrips, useTasks } from '@/features/tasks/queries';
-import { primaryAssignment, type TaskWithRelations } from '@/features/tasks/types';
+import { useShareTrip, useSimilarAirportTrips, useTasks } from '@/features/tasks/queries';
+import { primaryAssignment, sharedHostId, type TaskWithRelations } from '@/features/tasks/types';
 import { at } from '@/mocks/fixtures';
 import { companyDateKey, formatDate, formatRelative, formatTime, isolate } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
@@ -106,11 +108,23 @@ function AttentionRow({ item }: { item: AttentionItem }) {
 
 function ShareHintForDay({ tasks }: { tasks: TaskWithRelations[] }) {
   // First unassigned airport task today that has a same-airport trip from another site.
-  const candidate = tasks.find((t) => t.category === 'airport' && !primaryAssignment(t) && t.flight?.airport_id);
+  const candidate = tasks.find(
+    (t) => t.category === 'airport' && !primaryAssignment(t) && !sharedHostId(t) && t.flight?.airport_id && ['draft', 'scheduled', 'declined'].includes(t.status),
+  );
   const similar = useSimilarAirportTrips(candidate);
-  const trip = similar.data?.find((s) => s.site_id !== candidate?.site_id);
+  const share = useShareTrip();
+  const { profile } = useCurrentUser();
+  const groups = candidate ? [...new Set(readPassengers(candidate.passengers).flatMap((p) => (p.group_code ? [p.group_code] : [])))] : [];
+  const trip = similar.data?.find((s) => s.site_id !== candidate?.site_id && canShareWith(groups, s));
   if (!candidate || !trip) return null;
-  return <ShareTripHint trip={trip} flightNo={candidate.flight?.flight_no ?? null} airportCode={candidate.flight?.airport?.iata ?? ''} />;
+  return (
+    <ShareTripHint
+      trip={trip}
+      flightNo={candidate.flight?.flight_no ?? null}
+      airportCode={candidate.flight?.airport?.iata ?? ''}
+      onShare={isStaff(profile.role) && !share.isPending ? () => share.mutate({ taskId: candidate.id, hostTaskId: trip.task_id }) : undefined}
+    />
+  );
 }
 
 function DashboardPage() {

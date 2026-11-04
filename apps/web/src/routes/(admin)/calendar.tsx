@@ -4,15 +4,19 @@ import { CalendarX2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
+import { FormError } from '@/components/form';
 import { useOpenTask } from '@/components/layout/task-sheet-context';
 import { Page, Panel } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
-import { ResourceCalendar, rowsFromTasks } from '@/components/resource-calendar';
+import { ResourceCalendar, rowsFromTasks, type CalendarMove } from '@/components/resource-calendar';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
+import { isStaff } from '@/features/auth/guards';
+import { useCurrentUser } from '@/features/auth/session';
 import { useDrivers } from '@/features/drivers/queries';
 import { useScopedSiteIds } from '@/features/sites/site-scope';
-import { useTasks } from '@/features/tasks/queries';
+import { useRescheduleTask, useTasks } from '@/features/tasks/queries';
+import { EDITABLE_STATUSES, sharedHostId, type TaskWithRelations } from '@/features/tasks/types';
 import { at, dateKey } from '@/mocks/fixtures';
 import { formatDate, formatTime, formatWeekday } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
@@ -41,6 +45,13 @@ function CalendarPage() {
   const span = view === 'week' ? 7 : 1;
   const tasks = useTasks({ from: at(day, '00:00'), to: at(day + span, '00:00'), siteIds, categories: cat ? [cat] : undefined });
   const drivers = useDrivers(siteIds);
+  const user = useCurrentUser();
+  const reschedule = useRescheduleTask();
+  const staff = isStaff(user.profile.role);
+  // US-14: open work moves; a shared rider follows its host instead
+  const canMove = (task: TaskWithRelations) => staff && EDITABLE_STATUSES.includes(task.status) && !sharedHostId(task);
+  const move = (m: CalendarMove) =>
+    reschedule.mutate({ taskId: m.taskId, start: m.start, changeDriver: m.driverId !== undefined, driverId: m.driverId ?? null });
 
   const rows = useMemo(
     () =>
@@ -122,7 +133,16 @@ function CalendarPage() {
         })}
       </div>
 
-      <Panel>
+      {reschedule.isError && (
+        <div className="flex items-start gap-2">
+          <FormError error={reschedule.error} className="flex-1" />
+          <Button variant="ghost" size="sm" onClick={() => reschedule.reset()}>
+            {t('common.close')}
+          </Button>
+        </div>
+      )}
+
+      <Panel className={cn(reschedule.isPending && 'pointer-events-none opacity-70')}>
         {tasks.isError ? (
           <ErrorState error={tasks.error} onRetry={() => void tasks.refetch()} />
         ) : tasks.isPending || drivers.isPending ? (
@@ -134,7 +154,7 @@ function CalendarPage() {
         ) : !tasks.data.length ? (
           <EmptyState icon={CalendarX2} title={t('calendar.empty')} body={t('calendar.emptyBody')} />
         ) : view === 'day' ? (
-          <ResourceCalendar rows={rows} day={dateKey(day)} onOpenTask={openTask} />
+          <ResourceCalendar rows={rows} day={dateKey(day)} onOpenTask={openTask} onMove={staff ? move : undefined} canMove={canMove} />
         ) : (
           <WeekGrid rows={rows} startDay={day} onOpenTask={openTask} />
         )}

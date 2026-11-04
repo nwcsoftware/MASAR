@@ -35,7 +35,7 @@ export function siteToValues(site: SiteWithAirports): SiteValues {
 }
 
 export function siteAirportsToValues(site: SiteWithAirports): SiteAirportValues[] {
-  return site.airports.map((sa) => ({
+  return site.allAirports.map((sa) => ({
     iata: sa.airport.iata ?? '',
     icao: sa.airport.icao,
     name: sa.airport.name,
@@ -51,6 +51,7 @@ export function siteAirportsToValues(site: SiteWithAirports): SiteAirportValues[
     drive_minutes: sa.drive_minutes,
     default_buffer_min: sa.default_buffer_min,
     is_default: sa.is_default,
+    is_active: sa.is_active,
   }));
 }
 
@@ -258,7 +259,7 @@ function SiteAirportsEditor({ site, onDone }: { site: SiteWithAirports; onDone: 
           countryCode={company?.country_code}
           value={airports}
           onChange={setAirportsValue}
-          autoSuggest={!site.airports.length}
+          autoSuggest={!site.allAirports.length}
         />
         <FormError error={setAirports.error} className="mt-4" />
       </div>

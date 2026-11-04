@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Plane, Plus, Sparkles, Star, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import type { AirportSuggestion } from '@shared/schemas';
 import { Field, FormError } from '@/components/form';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
+import { mergeSuggestions, withActiveDefault } from '@/features/sites/airports';
 import type { SiteAirportValues } from '@/features/sites/schema';
 import { useSuggestAirports } from '@/features/sites/queries';
 import { formatNumber } from '@/lib/format';
@@ -14,30 +15,12 @@ import { distanceKm, estimateDrive } from '@/lib/geo';
 import { useLocalizedName } from '@/lib/i18n-data';
 import { cn } from '@/lib/utils';
 
-export function fromSuggestion(a: AirportSuggestion, isDefault = false): SiteAirportValues {
-  return {
-    iata: a.iata,
-    icao: a.icao,
-    name: a.name,
-    name_ar: a.name_ar,
-    city: a.city,
-    city_ar: a.city_ar,
-    country_code: a.country_code,
-    lat: a.lat,
-    lng: a.lng,
-    is_international: a.is_international,
-    source: a.source,
-    distance_km: a.distance_km,
-    drive_minutes: a.drive_minutes,
-    default_buffer_min: 30,
-    is_default: isDefault,
-  };
-}
-
 /**
- * docs/DESIGN.md §5 AirportPicker (FR-03): AI suggestions with distance and
- * drive time, tick the airports the site uses, star one default, set the
- * buffer. Controlled — the parent saves via rpc_set_site_airports.
+ * docs/DESIGN.md §5 AirportPicker (FR-03): the AI finds the airports around
+ * the site (distance + drive time) and every one stays on the list with an
+ * Active switch. Only active airports are offered when planning trips; star
+ * one default and set its buffer. Controlled — the parent saves via
+ * rpc_set_site_airports.
  */
 export function AirportPicker({
   lat,
@@ -61,17 +44,14 @@ export function AirportPicker({
   const [manual, setManual] = useState({ iata: '', name: '', lat: '', lng: '' });
   const [manualError, setManualError] = useState<string | null>(null);
   const requested = useRef(false);
+  // suggestions resolve later: merge into the list as it is then, not as it was when asked
+  const latest = useRef(value);
+  useEffect(() => {
+    latest.current = value;
+  }, [value]);
 
   const runSuggest = () => {
-    suggest.mutate(
-      { lat, lng, country_code: countryCode },
-      {
-        // first run on an empty site: preselect the nearest airport as default
-        onSuccess: (airports) => {
-          if (!value.length && airports[0]) onChange([fromSuggestion(airports[0], true)]);
-        },
-      },
-    );
+    suggest.mutate({ lat, lng, country_code: countryCode }, { onSuccess: (airports) => onChange(mergeSuggestions(latest.current, airports)) });
   };
 
   useEffect(() => {
@@ -83,21 +63,14 @@ export function AirportPicker({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoSuggest]);
 
-  const rows = useMemo(() => {
-    const byIata = new Map<string, SiteAirportValues>();
-    for (const a of value) byIata.set(a.iata, a);
-    for (const s of suggest.data ?? []) if (!byIata.has(s.iata)) byIata.set(s.iata, fromSuggestion(s));
-    return [...byIata.values()].sort((a, b) => (a.drive_minutes ?? 9999) - (b.drive_minutes ?? 9999));
-  }, [value, suggest.data]);
+  const rows = useMemo(() => [...value].sort((a, b) => (a.drive_minutes ?? 9999) - (b.drive_minutes ?? 9999)), [value]);
+  const activeCount = value.filter((a) => a.is_active).length;
+  const defaultIata = value.find((a) => a.is_default && a.is_active)?.iata;
 
-  const selected = new Set(value.map((a) => a.iata));
-  const defaultIata = value.find((a) => a.is_default)?.iata ?? value[0]?.iata;
-
-  const toggle = (row: SiteAirportValues, checked: boolean) => {
-    const next = checked ? [...value, { ...row, is_default: false }] : value.filter((a) => a.iata !== row.iata);
-    onChange(next.map((a) => ({ ...a, is_default: a.iata === (next.some((x) => x.iata === defaultIata) ? defaultIata : next[0]?.iata) })));
-  };
   const update = (iata: string, patch: Partial<SiteAirportValues>) => onChange(value.map((a) => (a.iata === iata ? { ...a, ...patch } : a)));
+  const setActive = (iata: string, active: boolean) =>
+    onChange(withActiveDefault(value.map((a) => (a.iata === iata ? { ...a, is_active: active, is_default: active && a.is_default } : a))));
+  const remove = (iata: string) => onChange(withActiveDefault(value.filter((a) => a.iata !== iata)));
 
   const addManual = () => {
     const iata = manual.iata.trim().toUpperCase();
@@ -122,9 +95,10 @@ export function AirportPicker({
       distance_km: drive.roadKm,
       drive_minutes: drive.minutes,
       default_buffer_min: 30,
-      is_default: !value.length,
+      is_default: false,
+      is_active: true,
     };
-    onChange([...value.filter((a) => a.iata !== iata), row]);
+    onChange(withActiveDefault([...value.filter((a) => a.iata !== iata), row]));
     setManual({ iata: '', name: '', lat: '', lng: '' });
     setManualError(null);
     setManualOpen(false);
@@ -133,13 +107,16 @@ export function AirportPicker({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="inline-flex items-center gap-2 text-sm text-fg-2">
-          <Sparkles className="size-4 text-brand-500" aria-hidden="true" />
-          {t('onboarding.airports.suggested')}
-        </p>
+        <div className="space-y-0.5">
+          <p className="inline-flex items-center gap-2 text-sm text-fg-2">
+            <Sparkles className="size-4 text-brand-500" aria-hidden="true" />
+            {t('onboarding.airports.suggested')}
+          </p>
+          {value.length > 0 && <p className="tabular text-xs font-semibold text-fg-2">{t('airports.activeCount', { active: activeCount, total: value.length })}</p>}
+        </div>
         <Button type="button" variant="outline" size="sm" onClick={runSuggest} disabled={suggest.isPending}>
           <Sparkles aria-hidden="true" />
-          {suggest.isPending ? t('airports.suggesting') : suggest.data ? t('airports.suggestAgain') : t('sites.suggestAirports')}
+          {suggest.isPending ? t('airports.suggesting') : suggest.data || value.length ? t('airports.suggestAgain') : t('sites.suggestAirports')}
         </Button>
       </div>
 
@@ -152,58 +129,67 @@ export function AirportPicker({
           <Skeleton className="h-14 w-full" />
         </div>
       ) : rows.length ? (
-        <ul className="divide-y divide-border rounded-lg border border-border">
-          {rows.map((row) => {
-            const checked = selected.has(row.iata);
-            const current = value.find((a) => a.iata === row.iata);
-            return (
-              <li key={row.iata} className="flex flex-wrap items-center gap-3 px-4 py-3">
-                <Checkbox id={`ap-${row.iata}`} checked={checked} onCheckedChange={(v) => toggle(row, v === true)} />
-                <label htmlFor={`ap-${row.iata}`} className="min-w-0 flex-1 cursor-pointer">
-                  <span className="block text-sm font-bold">
-                    {row.iata} · {name(row)}
-                  </span>
-                  <span className="tabular block text-xs text-fg-2">
-                    {row.city ? `${name({ name: row.city, name_ar: row.city_ar })} · ` : ''}
-                    {row.distance_km != null && t('units.km', { value: formatNumber(row.distance_km, 0) })}
-                    {row.drive_minutes != null && ` · ${t('units.minutes', { value: row.drive_minutes })}`}
-                    {row.source === 'manual' && ` · ${t('airports.manual')}`}
-                  </span>
-                </label>
-                {checked && (
-                  <label className="flex items-center gap-1.5 text-xs text-fg-2">
-                    {t('sites.buffer')}
-                    <Input
-                      type="number"
-                      min={0}
-                      max={240}
-                      className="tabular h-8 w-16"
-                      value={current?.default_buffer_min ?? 30}
-                      onChange={(e) => update(row.iata, { default_buffer_min: Number(e.target.value) || 0 })}
-                      aria-label={`${t('sites.buffer')} ${row.iata}`}
-                    />
+        <div className="space-y-2">
+          <p className="text-xs text-fg-3">{t('airports.toggleHint')}</p>
+          <ul className="divide-y divide-border rounded-lg border border-border">
+            {rows.map((row) => {
+              const active = row.is_active;
+              const isDefault = defaultIata === row.iata;
+              return (
+                <li key={row.iata} className={cn('flex flex-wrap items-center gap-3 px-4 py-3', !active && 'bg-surface-2')}>
+                  <Switch
+                    id={`ap-${row.iata}`}
+                    checked={active}
+                    onCheckedChange={(v) => setActive(row.iata, v)}
+                    aria-label={t('airports.activeLabel', { iata: row.iata })}
+                  />
+                  <label htmlFor={`ap-${row.iata}`} className="min-w-0 flex-1 cursor-pointer">
+                    <span className={cn('flex flex-wrap items-center gap-2 text-sm font-bold', !active && 'text-fg-2')}>
+                      {row.iata} · {name(row)}
+                      <Badge variant={active ? 'success' : 'default'}>{active ? t('airports.active') : t('airports.inactive')}</Badge>
+                    </span>
+                    <span className="tabular block text-xs text-fg-2">
+                      {row.city ? `${name({ name: row.city, name_ar: row.city_ar })} · ` : ''}
+                      {row.distance_km != null && t('units.km', { value: formatNumber(row.distance_km, 0) })}
+                      {row.drive_minutes != null && ` · ${t('units.minutes', { value: row.drive_minutes })}`}
+                      {row.source === 'manual' && ` · ${t('airports.manual')}`}
+                    </span>
                   </label>
-                )}
-                <button
-                  type="button"
-                  disabled={!checked}
-                  onClick={() => onChange(value.map((a) => ({ ...a, is_default: a.iata === row.iata })))}
-                  aria-pressed={defaultIata === row.iata}
-                  className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold disabled:opacity-40', defaultIata === row.iata ? 'text-fg' : 'text-fg-3 hover:text-fg')}
-                >
-                  {/* the star is decorative (3:1 is enough), so it keeps the pure amber token */}
-                  <Star className={cn('size-3.5', defaultIata === row.iata && 'fill-warning text-warning')} aria-hidden="true" />
-                  {t('sites.defaultAirport')}
-                </button>
-                {row.source === 'manual' && checked && (
-                  <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => toggle(row, false)} aria-label={t('common.remove')}>
-                    <Trash2 aria-hidden="true" />
-                  </Button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                  {active && (
+                    <label className="flex items-center gap-1.5 text-xs text-fg-2">
+                      {t('sites.buffer')}
+                      <Input
+                        type="number"
+                        min={0}
+                        max={240}
+                        className="tabular h-8 w-16"
+                        value={row.default_buffer_min}
+                        onChange={(e) => update(row.iata, { default_buffer_min: Number(e.target.value) || 0 })}
+                        aria-label={`${t('sites.buffer')} ${row.iata}`}
+                      />
+                    </label>
+                  )}
+                  <button
+                    type="button"
+                    disabled={!active}
+                    onClick={() => onChange(value.map((a) => ({ ...a, is_default: a.iata === row.iata })))}
+                    aria-pressed={isDefault}
+                    className={cn('inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-bold disabled:opacity-40', isDefault ? 'text-fg' : 'text-fg-3 hover:text-fg')}
+                  >
+                    {/* the star is decorative (3:1 is enough), so it keeps the pure amber token */}
+                    <Star className={cn('size-3.5', isDefault && 'fill-warning text-warning')} aria-hidden="true" />
+                    {t('sites.defaultAirport')}
+                  </button>
+                  {row.source === 'manual' && (
+                    <Button type="button" variant="ghost" size="icon" className="size-8" onClick={() => remove(row.iata)} aria-label={t('common.remove')}>
+                      <Trash2 aria-hidden="true" />
+                    </Button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       ) : (
         <p className="flex items-center gap-2 rounded-lg border border-dashed border-border-strong px-4 py-6 text-sm text-fg-2">
           <Plane className="size-4" aria-hidden="true" />

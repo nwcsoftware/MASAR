@@ -6,10 +6,18 @@ export interface RouterContext {
   session: Session;
 }
 
-/** Where a signed-in user lands: drivers → PWA, owners without a company → onboarding. */
-export function homePathFor(user: SessionUser): '/driver' | '/onboarding' | '/dashboard' {
-  if (!user.profile.company_id) return '/onboarding';
+export type HomePath = '/platform' | '/no-company' | '/driver' | '/passenger' | '/dashboard';
+
+/**
+ * Where a signed-in user lands: the super admin → companies console (0008),
+ * an account not attached to any company yet → waiting screen (only the super
+ * admin creates companies), drivers → PWA, passengers → their app.
+ */
+export function homePathFor(user: SessionUser): HomePath {
+  if (user.isPlatformAdmin) return '/platform';
+  if (!user.profile.company_id) return '/no-company';
   if (user.profile.role === 'driver') return '/driver';
+  if (user.profile.role === 'passenger') return '/passenger';
   return '/dashboard';
 }
 
@@ -24,7 +32,29 @@ function requireSignedIn(session: Session, location: ParsedLocation): SessionUse
 export function requireConsoleUser(session: Session, location: ParsedLocation): SessionUser {
   const user = requireSignedIn(session, location);
   if (user.profile.role === 'driver') throw redirect({ to: '/driver' });
-  if (!user.profile.company_id) throw redirect({ to: '/onboarding' });
+  if (user.profile.role === 'passenger') throw redirect({ to: '/passenger' });
+  if (user.isPlatformAdmin || !user.profile.company_id) throw redirect({ to: homePathFor(user) });
+  return user;
+}
+
+/** /platform: the super admin only (0008). */
+export function requirePlatformAdmin(session: Session, location: ParsedLocation): SessionUser {
+  const user = requireSignedIn(session, location);
+  if (!user.isPlatformAdmin) throw redirect({ to: homePathFor(user) });
+  return user;
+}
+
+/** /no-company: signed in but not attached to a company (and not the super admin). */
+export function requireNoCompanyUser(session: Session, location: ParsedLocation): SessionUser {
+  const user = requireSignedIn(session, location);
+  if (user.isPlatformAdmin || user.profile.company_id) throw redirect({ to: homePathFor(user) });
+  return user;
+}
+
+/** (passenger) group: passengers only (0006). Pending/rejected see a status screen, not trips. */
+export function requirePassenger(session: Session, location: ParsedLocation): SessionUser {
+  const user = requireSignedIn(session, location);
+  if (user.profile.role !== 'passenger' || !user.profile.company_id) throw redirect({ to: homePathFor(user) });
   return user;
 }
 
@@ -36,13 +66,13 @@ export function requireDriver(session: Session, location: ParsedLocation): Sessi
 }
 
 /**
- * Onboarding: a new signup without a company (rpc_create_company makes them
- * owner), or an owner/admin adding a site. A fresh profile's role is
- * `viewer`, so checking the role alone would bounce new owners in a loop.
+ * Onboarding: the owner (or an admin) of a company the super admin created —
+ * confirm the profile, add sites and airports, invite people (0008). Users
+ * without a company can no longer create one here.
  */
 export function requireOnboardingUser(session: Session, location: ParsedLocation): SessionUser {
   const user = requireSignedIn(session, location);
-  const canOnboard = !user.profile.company_id || user.profile.role === 'owner' || user.profile.role === 'admin';
+  const canOnboard = Boolean(user.profile.company_id) && (user.profile.role === 'owner' || user.profile.role === 'admin');
   if (!canOnboard) throw redirect({ to: homePathFor(user) });
   return user;
 }

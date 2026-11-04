@@ -1,12 +1,12 @@
 -- pgTAP — run with `pnpm supabase test db` (needs the seed loaded).
 -- Covers the 0002 fixes: profile/driver column guards, company-scoped
--- user_sites, rpc_create_company, rpc_set_site_airports and the driver
+-- user_sites, company creation (super admin only since 0008), rpc_set_site_airports and the driver
 -- live-status fix in rpc_task_transition. Everything rolls back.
 begin;
 create extension if not exists pgtap with schema extensions;
 select plan(27);
 
--- a fresh signup with no company yet (as postgres)
+-- a fresh signup with no company yet (as postgres); super@masar.dev is the seed's super admin
 insert into auth.users (instance_id, id, aud, role, email, encrypted_password, email_confirmed_at,
                         raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
                         confirmation_token, recovery_token, email_change_token_new, email_change)
@@ -75,17 +75,26 @@ select lives_ok($$insert into user_sites (user_id, site_id)
                 'an admin scopes a dispatcher to a site of their company');
 
 -- ---------------------------------------------------------------------
--- 4. a second company: onboarding RPC and tenant isolation
+-- 4. a second company: created by the super admin (0008), tenant isolation
 -- ---------------------------------------------------------------------
 select set_config('request.jwt.claims', '{"sub":"99999999-0000-4000-8000-000000000001"}', true);
+select throws_ok($$select rpc_platform_create_company('Other Co')$$,
+                 '42501', null, 'a signed-up user cannot create a company');
 
-select throws_ok($$select rpc_create_company('Other Co', null, 'SA', 'Mars/Olympus', 'en')$$,
-                 '22023', null, 'rpc_create_company validates the time zone');
-select lives_ok($$select rpc_create_company('Other Co', null, 'SA', 'Asia/Riyadh', 'en')$$,
-                'a new user creates their company');
-select is((select role::text from profiles where id = auth.uid()), 'owner', '… and becomes its owner');
-select throws_ok($$select rpc_create_company('Second Co')$$,
-                 '42501', null, 'a user cannot create a second company');
+select set_config('request.jwt.claims', '{"sub":"10000000-0000-4000-8000-000000000099"}', true);
+select throws_ok($$select rpc_platform_create_company('Other Co', null, 'SA', 'Mars/Olympus', 'en')$$,
+                 '22023', null, 'company creation validates the time zone');
+select lives_ok($$select rpc_platform_create_company('Other Co', null, 'SA', 'Asia/Riyadh', 'en')$$,
+                'the super admin creates a company');
+
+-- invite-owner attaches the founder as owner (service role)
+reset role;
+update profiles set company_id = (select id from companies where name = 'Other Co'), role = 'owner'
+ where id = '99999999-0000-4000-8000-000000000001';
+set local role authenticated;
+select set_config('request.jwt.claims', '{"sub":"99999999-0000-4000-8000-000000000001"}', true);
+
+select is((select count(*)::int from companies), 1, 'the new owner sees only their own company');
 select is((select count(*)::int from sites), 0, 'the new company sees no other company''s sites');
 select is((select count(*)::int from profiles), 1, '… and no other company''s people');
 select throws_ok($$insert into user_sites (user_id, site_id)

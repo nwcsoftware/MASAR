@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { IdCard, Plus, UsersRound } from 'lucide-react';
+import { FileWarning, IdCard, Plus, UsersRound } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ConflictBadge } from '@/components/conflict-badge';
 import { DriverAvatar } from '@/components/driver-avatar';
@@ -16,17 +16,19 @@ import { isAdmin } from '@/features/auth/guards';
 import { useCurrentUser } from '@/features/auth/session';
 import { useDrivers, type DriverOverview } from '@/features/drivers/queries';
 import { licenceExpiresSoon } from '@/features/drivers/utils';
+import { countByStatus, type DocumentItem } from '@/features/documents/status';
+import { useCompliance } from '@/features/documents/use-compliance';
 import { useScopedSiteIds } from '@/features/sites/site-scope';
 import { formatTime } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
 import { DRIVER_STATUS_COLOR } from '@/lib/task-meta';
-import { tone } from '@/lib/utils';
+import { cn, tone } from '@/lib/utils';
 
 export const Route = createFileRoute('/(admin)/drivers/')({
   component: DriversPage,
 });
 
-function DriverCard({ driver }: { driver: DriverOverview }) {
+function DriverCard({ driver, documents }: { driver: DriverOverview; documents: DocumentItem[] }) {
   const { t } = useTranslation();
   const name = useLocalizedName();
   const task = driver.activeTask ?? driver.nextTask;
@@ -71,7 +73,8 @@ function DriverCard({ driver }: { driver: DriverOverview }) {
         <HoursBar drivingMin={driver.plannedTodayMin} capMin={driver.maxDailyMin} />
       </div>
 
-      {licenceExpiresSoon(driver.licence_expiry) && (
+      <DocumentsBadge items={documents} />
+      {licenceExpiresSoon(driver.licence_expiry) && !documents.length && (
         <p className="tint-12 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold text-warning-fg [--tint-color:var(--warning)]">
           <IdCard className="size-3.5" aria-hidden="true" />
           {t('drivers.licenceExpiring', { date: driver.licence_expiry })}
@@ -81,12 +84,34 @@ function DriverCard({ driver }: { driver: DriverOverview }) {
   );
 }
 
+/** 0005: the most urgent document issue on the card (expired → missing → expiring). */
+function DocumentsBadge({ items }: { items: DocumentItem[] }) {
+  const { t } = useTranslation();
+  const c = countByStatus(items);
+  const [key, count, color] =
+    c.expired > 0
+      ? ['documents.card.expired', c.expired, 'var(--danger)']
+      : c.missing > 0
+        ? ['documents.card.missing', c.missing, 'var(--danger)']
+        : c.expiring > 0
+          ? ['documents.card.expiring', c.expiring, 'var(--warning)']
+          : [null, 0, ''];
+  if (!key) return null;
+  return (
+    <p className={cn('tint-12 inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold', color === 'var(--danger)' ? 'text-danger' : 'text-warning-fg')} style={{ ['--tint-color' as string]: color }}>
+      <FileWarning className="size-3.5" aria-hidden="true" />
+      {t(key, { count })}
+    </p>
+  );
+}
+
 /** Screen 8 — drivers card grid. */
 function DriversPage() {
   const { t } = useTranslation();
   const { profile } = useCurrentUser();
   const siteIds = useScopedSiteIds();
   const drivers = useDrivers(siteIds);
+  const compliance = useCompliance();
   const navigate = useNavigate();
   const [formOpen, setFormOpen] = useState(false);
 
@@ -134,7 +159,7 @@ function DriversPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {drivers.data.map((driver) => (
-            <DriverCard key={driver.id} driver={driver} />
+            <DriverCard key={driver.id} driver={driver} documents={compliance.items.filter((i) => i.driverId === driver.id)} />
           ))}
         </div>
       )}

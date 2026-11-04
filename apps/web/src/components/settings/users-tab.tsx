@@ -205,7 +205,7 @@ function AccessForm({ user, onDone }: { user: CompanyUser; onDone: () => void })
         <Button variant="outline" onClick={onDone}>
           {t('common.cancel')}
         </Button>
-        <Button disabled={update.isPending} onClick={() => update.mutate({ userId: user.id, values: { role, site_ids: siteIds } }, { onSuccess: onDone })}>
+        <Button disabled={update.isPending} onClick={() => update.mutate({ userId: user.id, values: { role: role as Exclude<AppRole, 'passenger'>, site_ids: siteIds } }, { onSuccess: onDone })}>
           {update.isPending ? t('common.saving') : t('common.save')}
         </Button>
       </DialogFooter>

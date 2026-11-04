@@ -1,5 +1,6 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { Download, LogOut } from 'lucide-react';
+import { PushToggle } from '@/components/notifications/push-toggle';
 import { useTranslation } from 'react-i18next';
 import { DriverAvatar } from '@/components/driver-avatar';
 import { ThemeToggle } from '@/components/theme-toggle';
@@ -76,6 +77,8 @@ function DriverMe() {
           ))}
         </div>
       </section>
+
+      <PushToggle />
 
       {install.canInstall && !install.installed && (
         <Button variant="outline" size="lg" className="w-full" onClick={() => void install.install()}>

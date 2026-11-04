@@ -48,10 +48,13 @@
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.88.0",
     "react-i18next": "^17.0.14",
+    "read-excel-file": "^5.8.8",
     "tailwind-merge": "^3.7.0",
+    "uqr": "0.1.2",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "1.3.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@tanstack/router-plugin": "^1.168.38",

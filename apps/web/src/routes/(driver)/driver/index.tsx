@@ -11,6 +11,7 @@ import { useMyTasks } from '@/features/tasks/driver';
 import { formatHours, formatTime } from '@/lib/format';
 import { useLocalizedName } from '@/lib/i18n-data';
 import { useDriver } from '@/features/drivers/queries';
+import { useLocationSharing } from '@/features/drivers/location';
 import { ACTIVE_STATUSES, TERMINAL_STATUSES } from '@/lib/task-meta';
 
 export const Route = createFileRoute('/(driver)/driver/')({
@@ -28,9 +29,9 @@ function DriverToday() {
   const hero = live.find((x) => ACTIVE_STATUSES.includes(x.status)) ?? live[0];
   const plannedMin = list.reduce((sum, x) => sum + (x.estimated_duration_min ?? 60), 0);
   const me = useDriver(user.driverId ?? '');
-  // FR-33 sharing banner — real Geolocation + rpc_report_location arrive in Phase 3.
-  const lastPing = me.data?.location;
-  const sharing = hero && ACTIVE_STATUSES.includes(hero.status);
+  // FR-33 sharing banner — the shell reports the position while a trip is under way
+  const sharing = useLocationSharing();
+  const lastPing = sharing.lastAt ?? me.data?.location?.recorded_at;
   const homeSite = me.data?.homeSite;
 
   return (
@@ -43,12 +44,17 @@ function DriverToday() {
         </p>
       </div>
 
-      {sharing && (
-        <div role="status" className="tone-pill flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold [--tone:var(--status-in-progress)]">
-          <span className="tone-dot animate-pulse-ring size-2 rounded-full" aria-hidden="true" />
-          {t('driver.sharing', { time: formatTime(lastPing?.recorded_at ?? new Date()) })}
-        </div>
-      )}
+      {sharing.taskId &&
+        (sharing.state === 'denied' || sharing.state === 'unsupported' ? (
+          <div role="alert" className="tone-pill rounded-lg px-3 py-2 text-xs font-bold [--tone:var(--status-delayed)]" data-sharing={sharing.state}>
+            {t(sharing.state === 'denied' ? 'driver.sharingDenied' : 'driver.sharingUnsupported')}
+          </div>
+        ) : (
+          <div role="status" className="tone-pill flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-bold [--tone:var(--status-in-progress)]" data-sharing={sharing.state}>
+            <span className="tone-dot animate-pulse-ring size-2 rounded-full" aria-hidden="true" />
+            {lastPing ? t('driver.sharing', { time: formatTime(lastPing) }) : t('driver.sharingStarting')}
+          </div>
+        ))}
 
       {tasks.isPending ? (
         <div className="space-y-3">

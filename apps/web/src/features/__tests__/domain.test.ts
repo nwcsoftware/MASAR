@@ -72,13 +72,14 @@ describe('homePathFor (role-based redirect)', () => {
     company: fx.company,
     driverId: null,
     siteIds: [],
+    isPlatformAdmin: false,
   });
 
-  it('sends drivers to the PWA, staff to the dashboard and new owners to onboarding', () => {
+  it('sends drivers to the PWA, staff to the dashboard, the super admin to the companies console', () => {
     expect(homePathFor(user('driver'))).toBe('/driver');
     expect(homePathFor(user('dispatcher'))).toBe('/dashboard');
     expect(homePathFor(user('viewer'))).toBe('/dashboard');
-    expect(homePathFor(user('owner', null))).toBe('/onboarding');
+    expect(homePathFor({ ...user('viewer', null), isPlatformAdmin: true })).toBe('/platform');
   });
 });
 

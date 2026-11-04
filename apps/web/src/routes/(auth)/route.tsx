@@ -10,6 +10,8 @@ export const Route = createFileRoute('/(auth)')({
   beforeLoad: ({ context, search, location }) => {
     // Supabase's invite link signs the user in before they set a password.
     if (location.pathname === '/accept-invite') return;
+    // a passenger who confirmed their e-mail comes back to finish registering (0006)
+    if (location.pathname === '/register' && context.session.status === 'signed-in' && !context.session.user.profile.company_id) return;
     const target = (search as { redirect?: unknown }).redirect;
     redirectIfSignedIn(context.session, typeof target === 'string' ? target : undefined);
   },

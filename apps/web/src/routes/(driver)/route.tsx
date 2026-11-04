@@ -1,6 +1,7 @@
 import { createFileRoute, Link, Outlet } from '@tanstack/react-router';
 import { CalendarDays, Clock, House, UserRound, type LucideIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { LocationSharingProvider } from '@/components/driver/location-sharing';
 import { LanguageToggle } from '@/components/language-toggle';
 import { NotificationBell } from '@/components/layout/notification-bell';
 import { LogoMark } from '@/components/logo';
@@ -39,7 +40,9 @@ function DriverShell() {
       </header>
       <OfflineBanner />
       <main className="flex-1 px-4 pb-24 pt-4">
-        <Outlet />
+        <LocationSharingProvider>
+          <Outlet />
+        </LocationSharingProvider>
       </main>
       <nav
         aria-label={t('driver.tabs.label')}

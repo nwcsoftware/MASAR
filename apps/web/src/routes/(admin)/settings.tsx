@@ -8,6 +8,9 @@ import { ErrorState } from '@/components/error-state';
 import { Page, Panel } from '@/components/page';
 import { PageHeader } from '@/components/page-header';
 import { CompanyTab } from '@/components/settings/company-tab';
+import { DocumentsTab } from '@/components/settings/documents-tab';
+import { PassengersTab } from '@/components/settings/passengers-tab';
+import { GradesTab } from '@/components/settings/grades-tab';
 import { HolidaysTab } from '@/components/settings/holidays-tab';
 import { UsersTab } from '@/components/settings/users-tab';
 import { VehiclesTab } from '@/components/settings/vehicles-tab';
@@ -23,7 +26,7 @@ import { companyRulesSchema, type CompanyRulesValues } from '@/features/company/
 import { useCompanySettings, useUpdateCompanyRules } from '@/features/company/queries';
 import { formatHours, formatWeekday } from '@/lib/format';
 
-const TABS = ['company', 'rules', 'holidays', 'vehicles', 'users'] as const;
+const TABS = ['company', 'rules', 'grades', 'documents', 'passengers', 'holidays', 'vehicles', 'users'] as const;
 type Tab = (typeof TABS)[number];
 
 export const Route = createFileRoute('/(admin)/settings')({
@@ -192,6 +195,15 @@ function SettingsPage() {
         </TabsContent>
         <TabsContent value="rules">
           <RulesTab />
+        </TabsContent>
+        <TabsContent value="grades">
+          <GradesTab />
+        </TabsContent>
+        <TabsContent value="documents">
+          <DocumentsTab />
+        </TabsContent>
+        <TabsContent value="passengers">
+          <PassengersTab />
         </TabsContent>
         <TabsContent value="holidays">
           <HolidaysTab />

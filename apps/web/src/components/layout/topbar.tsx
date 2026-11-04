@@ -76,7 +76,7 @@ export function Topbar({
         <ThemeToggle compact />
         <NotificationBell onOpenTask={onOpenTask} />
         {isStaff(user.profile.role) && (
-          <Button size="sm" className="ms-1.5" onClick={onNewTask}>
+          <Button size="sm" className="ms-1.5" onClick={onNewTask} aria-label={t('tasks.new')}>
             <Plus aria-hidden="true" />
             <span className="hidden sm:inline">{t('tasks.new')}</span>
           </Button>

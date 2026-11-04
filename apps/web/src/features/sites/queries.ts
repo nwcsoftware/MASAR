@@ -11,8 +11,12 @@ import { mockDb, mockQuery } from '@/mocks/db';
 import { at, type Airport, type Driver, type Site, type SiteAirport, type Vehicle } from '@/mocks/fixtures';
 import type { SiteAirportValues, SiteValues } from './schema';
 
+type SiteAirportRow = SiteAirport & { airport: Airport };
 export type SiteWithAirports = Site & {
-  airports: (SiteAirport & { airport: Airport })[];
+  /** active airports only — what trips are planned with (0008) */
+  airports: SiteAirportRow[];
+  /** every airport kept on the site, switched off ones included (AirportPicker, site detail) */
+  allAirports: SiteAirportRow[];
   driverCount: number;
   tasksToday: number;
 };
@@ -39,11 +43,19 @@ interface SiteSources {
 
 function buildSites({ sites, drivers, tasksToday }: SiteSources): SiteWithAirports[] {
   return sites
-    .map((site) => ({
-      ...site,
-      airports: site.airports
+    .map(({ airports, ...site }) => {
+      const allAirports = airports
         .flatMap((sa) => (sa.airport ? [{ ...sa, airport: sa.airport }] : []))
-        .sort((a, b) => Number(b.is_default) - Number(a.is_default) || (a.drive_minutes ?? 0) - (b.drive_minutes ?? 0)),
+        .sort(
+          (a, b) =>
+            Number(b.is_default) - Number(a.is_default) || Number(b.is_active) - Number(a.is_active) || (a.drive_minutes ?? 0) - (b.drive_minutes ?? 0),
+        );
+      return { site, allAirports };
+    })
+    .map(({ site, allAirports }) => ({
+      ...site,
+      allAirports,
+      airports: allAirports.filter((sa) => sa.is_active),
       driverCount: drivers.filter((d) => d.home_site_id === site.id && d.is_active).length,
       tasksToday: tasksToday.filter((t) => t.site_id === site.id).length,
     }))
@@ -78,6 +90,19 @@ export function useSites() {
   return useQuery({
     queryKey: siteKeys.all(profile.company_id ?? ''),
     queryFn: () => (live ? loadSources(true).then(buildSites) : mockQuery(() => loadSources(false).then(buildSites), [])),
+  });
+}
+
+/** The company airport catalogue (FR-13: a task may use any of them, not only the site's). */
+export function useAirports() {
+  const { profile } = useCurrentUser();
+  const live = useLiveData();
+  return useQuery({
+    queryKey: [...siteKeys.all(profile.company_id ?? ''), 'airports'],
+    queryFn: async () =>
+      live
+        ? (unwrap(await db().from('airports').select('*').order('iata')) ?? [])
+        : mockQuery<Airport[]>(() => [...mockDb.airports].sort((a, b) => (a.iata ?? '').localeCompare(b.iata ?? '')), []),
   });
 }
 
@@ -195,13 +220,17 @@ export function useSetSiteAirports() {
         }
         ids.push(airport.id);
       }
-      const defaultId = ids[airports.findIndex((a) => a.is_default)] ?? ids[0];
+      // mirror of rpc_set_site_airports (0008): the default is always an active airport
+      const activeIds = ids.filter((_, i) => airports[i]!.is_active);
+      const flagged = airports.findIndex((a) => a.is_default && a.is_active);
+      const defaultId = flagged >= 0 ? ids[flagged] : activeIds[0];
       mockDb.siteAirports = [
         ...mockDb.siteAirports.filter((sa) => sa.site_id !== siteId),
         ...airports.map((a, i) => ({
           site_id: siteId,
           airport_id: ids[i]!,
           is_default: ids[i] === defaultId,
+          is_active: a.is_active,
           distance_km: a.distance_km,
           drive_minutes: a.drive_minutes,
           default_buffer_min: a.default_buffer_min,

@@ -5,15 +5,18 @@
  * behaves like the real backend.
  */
 import * as fx from './fixtures';
-import type { Enums, Json } from '@/lib/database.types';
+import { onTaskStatus } from './passenger-trips';
+import type { Enums, Json, Tables } from '@/lib/database.types';
 
 const clone = <T>(value: T): T => structuredClone(value);
-
 
 export const mockDb = {
   company: clone(fx.company),
   companySettings: clone(fx.companySettings),
   profiles: clone(fx.profiles),
+  // 0008 platform super admin + the other tenants they manage
+  platformAdmins: clone(fx.platformAdmins),
+  otherCompanies: clone(fx.otherCompanies),
   userSites: clone(fx.userSites),
   sites: clone(fx.sites),
   airports: clone(fx.airports),
@@ -30,8 +33,25 @@ export const mockDb = {
   taskEvents: clone(fx.taskEvents),
   taskConflicts: clone(fx.taskConflicts),
   taskAttachments: clone(fx.taskAttachments),
+  taskLinks: [] as Tables<'task_links'>[],
   notifications: clone(fx.notifications),
   holidays: clone(fx.holidays),
+  gradeGroups: clone(fx.gradeGroups),
+  people: clone(fx.people),
+  documentTypes: clone(fx.documentTypes),
+  jobTitles: clone(fx.jobTitles),
+  jobTitleDocuments: clone(fx.jobTitleDocuments),
+  driverDocuments: clone(fx.driverDocuments),
+  emergencyContacts: clone(fx.emergencyContacts),
+  ratingOptions: clone(fx.ratingOptions),
+  tripRatings: clone(fx.tripRatings),
+  tripRatingChoices: clone(fx.tripRatingChoices),
+  // 0007 — task_passengers is built lazily from tasks.passengers (mocks/passenger-trips.ts)
+  taskPassengers: [] as fx.TaskPassenger[],
+  shareLinks: [] as fx.TripShareLink[],
+  sosEvents: [] as fx.SosEvent[],
+  tripRequests: clone(fx.tripRequests),
+  auditLog: [] as { action: string; table_name: string; row_id: string; actor_id: string | null; data: Json; created_at: string }[],
   driverDaySummaries: clone(fx.driverDaySummaries),
 };
 
@@ -199,5 +219,44 @@ export function mockTransition(taskId: string, action: TransitionAction, payload
     driver.current_status = to === 'en_route' || to === 'in_progress' || to === 'delayed' ? to : 'idle';
     driver.last_seen_at = now;
   }
+  followSharedRide(task, now);
+  onTaskStatus(task, from, to);
   return clone(task);
+}
+
+/** Mirror of trg_shared_ride_follow (0003): riders complete with their host, and are released if it is cancelled. */
+function followSharedRide(task: (typeof mockDb.tasks)[number], now: string) {
+  const db = mockDb;
+  const riderLinks = db.taskLinks.filter((l) => l.related_task_id === task.id && l.relation === 'shared_ride');
+  if (task.status === 'completed') {
+    for (const link of riderLinks) {
+      const rider = db.tasks.find((t) => t.id === link.task_id);
+      if (!rider || ['completed', 'cancelled', 'no_show'].includes(rider.status)) continue;
+      const from = rider.status;
+      Object.assign(rider, { status: 'completed', actual_start_at: task.actual_start_at, actual_end_at: task.actual_end_at, updated_at: now });
+      db.taskEvents.push({
+        id: crypto.randomUUID(),
+        task_id: rider.id,
+        company_id: rider.company_id,
+        type: 'completed',
+        actor_id: null,
+        from_status: from,
+        to_status: 'completed',
+        lat: null,
+        lng: null,
+        payload: { shared_ride_with: task.id },
+        client_ts: now,
+        created_at: now,
+      });
+    }
+  } else if (task.status === 'cancelled' || task.status === 'no_show') {
+    const released = new Set(riderLinks.map((l) => l.task_id));
+    released.add(task.id);
+    for (const t of db.tasks) {
+      if (!released.has(t.id) || !t.metadata || typeof t.metadata !== 'object' || Array.isArray(t.metadata)) continue;
+      const { shared_with: _dropped, ...rest } = t.metadata as Record<string, Json>;
+      t.metadata = rest;
+    }
+    db.taskLinks = db.taskLinks.filter((l) => l.relation !== 'shared_ride' || (l.related_task_id !== task.id && l.task_id !== task.id));
+  }
 }

@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
-import { ArrowLeft, FileQuestion, Phone } from 'lucide-react';
+import { ArrowLeft, FileQuestion } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { NextTaskHero } from '@/components/driver/next-task-hero';
+import { RidersPanel } from '@/components/driver/riders-panel';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { StatusPill } from '@/components/status-pill';
@@ -15,15 +16,12 @@ export const Route = createFileRoute('/(driver)/driver/tasks/$taskId')({
   component: DriverTaskDetail,
 });
 
-type Passenger = { name?: string; phone?: string; note?: string };
-
-/** Screen 12b — driver task detail: stops + Open in Maps, passengers tap-to-call, flight (FR-31). */
+/** Screen 12b — driver task detail: stops + Open in Maps, passengers (call, check-in, drop-off), flight (FR-31). */
 function DriverTaskDetail() {
   const { t } = useTranslation();
   const { taskId } = Route.useParams();
   const query = useTask(taskId);
   const task = query.data;
-  const passengers = (task && Array.isArray(task.passengers) ? task.passengers : []) as Passenger[];
 
   return (
     <div className="space-y-4">
@@ -52,26 +50,7 @@ function DriverTaskDetail() {
             <NextTaskHero task={task} />
           )}
 
-          {passengers.length > 0 && (
-            <section className="space-y-2">
-              <h2 className="eyebrow">{t('taskDetail.passengers')}</h2>
-              <ul className="divide-y divide-border rounded-lg border border-border bg-surface">
-                {passengers.map((p, i) => (
-                  <li key={i} className="flex min-h-touch items-center justify-between gap-3 px-4 py-2">
-                    <span className="font-semibold">{p.name}</span>
-                    {p.phone && (
-                      <Button asChild size="sm" variant="outline">
-                        <a href={`tel:${p.phone.replace(/\s/g, '')}`}>
-                          <Phone aria-hidden="true" />
-                          {t('driver.call')}
-                        </a>
-                      </Button>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          )}
+          <RidersPanel task={task} />
 
           {task.completion_notes && (
             <section className="space-y-1">

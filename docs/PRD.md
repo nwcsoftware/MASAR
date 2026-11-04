@@ -159,9 +159,9 @@ Rules:
 Each requirement has an ID (`FR-xx`) so Claude Code can reference them in commits and tests.
 
 ### 5.1 Onboarding & company setup
-- **FR-01** Owner signs up (email + password or magic link), creates a **Company** (name, country, timezone, default language, working-day rules).
+- **FR-01** A **platform super admin** (outside every company) creates each **Company** (name, country, timezone, default language) and invites its **owner** by e-mail. Owners cannot create companies; they complete the profile and working-day rules in onboarding. Companies are fully isolated: users never see another company's sites, people or tasks, and the super admin sees only the companies list (owner, site and user counts), not their data. (0008)
 - **FR-02** Owner/admin creates **Sites**: name (EN/AR), type (`construction_site`, `office`, `warehouse`, `other`), address, lat/lng (map picker + Places autocomplete), contact person, phone, working hours, notes, active flag.
-- **FR-03** Site registration ends with **Airport setup**: the app calls `ai-suggest-airports` with the site coordinates → returns the closest airports (IATA, name EN/AR, city, lat/lng, distance km, typical drive minutes). User ticks the ones the site normally uses; they are stored in `airports` (company-wide catalogue, upserted by IATA) and linked in `site_airports` with `is_default` and `default_buffer_min`.
+- **FR-03** Site registration ends with **Airport setup**: the app calls `ai-suggest-airports` with the site coordinates → returns the closest airports (IATA, name EN/AR, city, lat/lng, distance km, typical drive minutes). Every airport found is kept on the site with an **Active** switch (the nearest starts active and default); the user switches on the ones the site uses. They are stored in `airports` (company-wide catalogue, upserted by IATA) and linked in `site_airports` with `is_active`, `is_default` (always an active airport) and `default_buffer_min`. Only active airports are offered when planning trips. A site's location comes from the device, a pasted Maps link or typed coordinates; airports can also be added manually.
 - **FR-04** Users are invited by email with a role and site scope. Drivers get a `drivers` record (licence number & expiry, phone, home site, employee no., max daily driving hours, photo).
 - **FR-05** Vehicles: plate, make/model, seats, site, active, current odometer.
 
@@ -181,6 +181,7 @@ Each requirement has an ID (`FR-xx`) so Claude Code can reference them in commit
 - **FR-15** **Cross-site airport hint**: when an airport task is created, `fn_similar_airport_trips(company, airport, date)` returns other sites' airport tasks within ± `settings.airport_share_window_min` (default 90). UI shows "Site B already has a car going to KKIA at 14:00 — share this trip?" with one-click **Merge as shared trip** (creates `task_links` with `relation = 'shared_ride'` and copies passengers as additional stop).
 - **FR-16** Assign driver: list sorted by availability, proximity (last location), remaining hours; shows conflicts inline. Assign vehicle optionally.
 - **FR-17** Bulk actions: duplicate task, move to another day, reassign driver, cancel with reason.
+- **FR-18** **Ticket import**: on an airport task the dispatcher uploads the passenger's ticket (PDF, scan or photo, any agency's layout). AI (`ai-parse-ticket`) reads its flights and passengers; the dispatcher picks the flight the trip is for (arrival or departure; airports not set up in Masar are still filled in and flagged), reviews what was read (unclear fields flagged "Check"), and the flight card, the other end of the flight (airport, date, local time, terminal), the booking reference and the passengers (staff matched by name, others as one-time visitors) are filled in. The file is not stored.
 
 ### 5.3 Notifications & reminders
 - **FR-20** On assignment → push + in-app notification to driver (`task_assigned`) with **Acknowledge / Decline** actions.

@@ -12,9 +12,11 @@ import { useSessionApi } from '@/features/auth/session';
 import { supabase } from '@/lib/supabase';
 
 export const Route = createFileRoute('/(auth)/accept-invite')({
-  validateSearch: (search: Record<string, unknown>): { email?: string; company?: string } => ({
+  validateSearch: (search: Record<string, unknown>): { email?: string; company?: string; next?: '/onboarding' } => ({
     email: typeof search.email === 'string' ? search.email : undefined,
     company: typeof search.company === 'string' ? search.company : undefined,
+    // invite-owner (0008) sends new owners on to onboarding; only that path is accepted
+    next: search.next === '/onboarding' ? '/onboarding' : undefined,
   }),
   component: AcceptInvitePage,
 });
@@ -26,7 +28,7 @@ export const Route = createFileRoute('/(auth)/accept-invite')({
  */
 function AcceptInvitePage() {
   const { t } = useTranslation();
-  const { email, company } = Route.useSearch();
+  const { email, company, next } = Route.useSearch();
   const { isSupabase } = useSessionApi();
   const [done, setDone] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -42,7 +44,7 @@ function AcceptInvitePage() {
         <MailCheck className="size-10 text-success-fg" aria-hidden="true" />
         <h1 className="text-xl font-extrabold">{t('invite.doneTitle')}</h1>
         <Button asChild>
-          <Link to="/">{t('common.continue')}</Link>
+          <Link to={next ?? '/'}>{t('common.continue')}</Link>
         </Button>
       </div>
     );

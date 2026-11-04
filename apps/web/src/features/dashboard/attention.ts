@@ -1,4 +1,4 @@
-import { openDelay, primaryAssignment, type TaskWithRelations } from '@/features/tasks/types';
+import { openDelay, primaryAssignment, sharedHostId, type TaskWithRelations } from '@/features/tasks/types';
 import { TERMINAL_STATUSES } from '@/lib/task-meta';
 
 export type AttentionKind = 'double_booked' | 'delayed' | 'not_acknowledged' | 'over_hours' | 'unassigned';
@@ -72,7 +72,8 @@ export function deriveAttention(
       });
     }
 
-    if (!assignment && new Date(task.scheduled_start).getTime() <= horizon) {
+    // a shared rider (FR-15) travels in another site's car — not unassigned work
+    if (!assignment && !sharedHostId(task) && new Date(task.scheduled_start).getTime() <= horizon) {
       items.push({ id: `unassigned:${task.id}`, kind: 'unassigned', task });
     }
   }

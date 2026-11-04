@@ -40,7 +40,7 @@ test.describe('console screens (owner)', () => {
     const sheet = page.getByRole('dialog');
     await expect(sheet).toContainText('JED departure · XY 210');
     await sheet.getByRole('tab', { name: /Conflicts|التعارضات/ }).click();
-    await expect(sheet).toContainText(/Overlaps Escort · Al Rajhi Bank|تتداخل مع/);
+    await expect(sheet).toContainText(/Overlaps \u2068?Escort · Al Rajhi Bank|تتداخل مع/);
   });
 
   test('empty and error states render on demand', async ({ page }) => {

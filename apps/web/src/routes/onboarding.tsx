@@ -15,7 +15,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { requireOnboardingUser } from '@/features/auth/guards';
 import { useCurrentUser } from '@/features/auth/session';
-import { useCreateCompany, useInviteUser, useUpdateCompany } from '@/features/company/queries';
+import { useInviteUser, useUpdateCompany } from '@/features/company/queries';
 import { companyProfileSchema, type CompanyProfileValues } from '@/features/company/schema';
 import { SITE_DEFAULTS, siteSchema, type SiteAirportValues, type SiteValues } from '@/features/sites/schema';
 import { useSaveSite, useSetSiteAirports } from '@/features/sites/queries';
@@ -41,18 +41,17 @@ interface InviteRow {
 
 /**
  * Screen 2 — Company → First site (MapPicker) → Airports (AirportPicker) →
- * Invite users (FR-01…04). Each step persists when you press Next, so leaving
- * half-way keeps what's done; returning owners skip straight to the site.
+ * Invite users (FR-01…04). The platform super admin has already created the
+ * company and invited this owner (0008); the first step confirms its profile.
+ * Each step persists when you press Next, so leaving half-way keeps what's done.
  */
 function OnboardingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const user = useCurrentUser();
-  const hasCompany = Boolean(user.profile.company_id);
   const [step, setStep] = useState<Step>('company');
   const index = STEPS.indexOf(step);
 
-  const createCompany = useCreateCompany();
   const updateCompany = useUpdateCompany();
   const saveSite = useSaveSite();
   const setAirports = useSetSiteAirports();
@@ -76,15 +75,14 @@ function OnboardingPage() {
   const companyErrors = companyForm.formState.errors;
   const siteErrors = siteForm.formState.errors;
 
-  const busy = createCompany.isPending || updateCompany.isPending || saveSite.isPending || setAirports.isPending || invite.isPending;
+  const busy = updateCompany.isPending || saveSite.isPending || setAirports.isPending || invite.isPending;
   const stepError =
-    step === 'company' ? (createCompany.error ?? updateCompany.error) : step === 'site' ? saveSite.error : step === 'airports' ? setAirports.error : null;
+    step === 'company' ? updateCompany.error : step === 'site' ? saveSite.error : step === 'airports' ? setAirports.error : null;
 
   const next = async () => {
     if (step === 'company') {
       await companyForm.handleSubmit(async (values) => {
-        if (hasCompany) await updateCompany.mutateAsync(values);
-        else await createCompany.mutateAsync(values);
+        await updateCompany.mutateAsync(values);
         setStep('site');
       })();
       return;
@@ -127,11 +125,9 @@ function OnboardingPage() {
         <div className="flex items-center gap-1">
           <LanguageToggle compact />
           <ThemeToggle compact />
-          {hasCompany && (
-            <Button asChild variant="ghost" size="sm">
-              <Link to="/">{t('onboarding.exit')}</Link>
-            </Button>
-          )}
+          <Button asChild variant="ghost" size="sm">
+            <Link to="/">{t('onboarding.exit')}</Link>
+          </Button>
         </div>
       </header>
 

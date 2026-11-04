@@ -1,15 +1,30 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { parseTicketOutput, routeEstimateOutput, type ParseTicketOutput, type RouteEstimateOutput } from '@shared/schemas';
 import { useCurrentUser } from '@/features/auth/session';
-import { db, unwrap, useLiveData } from '@/lib/data-source';
+import { AppError, db, invokeFunction, unwrap, useDualMutation, useLiveData } from '@/lib/data-source';
 import { mockDb, mockQuery, mockTransition, type TransitionAction, type TransitionPayload } from '@/mocks/db';
+import {
+  mockOverrideConflicts,
+  mockPreviewConflicts,
+  mockRescheduleTask,
+  mockSaveTask,
+  mockShareTrip,
+  type MockActor,
+} from '@/mocks/task-writes';
 import type { Json } from '@/lib/database.types';
-import type { SimilarAirportTrip, TaskDetail, TaskFilters, TaskWithRelations } from './types';
+import { readPassengers } from '@/features/grades/rules';
+import { mockParseTicket } from '@/mocks/ticket';
+import { estimateRoute } from './plan';
+import { fileToBase64, ticketMediaType } from './ticket';
+import { sharedHostId, type PreviewConflict, type SaveTaskPayload, type SimilarAirportTrip, type TaskDetail, type TaskFilters, type TaskWithRelations } from './types';
 
 export const taskKeys = {
   all: (companyId: string) => ['tasks', companyId] as const,
   list: (companyId: string, filters: TaskFilters) => ['tasks', companyId, filters] as const,
   detail: (companyId: string, taskId: string) => ['tasks', companyId, 'detail', taskId] as const,
-  similar: (companyId: string, taskId: string) => ['tasks', companyId, 'similar', taskId] as const,
+  similar: (companyId: string, input: SimilarTripsInput) => ['tasks', companyId, 'similar', input] as const,
+  preview: (companyId: string, input: ConflictPreviewInput) => ['tasks', companyId, 'preview', input] as const,
+  route: (companyId: string, input: RouteInput) => ['route', companyId, input] as const,
 };
 
 // ---------------------------------------------------------------------------
@@ -141,33 +156,39 @@ export function useTask(taskId: string | undefined) {
   });
 }
 
+export interface SimilarTripsInput {
+  airportId: string;
+  /** flight time (ISO) */
+  time: string;
+  excludeTaskId?: string;
+}
+
 /** FR-15 cross-site airport hint — fn_similar_airport_trips (mirrored in demo mode). */
-export function useSimilarAirportTrips(task: TaskWithRelations | null | undefined) {
+export function useSimilarTrips(input: SimilarTripsInput | null) {
   const { profile } = useCurrentUser();
   const live = useLiveData();
-  const flight = task?.flight;
   return useQuery({
-    queryKey: taskKeys.similar(profile.company_id ?? '', task?.id ?? ''),
-    enabled: Boolean(flight?.airport_id),
+    queryKey: taskKeys.similar(profile.company_id ?? '', input ?? { airportId: '', time: '' }),
+    enabled: Boolean(input?.airportId && input.time),
     queryFn: async (): Promise<SimilarAirportTrip[]> => {
-      if (!task || !flight?.airport_id) return [];
+      if (!input) return [];
       if (live) {
         const rows = unwrap(
           await db().rpc('fn_similar_airport_trips', {
-            p_airport_id: flight.airport_id,
-            p_time: flight.scheduled_time,
-            p_exclude_task: task.id,
+            p_airport_id: input.airportId,
+            p_time: input.time,
+            p_exclude_task: input.excludeTaskId,
           }),
         );
         return rows ?? [];
       }
       return mockQuery<SimilarAirportTrip[]>(() => {
         const window = mockDb.companySettings.airport_share_window_min;
-        const at = new Date(flight.scheduled_time).getTime();
+        const at = new Date(input.time).getTime();
         return mockDb.flightDetails
-          .filter((f) => f.airport_id === flight.airport_id && f.task_id !== task.id)
+          .filter((f) => f.airport_id === input.airportId && f.task_id !== input.excludeTaskId)
           .map((f) => ({ f, other: withRelations(f.task_id) }))
-          .filter(({ other }) => other && !['cancelled', 'completed', 'declined', 'no_show'].includes(other.status))
+          .filter(({ other }) => other && !['cancelled', 'completed', 'declined', 'no_show'].includes(other.status) && !sharedHostId(other))
           .map(({ f, other }) => ({
             task_id: f.task_id,
             site_id: other!.site_id,
@@ -178,11 +199,205 @@ export function useSimilarAirportTrips(task: TaskWithRelations | null | undefine
             scheduled_start: other!.scheduled_start,
             driver_name: other!.assignments[0]?.driver.full_name ?? null,
             minutes_apart: Math.round(Math.abs(new Date(f.scheduled_time).getTime() - at) / 60_000),
+            passenger_groups: [...new Set(readPassengers(other!.passengers).flatMap((p) => (p.group_code ? [p.group_code] : [])))],
+            vehicle_group: mockDb.gradeGroups.find((g) => g.id === other!.assignments[0]?.vehicle?.grade_group_id)?.code ?? null,
           }))
           .filter((trip) => trip.minutes_apart <= window)
           .sort((a, b) => a.minutes_apart - b.minutes_apart);
       }, []);
     },
+  });
+}
+
+/** Similar trips for an existing airport task. */
+export function useSimilarAirportTrips(task: TaskWithRelations | null | undefined) {
+  const flight = task?.flight;
+  return useSimilarTrips(
+    task && flight?.airport_id ? { airportId: flight.airport_id, time: flight.scheduled_time, excludeTaskId: task.id } : null,
+  );
+}
+
+// ---------------------------------------------------------------------------
+// FR-11 route estimate (Edge Function route-estimate; local estimate in demo
+// mode or when the function is unreachable)
+// ---------------------------------------------------------------------------
+export interface RouteInput {
+  stops: { lat: number; lng: number }[];
+  departure_time?: string;
+}
+
+export function useRouteEstimate(input: RouteInput | null) {
+  const { profile } = useCurrentUser();
+  const live = useLiveData();
+  return useQuery({
+    queryKey: taskKeys.route(profile.company_id ?? '', input ?? { stops: [] }),
+    enabled: Boolean(input && input.stops.length >= 2),
+    staleTime: 10 * 60_000,
+    placeholderData: keepPreviousData,
+    queryFn: async (): Promise<RouteEstimateOutput> => {
+      if (!input) return estimateRoute([]);
+      if (!live) return mockQuery(() => estimateRoute(input.stops), estimateRoute(input.stops));
+      try {
+        return routeEstimateOutput.parse(await invokeFunction<unknown>('route-estimate', { ...input }));
+      } catch {
+        // not deployed / Maps down: the wizard still plans with the rough estimate (flagged)
+        return estimateRoute(input.stops);
+      }
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// FR-18 ticket import — ai-parse-ticket reads the PDF / photo. Demo mode:
+// the dev server reads it when ANTHROPIC_API_KEY is set (vite.config.ts),
+// otherwise a sample ticket comes back flagged `sample`. Nothing is stored.
+// ---------------------------------------------------------------------------
+export interface ReadTicket {
+  ticket: ParseTicketOutput;
+  /** demo sample — the chosen file was not read */
+  sample: boolean;
+}
+
+async function readTicketOnDevServer(body: Record<string, unknown>): Promise<ParseTicketOutput | null> {
+  const response = await fetch('/__dev/ai-parse-ticket', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  // 404: preview / built demo without the dev server; unavailable: no ANTHROPIC_API_KEY
+  if (response.status === 404) return null;
+  const payload = (await response.json().catch(() => null)) as { unavailable?: boolean; code?: string; message?: string } | null;
+  if (response.ok && payload?.unavailable) return null;
+  if (!response.ok) throw new AppError(payload?.message ?? response.statusText, payload?.code ?? 'ticketImport.errors.aiFailed');
+  return parseTicketOutput.parse(payload);
+}
+
+export function useParseTicket() {
+  const live = useLiveData();
+  return useMutation({
+    mutationFn: async (file: File): Promise<ReadTicket> => {
+      const media_type = ticketMediaType(file);
+      const body = { media_type, data: await fileToBase64(file), file_name: file.name };
+      if (live) return { ticket: parseTicketOutput.parse(await invokeFunction<unknown>('ai-parse-ticket', body)), sample: false };
+      const read = import.meta.env.DEV ? await readTicketOnDevServer(body) : null;
+      if (read) return { ticket: read, sample: false };
+      await new Promise((resolve) => setTimeout(resolve, import.meta.env.MODE === 'test' ? 0 : 800));
+      return { ticket: mockParseTicket(), sample: true };
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// FR-14 / FR-16 / US-03 conflict preview for candidate drivers
+// ---------------------------------------------------------------------------
+export interface ConflictPreviewInput {
+  driverIds: string[];
+  vehicleId: string | null;
+  start: string;
+  end: string;
+  firstLat: number | null;
+  firstLng: number | null;
+  excludeTaskId: string | null;
+}
+
+export function useConflictPreview(input: ConflictPreviewInput | null) {
+  const { profile } = useCurrentUser();
+  const live = useLiveData();
+  return useQuery({
+    queryKey: taskKeys.preview(profile.company_id ?? '', input ?? ({} as ConflictPreviewInput)),
+    enabled: Boolean(input && (input.driverIds.length || input.vehicleId)),
+    placeholderData: keepPreviousData,
+    queryFn: async (): Promise<PreviewConflict[]> => {
+      if (!input) return [];
+      if (live) {
+        const rows = unwrap(
+          await db().rpc('rpc_preview_task_conflicts', {
+            p_driver_ids: input.driverIds,
+            p_start: input.start,
+            p_end: input.end,
+            p_vehicle_id: input.vehicleId ?? undefined,
+            p_first_lat: input.firstLat ?? undefined,
+            p_first_lng: input.firstLng ?? undefined,
+            p_exclude_task: input.excludeTaskId ?? undefined,
+          }),
+        );
+        return rows ?? [];
+      }
+      return mockQuery(() => mockPreviewConflicts(input), []);
+    },
+  });
+}
+
+// ---------------------------------------------------------------------------
+// writes (0003) — all invalidate tasks + drivers (planned hours, conflicts)
+// ---------------------------------------------------------------------------
+function useActor(): MockActor {
+  const user = useCurrentUser();
+  return { id: user.id, role: user.profile.role, siteIds: user.siteIds };
+}
+
+function useTaskInvalidation() {
+  const { profile } = useCurrentUser();
+  const companyId = profile.company_id ?? '';
+  return () => [taskKeys.all(companyId), ['drivers', companyId], ['sites', companyId]];
+}
+
+/** FR-10 … FR-16 — the wizard's single write (rpc_save_task). Resolves the task id. */
+export function useSaveTask() {
+  const actor = useActor();
+  return useDualMutation<SaveTaskPayload, string>({
+    live: async (payload) => unwrap(await db().rpc('rpc_save_task', { p_task: payload as unknown as Json }))!,
+    mock: (payload) => mockSaveTask(payload, actor),
+    invalidate: useTaskInvalidation(),
+  });
+}
+
+export interface RescheduleInput {
+  taskId: string;
+  start: string;
+  /** set to move the task to another driver row (null = unassigned) */
+  changeDriver?: boolean;
+  driverId?: string | null;
+  overrideReason?: string | null;
+}
+
+/** US-14 calendar drag-and-drop (rpc_reschedule_task). */
+export function useRescheduleTask() {
+  const actor = useActor();
+  return useDualMutation<RescheduleInput, void>({
+    live: async (input) => {
+      unwrap(
+        await db().rpc('rpc_reschedule_task', {
+          p_task_id: input.taskId,
+          p_start: input.start,
+          p_driver_id: input.driverId ?? undefined,
+          p_change_driver: input.changeDriver ?? false,
+          p_override_reason: input.overrideReason ?? undefined,
+        }),
+      );
+    },
+    mock: (input) => mockRescheduleTask(input, actor),
+    invalidate: useTaskInvalidation(),
+  });
+}
+
+/** FR-14 admin override from the task sheet (rpc_override_task_conflicts). */
+export function useOverrideConflicts() {
+  const actor = useActor();
+  return useDualMutation<{ taskId: string; reason: string }, void>({
+    live: async ({ taskId, reason }) => {
+      unwrap(await db().rpc('rpc_override_task_conflicts', { p_task_id: taskId, p_reason: reason }));
+    },
+    mock: ({ taskId, reason }) => mockOverrideConflicts(taskId, reason, actor),
+    invalidate: useTaskInvalidation(),
+  });
+}
+
+/** FR-15 / US-04 "Share trip": the rider rides in the host's car (rpc_share_trip). */
+export function useShareTrip() {
+  const actor = useActor();
+  return useDualMutation<{ taskId: string; hostTaskId: string }, void>({
+    live: async ({ taskId, hostTaskId }) => {
+      unwrap(await db().rpc('rpc_share_trip', { p_task_id: taskId, p_host_task_id: hostTaskId }));
+    },
+    mock: ({ taskId, hostTaskId }) => mockShareTrip(taskId, hostTaskId, actor),
+    invalidate: useTaskInvalidation(),
   });
 }
 

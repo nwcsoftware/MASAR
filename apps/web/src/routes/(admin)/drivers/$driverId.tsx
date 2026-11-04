@@ -3,6 +3,7 @@ import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft, CalendarOff, CalendarX2, IdCard, Pencil, Phone, Plus, Trash2, UserRoundX } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DriverAvatar } from '@/components/driver-avatar';
+import { DriverDocumentsPanel } from '@/components/documents/driver-documents-panel';
 import { EmptyState } from '@/components/empty-state';
 import { ErrorState } from '@/components/error-state';
 import { HoursBar } from '@/components/hours-bar';
@@ -140,6 +141,7 @@ function DriverDetailPage() {
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="min-w-0 space-y-5">
+          <DriverDocumentsPanel driver={driver} />
           <Panel title={t('drivers.hours14')} bodyClassName="p-4 pt-6">
             {last14.length ? (
               <HoursChart standardMin={standard} points={last14.map((s) => ({ date: s.date, drivingMin: s.driving_min, overtimeMin: s.overtime_min }))} />

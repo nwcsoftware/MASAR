@@ -22,7 +22,7 @@ export const companyRulesSchema = z
 
 export type CompanyRulesValues = z.infer<typeof companyRulesSchema>;
 
-/** FR-01 company profile (create via rpc_create_company, edit via companies update). */
+/** FR-01 company profile (created by the super admin via rpc_platform_create_company, edited via companies update). */
 export const companyProfileSchema = z.object({
   name: z.string().trim().min(2, 'onboarding.errors.companyName'),
   name_ar: z.string().trim().optional(),
@@ -58,6 +58,8 @@ export const vehicleSchema = z.object({
   color: z.string().trim().optional(),
   seats: z.number().int().min(1, 'vehicles.errors.seats').max(60, 'vehicles.errors.seats'),
   site_id: z.string().optional(),
+  /** 0004: the grade group this car carries (same group only) */
+  grade_group_id: z.string().optional(),
   odometer_km: z.number({ message: 'errors.outOfRange' }).int().min(0, 'errors.outOfRange'),
   is_active: z.boolean(),
   notes: z.string().optional(),

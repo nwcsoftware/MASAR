@@ -64,5 +64,7 @@ export const siteAirportSchema = z.object({
   drive_minutes: z.number().int().nullable(),
   default_buffer_min: z.number().int().min(0, 'sites.errors.buffer').max(240, 'sites.errors.buffer'),
   is_default: z.boolean(),
+  /** switched off = kept on the site but not offered when planning trips (0008) */
+  is_active: z.boolean(),
 });
 export type SiteAirportValues = z.infer<typeof siteAirportSchema>;

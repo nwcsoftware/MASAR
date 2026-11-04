@@ -27,6 +27,10 @@ export const env = {
   get googleMapsBrowserKey() {
     return import.meta.env.VITE_GOOGLE_MAPS_BROWSER_KEY ?? '';
   },
+  /** Web Push application server key (public half of the VAPID pair). */
+  get vapidPublicKey() {
+    return import.meta.env.VITE_VAPID_PUBLIC_KEY ?? '';
+  },
   get isConfigured() {
     return required.every((key) => Boolean(import.meta.env[key]));
   },

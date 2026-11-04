@@ -38,7 +38,7 @@ describe('Phase 1 schemas', () => {
   });
 
   it('site airport: IATA must be three capitals; buffer bounded', () => {
-    const base = { iata: 'RUH', icao: null, name: 'King Khalid', name_ar: null, city: null, city_ar: null, country_code: 'SA', lat: 24.9, lng: 46.7, is_international: true, source: 'ai' as const, distance_km: 39.6, drive_minutes: 34, default_buffer_min: 30, is_default: true };
+    const base = { iata: 'RUH', icao: null, name: 'King Khalid', name_ar: null, city: null, city_ar: null, country_code: 'SA', lat: 24.9, lng: 46.7, is_international: true, source: 'ai' as const, distance_km: 39.6, drive_minutes: 34, default_buffer_min: 30, is_default: true, is_active: true };
     expect(siteAirportSchema.safeParse(base).success).toBe(true);
     expect(siteAirportSchema.safeParse({ ...base, iata: 'ru' }).error?.issues[0]?.message).toBe('sites.errors.iata');
     expect(siteAirportSchema.safeParse({ ...base, default_buffer_min: 500 }).success).toBe(false);
@@ -96,9 +96,9 @@ describe('shared Edge Function contracts', () => {
   });
 });
 
-describe('homePathFor after sign-up', () => {
-  it('sends a brand-new signup (viewer, no company) to onboarding — not into a redirect loop', () => {
-    const user: SessionUser = { id: 'u', email: null, profile: { ...fx.profiles[3]!, role: 'viewer', company_id: null }, company: null, driverId: null, siteIds: [] };
-    expect(homePathFor(user)).toBe('/onboarding');
+describe('homePathFor after sign-up (0008: only the super admin creates companies)', () => {
+  it('sends an account without a company to the waiting screen — never to company creation', () => {
+    const user: SessionUser = { id: 'u', email: null, profile: { ...fx.profiles[3]!, role: 'viewer', company_id: null }, company: null, driverId: null, siteIds: [], isPlatformAdmin: false };
+    expect(homePathFor(user)).toBe('/no-company');
   });
 });

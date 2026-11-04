@@ -86,8 +86,8 @@ pnpm db:types                           # regenerate apps/web/src/lib/database.t
 - `useLiveData()` (lib/data-source.ts): signed in through Supabase → every `features/<domain>/queries.ts` hook reads/writes real tables (RLS applies); demo mode → the in-memory store in `src/mocks` (same row types, `Tables<'…'>`). Writes use `useDualMutation({ live, mock, invalidate })`.
 - No `VITE_SUPABASE_*` in `.env.local` → the login screen offers a role picker (owner / dispatcher / driver / viewer) with the seed's personas.
 - `?mock=empty` / `?mock=error` on any URL renders that screen's empty / error state (demo mode).
-- `rpc_task_transition` is mirrored by `mockTransition` so driver actions work in demo mode — keep them in sync.
-- Edge Functions: `ai-suggest-airports`, `invite-user` (`supabase/functions`, Deno; `deno check` in CI). Security tests: `supabase/tests/*.test.sql` (pgTAP, `pnpm db:test`).
+- `rpc_task_transition` is mirrored by `mockTransition`, and the 0003 task writes (`rpc_save_task`, `rpc_reschedule_task`, `rpc_share_trip`, the conflict engine) by `mocks/task-writes.ts`, so demo mode behaves like the backend — keep them in sync.
+- Edge Functions: `ai-suggest-airports`, `ai-parse-ticket`, `invite-user`, `route-estimate`, `send-push` (`supabase/functions`, Deno; `deno check` in CI). Security tests: `supabase/tests/*.test.sql` (pgTAP, `pnpm db:test`).
 
 ## Phase 1 — Setup (done, FR-01…05, FR-60/61)
 - [x] Migration `0002_phase1_setup.sql`: profile/driver column guards, company-scoped `user_sites`, `rpc_create_company`, `rpc_set_site_airports`, driver live-status fix — pgTAP suite
@@ -95,3 +95,42 @@ pnpm db:types                           # regenerate apps/web/src/lib/database.t
 - [x] Sites CRUD + MapPicker (paste Maps link / coordinates / device location) + AirportPicker with AI suggestions
 - [x] Drivers CRUD + leave; vehicles; users (invite, role + site scope, deactivate); company profile, rules, holidays
 - [ ] Interactive Google map + Places search in MapPicker → with LiveMap in Phase 4 (needs `VITE_GOOGLE_MAPS_BROWSER_KEY`)
+
+## Phase 2 — Tasks core (FR-10, FR-11, FR-13…16, FR-42, US-02, US-03, US-04, US-14)
+- [x] Migration `0003_phase2_tasks.sql`: conflict engine for proposed tasks (company-local days, tenant check), `rpc_preview_task_conflicts`, `rpc_save_task` + FR-14 gate (admin override with reason), `rpc_reschedule_task`, `rpc_override_task_conflicts`, `rpc_share_trip` — pgTAP suite
+- [x] Edge Function `route-estimate` (Distance Matrix, haversine fallback); the wizard plans with it (`features/tasks/plan.ts`)
+- [x] Task wizard (`components/task-wizard/`): category → details (flight card) → stops → schedule (start = flight − drive − buffer) → driver (conflicts inline, share hint) → review; edit / assign / cancel from the task sheet
+- [x] Calendar: drag (or Shift+arrows) to reschedule or move between drivers
+- [ ] Recurring daily routines (FR-12, RRULE + generator) → Phase 5 per the PRD roadmap
+- [ ] Bulk actions (FR-17: duplicate, move day, reassign, cancel) and week-view drag
+- [ ] Places autocomplete for custom stops → with Maps JS in Phase 4 (stops take a pasted Maps link / coordinates today)
+- [x] Ticket import (FR-18): wizard flight card → "Import from ticket" → Edge Function `ai-parse-ticket` (Claude reads any agency's PDF / photo) → review dialog (pick the flight, staff passengers matched by name, others as visitors, unclear fields flagged) → flight card + far end of the flight + booking filled (`tasks.metadata.ticket`). Prompt/clean-up in `_shared/ticket-reader.ts`, matching in `features/tasks/ticket.ts`. Demo mode: the dev server reads real tickets when `ANTHROPIC_API_KEY` is in `apps/web/.env.local` (`/__dev/ai-parse-ticket`, vite.config.ts); without it the sample `mocks/ticket.ts` is shown and labelled as a sample
+
+## Staff, grades & grade groups (migration 0004)
+- [x] `grade_groups` (Settings → Grades; presets "20 / 01 is most senior"), `people` staff directory (Staff page, Excel/CSV import via `read-excel-file`, template download)
+- [x] Vehicles carry a group; drivers have a grade + "drives for" group (A = everyone, C = C and below)
+- [x] Wizard passengers come from the directory; unknown → register popup (name + grade) or one-time visitor (given a group)
+- [x] Same group only per car: `grade_mixed`, `vehicle_grade_mismatch`, `driver_grade_not_allowed` are blocking conflicts (admin override with reason); shared trips stay within one group
+- Grade rules live in `features/grades/rules.ts` (client preview + demo mirror of `fn_grade_conflicts` / `fn_snapshot_passengers`) — keep in sync with 0004
+
+## Job titles & driver documents (migration 0005)
+- [x] Settings → Documents: document types (country starter sets, expiry + reminder window) and job titles with required documents
+- [x] Driver job title → required documents on the profile; upload copy + number + issue/expiry date (private bucket `driver-documents`)
+- [x] Documents page (sidebar badge = expired + missing) and owner/admin reminders via `fn_document_reminders` (pg_cron daily, see DATABASE.md §9d)
+- [ ] Drivers see / upload their own documents in the driver app
+- [ ] Optional: warn when assigning a driver whose required documents are expired
+
+## Platform super admin & active airports (migration 0008)
+- [x] `platform_admins` + `rpc_platform_create_company` / `rpc_platform_companies`; self-service `rpc_create_company` dropped (owners no longer sign up — login has no "New company" tab)
+- [x] `/platform` console (super admin): companies list, create company + invite owner (Edge Function `invite-owner`), invite owner later; no access to company data
+- [x] Accounts without a company → `/no-company`; invited owners → `/accept-invite?next=/onboarding`; onboarding only edits the company profile
+- [x] `site_airports.is_active`: AirportPicker keeps every AI suggestion with an Active switch; `useSites()` → `airports` (active, used by the wizard/ticket import) and `allAirports` (picker, site detail). Helpers in `features/sites/airports.ts` mirror `rpc_set_site_airports`
+- Seed login `super@masar.dev`; demo persona "Super admin". Grant a real one with SQL (DATABASE.md §9g)
+
+## Passenger module (migration 0006+) — role `passenger`, app at `/passenger`
+- Passengers never read staff tables (restrictive policies); their data comes from `rpc_passenger_home` (masked). Keep `mocks/passenger.ts` in sync with 0006 and `mocks/passenger-trips.ts` with 0007.
+- Drivers never read `task_passengers.checkin_code` (column privileges) — select explicit columns, never `*`, on that table.
+- [x] Phase 1: registration (e-mail domain or join code + employee ID → pending → owner/admin approves on Staff), trips + ticket + duration, driver card (no phone), trip documents (task sheet → Documents), ratings (configurable options, 24 h edit window, anonymous to drivers, low-rating alerts, Ratings page), Settings → Passengers
+- [x] Phase 2 (0007): live trip view + share link (`/track/$token`, anonymous), passenger notifications + Web Push (`send-push`, `public/push-sw.js`), QR / six-digit check-in + drop-off (driver task page), SOS (passenger button, staff alert bar), trip requests (passenger Requests tab, staff `/requests` inbox → wizard prefill); driver location reporting (`features/drivers/location.ts`)
+- [ ] Push needs VAPID keys + the `masar-send-push` cron job (DATABASE.md §9f); demo mode is in-app only
+- [ ] Phase 3: chat, history + PDF receipt, complaints & lost-and-found, offline documents, shared-trip pickup order, i18n/RTL pass

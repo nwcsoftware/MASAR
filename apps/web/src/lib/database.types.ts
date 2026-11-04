@@ -164,9 +164,13 @@ export type Database = {
           flight_api_enabled: boolean
           grace_min: number
           location_interval_sec: number
+          low_rating_threshold: number
           max_daily_driving_min: number
           no_show_after_min: number
           offline_alert_after_min: number
+          passenger_email_domains: string[]
+          passenger_join_code: string | null
+          rating_edit_hours: number
           reminder_offsets_min: number[]
           standard_day_min: number
           start_prompt_after_min: number
@@ -184,9 +188,13 @@ export type Database = {
           flight_api_enabled?: boolean
           grace_min?: number
           location_interval_sec?: number
+          low_rating_threshold?: number
           max_daily_driving_min?: number
           no_show_after_min?: number
           offline_alert_after_min?: number
+          passenger_email_domains?: string[]
+          passenger_join_code?: string | null
+          rating_edit_hours?: number
           reminder_offsets_min?: number[]
           standard_day_min?: number
           start_prompt_after_min?: number
@@ -204,9 +212,13 @@ export type Database = {
           flight_api_enabled?: boolean
           grace_min?: number
           location_interval_sec?: number
+          low_rating_threshold?: number
           max_daily_driving_min?: number
           no_show_after_min?: number
           offline_alert_after_min?: number
+          passenger_email_domains?: string[]
+          passenger_join_code?: string | null
+          rating_edit_hours?: number
           reminder_offsets_min?: number[]
           standard_day_min?: number
           start_prompt_after_min?: number
@@ -219,6 +231,53 @@ export type Database = {
             foreignKeyName: "company_settings_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      document_types: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          has_expiry: boolean
+          id: string
+          is_active: boolean
+          is_driving_licence: boolean
+          name: string
+          name_ar: string | null
+          remind_days: number
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          has_expiry?: boolean
+          id?: string
+          is_active?: boolean
+          is_driving_licence?: boolean
+          name: string
+          name_ar?: string | null
+          remind_days?: number
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          has_expiry?: boolean
+          id?: string
+          is_active?: boolean
+          is_driving_licence?: boolean
+          name?: string
+          name_ar?: string | null
+          remind_days?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "document_types_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
@@ -338,6 +397,89 @@ export type Database = {
           },
         ]
       }
+      driver_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          document_no: string | null
+          document_type_id: string
+          driver_id: string
+          expires_on: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
+          id: string
+          issued_on: string
+          notes: string | null
+          storage_path: string | null
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          document_no?: string | null
+          document_type_id: string
+          driver_id: string
+          expires_on?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issued_on: string
+          notes?: string | null
+          storage_path?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          document_no?: string | null
+          document_type_id?: string
+          driver_id?: string
+          expires_on?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
+          id?: string
+          issued_on?: string
+          notes?: string | null
+          storage_path?: string | null
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_documents_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_documents_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_documents_uploaded_by_fkey"
+            columns: ["uploaded_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       driver_locations: {
         Row: {
           accuracy_m: number | null
@@ -401,19 +543,24 @@ export type Database = {
           created_at: string
           current_status: Database["public"]["Enums"]["driver_status"]
           employee_no: string | null
+          english_rating: number | null
           full_name: string
           full_name_ar: string | null
+          grade: number | null
           home_site_id: string | null
           id: string
           is_active: boolean
+          job_title_id: string | null
           last_seen_at: string | null
           licence_expiry: string | null
           licence_no: string | null
           max_daily_driving_min: number | null
+          nationality: string | null
           notes: string | null
           phone: string | null
           photo_url: string | null
           profile_id: string | null
+          serve_group_id: string | null
           shift_end: string | null
           shift_start: string | null
           updated_at: string
@@ -423,19 +570,24 @@ export type Database = {
           created_at?: string
           current_status?: Database["public"]["Enums"]["driver_status"]
           employee_no?: string | null
+          english_rating?: number | null
           full_name: string
           full_name_ar?: string | null
+          grade?: number | null
           home_site_id?: string | null
           id?: string
           is_active?: boolean
+          job_title_id?: string | null
           last_seen_at?: string | null
           licence_expiry?: string | null
           licence_no?: string | null
           max_daily_driving_min?: number | null
+          nationality?: string | null
           notes?: string | null
           phone?: string | null
           photo_url?: string | null
           profile_id?: string | null
+          serve_group_id?: string | null
           shift_end?: string | null
           shift_start?: string | null
           updated_at?: string
@@ -445,19 +597,24 @@ export type Database = {
           created_at?: string
           current_status?: Database["public"]["Enums"]["driver_status"]
           employee_no?: string | null
+          english_rating?: number | null
           full_name?: string
           full_name_ar?: string | null
+          grade?: number | null
           home_site_id?: string | null
           id?: string
           is_active?: boolean
+          job_title_id?: string | null
           last_seen_at?: string | null
           licence_expiry?: string | null
           licence_no?: string | null
           max_daily_driving_min?: number | null
+          nationality?: string | null
           notes?: string | null
           phone?: string | null
           photo_url?: string | null
           profile_id?: string | null
+          serve_group_id?: string | null
           shift_end?: string | null
           shift_start?: string | null
           updated_at?: string
@@ -482,6 +639,55 @@ export type Database = {
             columns: ["profile_id"]
             isOneToOne: true
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_serve_group_id_fkey"
+            columns: ["serve_group_id"]
+            isOneToOne: false
+            referencedRelation: "grade_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_job_title_id_fkey"
+            columns: ["job_title_id"]
+            isOneToOne: false
+            referencedRelation: "job_titles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      emergency_contacts: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          person_id: string
+          phone: string
+          relation: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          person_id: string
+          phone: string
+          relation?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          person_id?: string
+          phone?: string
+          relation?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "emergency_contacts_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
             referencedColumns: ["id"]
           },
         ]
@@ -549,6 +755,50 @@ export type Database = {
           },
         ]
       }
+      grade_groups: {
+        Row: {
+          code: string
+          company_id: string
+          created_at: string
+          id: string
+          max_grade: number
+          min_grade: number
+          name: string | null
+          name_ar: string | null
+          rank: number
+        }
+        Insert: {
+          code: string
+          company_id: string
+          created_at?: string
+          id?: string
+          max_grade: number
+          min_grade: number
+          name?: string | null
+          name_ar?: string | null
+          rank: number
+        }
+        Update: {
+          code?: string
+          company_id?: string
+          created_at?: string
+          id?: string
+          max_grade?: number
+          min_grade?: number
+          name?: string | null
+          name_ar?: string | null
+          rank?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "grade_groups_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       holidays: {
         Row: {
           company_id: string
@@ -574,6 +824,74 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "holidays_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_title_documents: {
+        Row: {
+          document_type_id: string
+          job_title_id: string
+        }
+        Insert: {
+          document_type_id: string
+          job_title_id: string
+        }
+        Update: {
+          document_type_id?: string
+          job_title_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_title_documents_document_type_id_fkey"
+            columns: ["document_type_id"]
+            isOneToOne: false
+            referencedRelation: "document_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_title_documents_job_title_id_fkey"
+            columns: ["job_title_id"]
+            isOneToOne: false
+            referencedRelation: "job_titles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_titles: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          name_ar: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          name_ar?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          name_ar?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_titles_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
@@ -651,6 +969,131 @@ export type Database = {
           {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_admins: {
+        Row: {
+          created_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      people: {
+        Row: {
+          accessibility_needs: string | null
+          company_id: string
+          created_at: string
+          created_by: string | null
+          department: string | null
+          email: string | null
+          employee_no: string | null
+          full_name: string
+          full_name_ar: string | null
+          grade: number | null
+          id: string
+          is_active: boolean
+          job_title: string | null
+          language: Database["public"]["Enums"]["app_language"]
+          notes: string | null
+          phone: string | null
+          photo_url: string | null
+          profile_id: string | null
+          registration_note: string | null
+          registration_status: string | null
+          ride_preferences: string[]
+          site_id: string | null
+          source: string
+          updated_at: string
+        }
+        Insert: {
+          accessibility_needs?: string | null
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          employee_no?: string | null
+          full_name: string
+          full_name_ar?: string | null
+          grade?: number | null
+          id?: string
+          is_active?: boolean
+          job_title?: string | null
+          language?: Database["public"]["Enums"]["app_language"]
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          registration_note?: string | null
+          registration_status?: string | null
+          ride_preferences?: string[]
+          site_id?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Update: {
+          accessibility_needs?: string | null
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          employee_no?: string | null
+          full_name?: string
+          full_name_ar?: string | null
+          grade?: number | null
+          id?: string
+          is_active?: boolean
+          job_title?: string | null
+          language?: Database["public"]["Enums"]["app_language"]
+          notes?: string | null
+          phone?: string | null
+          photo_url?: string | null
+          profile_id?: string | null
+          registration_note?: string | null
+          registration_status?: string | null
+          ride_preferences?: string[]
+          site_id?: string | null
+          source?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "people_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "people_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "people_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "people_profile_id_fkey"
+            columns: ["profile_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
@@ -770,6 +1213,53 @@ export type Database = {
           },
         ]
       }
+      rating_options: {
+        Row: {
+          alerts: boolean
+          category: string
+          code: string
+          company_id: string
+          id: string
+          is_active: boolean
+          label: string
+          label_ar: string | null
+          score: number | null
+          sort: number
+        }
+        Insert: {
+          alerts?: boolean
+          category: string
+          code: string
+          company_id: string
+          id?: string
+          is_active?: boolean
+          label: string
+          label_ar?: string | null
+          score?: number | null
+          sort?: number
+        }
+        Update: {
+          alerts?: boolean
+          category?: string
+          code?: string
+          company_id?: string
+          id?: string
+          is_active?: boolean
+          label?: string
+          label_ar?: string | null
+          score?: number | null
+          sort?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rating_options_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recurrence_rules: {
         Row: {
           company_id: string
@@ -818,6 +1308,7 @@ export type Database = {
           default_buffer_min: number
           distance_km: number | null
           drive_minutes: number | null
+          is_active: boolean
           is_default: boolean
           site_id: string
         }
@@ -827,6 +1318,7 @@ export type Database = {
           default_buffer_min?: number
           distance_km?: number | null
           drive_minutes?: number | null
+          is_active?: boolean
           is_default?: boolean
           site_id: string
         }
@@ -836,6 +1328,7 @@ export type Database = {
           default_buffer_min?: number
           distance_km?: number | null
           drive_minutes?: number | null
+          is_active?: boolean
           is_default?: boolean
           site_id?: string
         }
@@ -933,6 +1426,88 @@ export type Database = {
           },
         ]
       }
+      sos_events: {
+        Row: {
+          accuracy_m: number | null
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          company_id: string
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          location_at: string | null
+          message: string | null
+          person_id: string
+          raised_by: string | null
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+          task_id: string
+        }
+        Insert: {
+          accuracy_m?: number | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_at?: string | null
+          message?: string | null
+          person_id: string
+          raised_by?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          task_id: string
+        }
+        Update: {
+          accuracy_m?: number | null
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          location_at?: string | null
+          message?: string | null
+          person_id?: string
+          raised_by?: string | null
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sos_events_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sos_events_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sos_events_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_assignments: {
         Row: {
           acknowledged_at: string | null
@@ -1010,30 +1585,51 @@ export type Database = {
       task_attachments: {
         Row: {
           caption: string | null
+          category: string
           created_at: string
+          expires_on: string | null
+          file_name: string | null
+          file_size: number | null
+          file_type: string | null
           id: string
           kind: string
-          storage_path: string
+          storage_path: string | null
           task_id: string
+          title: string | null
           uploaded_by: string | null
+          visible_to_passengers: boolean
         }
         Insert: {
           caption?: string | null
+          category?: string
           created_at?: string
+          expires_on?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           kind?: string
-          storage_path: string
+          storage_path?: string | null
           task_id: string
+          title?: string | null
           uploaded_by?: string | null
+          visible_to_passengers?: boolean
         }
         Update: {
           caption?: string | null
+          category?: string
           created_at?: string
+          expires_on?: string | null
+          file_name?: string | null
+          file_size?: number | null
+          file_type?: string | null
           id?: string
           kind?: string
-          storage_path?: string
+          storage_path?: string | null
           task_id?: string
+          title?: string | null
           uploaded_by?: string | null
+          visible_to_passengers?: boolean
         }
         Relationships: [
           {
@@ -1287,6 +1883,73 @@ export type Database = {
           },
         ]
       }
+      task_passengers: {
+        Row: {
+          checked_in_at: string | null
+          checkin_code: string | null
+          company_id: string
+          created_at: string
+          dropoff_stop_seq: number | null
+          dropped_off_at: string | null
+          id: string
+          name: string
+          person_id: string | null
+          pickup_order: number
+          pickup_stop_seq: number | null
+          task_id: string
+        }
+        Insert: {
+          checked_in_at?: string | null
+          checkin_code?: string | null
+          company_id: string
+          created_at?: string
+          dropoff_stop_seq?: number | null
+          dropped_off_at?: string | null
+          id?: string
+          name: string
+          person_id?: string | null
+          pickup_order: number
+          pickup_stop_seq?: number | null
+          task_id: string
+        }
+        Update: {
+          checked_in_at?: string | null
+          checkin_code?: string | null
+          company_id?: string
+          created_at?: string
+          dropoff_stop_seq?: number | null
+          dropped_off_at?: string | null
+          id?: string
+          name?: string
+          person_id?: string | null
+          pickup_order?: number
+          pickup_stop_seq?: number | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_passengers_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_passengers_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_passengers_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_stops: {
         Row: {
           actual_arrival_at: string | null
@@ -1520,6 +2183,280 @@ export type Database = {
           },
         ]
       }
+      trip_rating_choices: {
+        Row: {
+          option_id: string
+          rating_id: string
+        }
+        Insert: {
+          option_id: string
+          rating_id: string
+        }
+        Update: {
+          option_id?: string
+          rating_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_rating_choices_option_id_fkey"
+            columns: ["option_id"]
+            isOneToOne: false
+            referencedRelation: "rating_options"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_rating_choices_rating_id_fkey"
+            columns: ["rating_id"]
+            isOneToOne: false
+            referencedRelation: "trip_ratings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_ratings: {
+        Row: {
+          comment: string | null
+          company_id: string
+          created_at: string
+          driver_id: string | null
+          editable_until: string
+          id: string
+          is_low: boolean
+          person_id: string
+          photo_paths: string[]
+          stars: number
+          task_id: string
+          updated_at: string
+          vehicle_id: string | null
+        }
+        Insert: {
+          comment?: string | null
+          company_id: string
+          created_at?: string
+          driver_id?: string | null
+          editable_until: string
+          id?: string
+          is_low?: boolean
+          person_id: string
+          photo_paths?: string[]
+          stars: number
+          task_id: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Update: {
+          comment?: string | null
+          company_id?: string
+          created_at?: string
+          driver_id?: string | null
+          editable_until?: string
+          id?: string
+          is_low?: boolean
+          person_id?: string
+          photo_paths?: string[]
+          stars?: number
+          task_id?: string
+          updated_at?: string
+          vehicle_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_ratings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_ratings_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_ratings_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_ratings_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_ratings_vehicle_id_fkey"
+            columns: ["vehicle_id"]
+            isOneToOne: false
+            referencedRelation: "vehicles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_requests: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_task_id: string | null
+          decided_at: string | null
+          decided_by: string | null
+          decision_note: string | null
+          dropoff: string | null
+          id: string
+          kind: string
+          notes: string | null
+          passengers_count: number
+          person_id: string
+          pickup: string | null
+          requested_by: string | null
+          requested_start: string | null
+          site_id: string | null
+          status: string
+          task_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_task_id?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          dropoff?: string | null
+          id?: string
+          kind: string
+          notes?: string | null
+          passengers_count?: number
+          person_id: string
+          pickup?: string | null
+          requested_by?: string | null
+          requested_start?: string | null
+          site_id?: string | null
+          status?: string
+          task_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_task_id?: string | null
+          decided_at?: string | null
+          decided_by?: string | null
+          decision_note?: string | null
+          dropoff?: string | null
+          id?: string
+          kind?: string
+          notes?: string | null
+          passengers_count?: number
+          person_id?: string
+          pickup?: string | null
+          requested_by?: string | null
+          requested_start?: string | null
+          site_id?: string | null
+          status?: string
+          task_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_requests_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_requests_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_requests_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_requests_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_requests_created_task_id_fkey"
+            columns: ["created_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_share_links: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          person_id: string
+          revoked_at: string | null
+          task_id: string
+          token: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          expires_at: string
+          id?: string
+          person_id: string
+          revoked_at?: string | null
+          task_id: string
+          token?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          person_id?: string
+          revoked_at?: string | null
+          task_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_share_links_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_share_links_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_share_links_person_id_fkey"
+            columns: ["person_id"]
+            isOneToOne: false
+            referencedRelation: "people"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_sites: {
         Row: {
           site_id: string
@@ -1555,6 +2492,7 @@ export type Database = {
           color: string | null
           company_id: string
           created_at: string
+          grade_group_id: string | null
           id: string
           is_active: boolean
           make: string | null
@@ -1571,6 +2509,7 @@ export type Database = {
           color?: string | null
           company_id: string
           created_at?: string
+          grade_group_id?: string | null
           id?: string
           is_active?: boolean
           make?: string | null
@@ -1587,6 +2526,7 @@ export type Database = {
           color?: string | null
           company_id?: string
           created_at?: string
+          grade_group_id?: string | null
           id?: string
           is_active?: boolean
           make?: string | null
@@ -1612,6 +2552,13 @@ export type Database = {
             columns: ["site_id"]
             isOneToOne: false
             referencedRelation: "sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vehicles_grade_group_id_fkey"
+            columns: ["grade_group_id"]
+            isOneToOne: false
+            referencedRelation: "grade_groups"
             referencedColumns: ["id"]
           },
         ]
@@ -1676,9 +2623,21 @@ export type Database = {
         Args: never
         Returns: boolean
       }
+      auth_is_platform_admin: {
+        Args: never
+        Returns: boolean
+      }
+      auth_is_passenger: {
+        Args: never
+        Returns: boolean
+      }
       auth_is_staff: {
         Args: never
         Returns: boolean
+      }
+      auth_person_id: {
+        Args: never
+        Returns: string
       }
       auth_role: {
         Args: never
@@ -1689,6 +2648,31 @@ export type Database = {
           p_user: string
         }
         Returns: boolean
+      }
+      fn_conflict_gate: {
+        Args: {
+          p_task_id: string
+          p_override_reason: string
+        }
+        Returns: undefined
+      }
+      fn_conflicts_for: {
+        Args: {
+          p_company: string
+          p_driver_id: string
+          p_vehicle_id: string
+          p_start: string
+          p_end: string
+          p_first_lat?: number
+          p_first_lng?: number
+          p_exclude_task?: string
+        }
+        Returns: {
+            type: Database["public"]["Enums"]["conflict_type"]
+            severity: Database["public"]["Enums"]["conflict_severity"]
+            other_task_id: string
+            details: Json
+          }[]
       }
       fn_check_task_conflicts: {
         Args: {
@@ -1714,6 +2698,47 @@ export type Database = {
         }
         Returns: number
       }
+      fn_document_reminders: {
+        Args: never
+        Returns: number
+      }
+      fn_driver_rating: {
+        Args: {
+          p_driver_id: string
+        }
+        Returns: {
+            ratings: number
+            stars: number
+            driving: number
+          }[]
+      }
+      fn_grade_conflicts: {
+        Args: {
+          p_company: string
+          p_passengers: Json
+          p_vehicle_id: string
+          p_driver_id: string
+        }
+        Returns: {
+            type: Database["public"]["Enums"]["conflict_type"]
+            severity: Database["public"]["Enums"]["conflict_severity"]
+            other_task_id: string
+            details: Json
+          }[]
+      }
+      fn_grade_group: {
+        Args: {
+          p_company: string
+          p_grade: number
+        }
+        Returns: string
+      }
+      fn_passenger_can_read_attachment: {
+        Args: {
+          p_path: string
+        }
+        Returns: boolean
+      }
       fn_plan_due_reminders: {
         Args: never
         Returns: number
@@ -1735,6 +2760,21 @@ export type Database = {
         }
         Returns: undefined
       }
+      fn_set_primary_driver: {
+        Args: {
+          p_task_id: string
+          p_driver_id: string
+          p_vehicle_id: string
+        }
+        Returns: undefined
+      }
+      fn_share_grade_check: {
+        Args: {
+          p_task_id: string
+          p_host_task_id: string
+        }
+        Returns: undefined
+      }
       fn_similar_airport_trips: {
         Args: {
           p_airport_id: string
@@ -1751,7 +2791,16 @@ export type Database = {
             scheduled_start: string
             driver_name: string
             minutes_apart: number
+            passenger_groups: string[]
+            vehicle_group: string
           }[]
+      }
+      fn_snapshot_passengers: {
+        Args: {
+          p_company: string
+          p_passengers: Json
+        }
+        Returns: Json
       }
       fn_task_effective_end: {
         Args: {
@@ -1769,7 +2818,178 @@ export type Database = {
         Args: never
         Returns: undefined
       }
-      rpc_create_company: {
+      rpc_import_people: {
+        Args: {
+          p_rows: Json
+        }
+        Returns: Json
+      }
+      rpc_override_task_conflicts: {
+        Args: {
+          p_task_id: string
+          p_reason: string
+        }
+        Returns: undefined
+      }
+      rpc_create_share_link: {
+        Args: {
+          p_task_id: string
+        }
+        Returns: string
+      }
+      rpc_decide_request: {
+        Args: {
+          p_request_id: string
+          p_approve: boolean
+          p_note?: string
+          p_created_task_id?: string
+          p_override_reason?: string
+        }
+        Returns: undefined
+      }
+      rpc_driver_check_in: {
+        Args: {
+          p_task_id: string
+          p_code: string
+          p_lat?: number
+          p_lng?: number
+          p_task_passenger_id?: string
+        }
+        Returns: Json
+      }
+      rpc_driver_drop_off: {
+        Args: {
+          p_task_passenger_id: string
+          p_lat?: number
+          p_lng?: number
+        }
+        Returns: Json
+      }
+      rpc_passenger_live: {
+        Args: {
+          p_task_id: string
+        }
+        Returns: Json
+      }
+      rpc_passenger_request: {
+        Args: {
+          p: Json
+        }
+        Returns: string
+      }
+      rpc_passenger_sos: {
+        Args: {
+          p_task_id: string
+          p_lat?: number
+          p_lng?: number
+          p_accuracy?: number
+          p_message?: string
+        }
+        Returns: Json
+      }
+      rpc_revoke_share_link: {
+        Args: {
+          p_task_id: string
+        }
+        Returns: undefined
+      }
+      rpc_shared_trip: {
+        Args: {
+          p_token: string
+        }
+        Returns: Json
+      }
+      rpc_sos_update: {
+        Args: {
+          p_sos_id: string
+          p_action: string
+          p_note?: string
+        }
+        Returns: undefined
+      }
+      rpc_withdraw_request: {
+        Args: {
+          p_request_id: string
+        }
+        Returns: undefined
+      }
+      rpc_passenger_home: {
+        Args: never
+        Returns: Json
+      }
+      rpc_passenger_register: {
+        Args: {
+          p_full_name: string
+          p_phone?: string
+          p_employee_no?: string
+          p_join_code?: string
+          p_language?: string
+        }
+        Returns: string
+      }
+      rpc_preview_grade_conflicts: {
+        Args: {
+          p_passengers: Json
+          p_vehicle_id?: string
+          p_driver_id?: string
+        }
+        Returns: {
+            type: Database["public"]["Enums"]["conflict_type"]
+            severity: Database["public"]["Enums"]["conflict_severity"]
+            other_task_id: string
+            details: Json
+          }[]
+      }
+      rpc_preview_task_conflicts: {
+        Args: {
+          p_driver_ids: string[]
+          p_start: string
+          p_end: string
+          p_vehicle_id?: string
+          p_first_lat?: number
+          p_first_lng?: number
+          p_exclude_task?: string
+        }
+        Returns: {
+            driver_id: string
+            type: Database["public"]["Enums"]["conflict_type"]
+            severity: Database["public"]["Enums"]["conflict_severity"]
+            other_task_id: string
+            details: Json
+          }[]
+      }
+      rpc_report_location: {
+        Args: {
+          p_lat: number
+          p_lng: number
+          p_accuracy?: number
+          p_speed_kmh?: number
+          p_heading?: number
+          p_battery?: number
+          p_task_id?: string
+          p_recorded_at?: string
+        }
+        Returns: undefined
+      }
+      rpc_platform_companies: {
+        Args: never
+        Returns: {
+          id: string
+          name: string
+          name_ar: string | null
+          country_code: string
+          timezone: string
+          default_language: Database["public"]["Enums"]["app_language"]
+          created_at: string
+          owner_id: string | null
+          owner_name: string | null
+          owner_email: string | null
+          owner_pending: boolean | null
+          site_count: number
+          user_count: number
+        }[]
+      }
+      rpc_platform_create_company: {
         Args: {
           p_name: string
           p_name_ar?: string
@@ -1789,18 +3009,51 @@ export type Database = {
             updated_at: string
           }
       }
-      rpc_report_location: {
+      rpc_reschedule_task: {
         Args: {
-          p_lat: number
-          p_lng: number
-          p_accuracy?: number
-          p_speed_kmh?: number
-          p_heading?: number
-          p_battery?: number
-          p_task_id?: string
-          p_recorded_at?: string
+          p_task_id: string
+          p_start: string
+          p_driver_id?: string
+          p_change_driver?: boolean
+          p_override_reason?: string
         }
         Returns: undefined
+      }
+      rpc_save_task: {
+        Args: {
+          p_task: Json
+        }
+        Returns: string
+      }
+      rpc_review_registration: {
+        Args: {
+          p_person_id: string
+          p_approve: boolean
+          p_note?: string
+        }
+        Returns: undefined
+      }
+      rpc_save_job_title: {
+        Args: {
+          p_title: Json
+        }
+        Returns: string
+      }
+      rpc_set_grade_groups: {
+        Args: {
+          p_groups: Json
+        }
+        Returns: {
+            code: string
+            company_id: string
+            created_at: string
+            id: string
+            max_grade: number
+            min_grade: number
+            name: string | null
+            name_ar: string | null
+            rank: number
+          }[]
       }
       rpc_set_site_airports: {
         Args: {
@@ -1816,6 +3069,23 @@ export type Database = {
             is_default: boolean
             site_id: string
           }[]
+      }
+      rpc_share_trip: {
+        Args: {
+          p_task_id: string
+          p_host_task_id: string
+        }
+        Returns: undefined
+      }
+      rpc_submit_rating: {
+        Args: {
+          p_task_id: string
+          p_stars: number
+          p_option_ids?: string[]
+          p_comment?: string
+          p_photo_paths?: string[]
+        }
+        Returns: string
       }
       rpc_task_transition: {
         Args: {
@@ -1858,6 +3128,12 @@ export type Database = {
             updated_at: string
           }
       }
+      rpc_update_my_profile: {
+        Args: {
+          p: Json
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_language:
@@ -1869,6 +3145,7 @@ export type Database = {
         | "dispatcher"
         | "driver"
         | "viewer"
+        | "passenger"
       availability_type:
         | "leave"
         | "sick"
@@ -1886,6 +3163,9 @@ export type Database = {
         | "driver_over_hours"
         | "outside_working_hours"
         | "driver_unavailable"
+        | "grade_mixed"
+        | "vehicle_grade_mismatch"
+        | "driver_grade_not_allowed"
       delay_reason:
         | "flight_delayed"
         | "traffic"
@@ -1922,6 +3202,20 @@ export type Database = {
         | "airport_share_hint"
         | "conflict_detected"
         | "system"
+        | "document_expiring"
+        | "document_expired"
+        | "passenger_registered"
+        | "registration_approved"
+        | "registration_rejected"
+        | "low_rating"
+        | "passenger_trip_assigned"
+        | "driver_changed"
+        | "driver_on_the_way"
+        | "driver_arrived"
+        | "trip_document_added"
+        | "sos_alert"
+        | "trip_request"
+        | "trip_request_decided"
       site_type:
         | "construction_site"
         | "office"
@@ -2000,15 +3294,15 @@ export const Constants = {
   public: {
     Enums: {
       app_language: ["en", "ar"],
-      app_role: ["owner", "admin", "dispatcher", "driver", "viewer"],
+      app_role: ["owner", "admin", "dispatcher", "driver", "viewer", "passenger"],
       availability_type: ["leave", "sick", "off_day", "training", "other"],
       conflict_severity: ["info", "warning", "blocking"],
-      conflict_type: ["driver_overlap", "driver_multi_location_same_day", "vehicle_overlap", "driver_over_hours", "outside_working_hours", "driver_unavailable"],
+      conflict_type: ["driver_overlap", "driver_multi_location_same_day", "vehicle_overlap", "driver_over_hours", "outside_working_hours", "driver_unavailable", "grade_mixed", "vehicle_grade_mismatch", "driver_grade_not_allowed"],
       delay_reason: ["flight_delayed", "traffic", "passenger_late", "vehicle_issue", "weather", "other"],
       driver_status: ["offline", "idle", "en_route", "in_progress", "delayed"],
       flight_direction: ["arrival", "departure"],
       notification_channel: ["in_app", "push", "email"],
-      notification_type: ["task_assigned", "task_reminder", "task_start_prompt", "task_complete_prompt", "task_updated", "task_cancelled", "driver_not_acknowledged", "task_not_started", "task_delayed", "task_completed", "driver_no_show", "driver_offline", "airport_share_hint", "conflict_detected", "system"],
+      notification_type: ["task_assigned", "task_reminder", "task_start_prompt", "task_complete_prompt", "task_updated", "task_cancelled", "driver_not_acknowledged", "task_not_started", "task_delayed", "task_completed", "driver_no_show", "driver_offline", "airport_share_hint", "conflict_detected", "system", "document_expiring", "document_expired", "passenger_registered", "registration_approved", "registration_rejected", "low_rating", "passenger_trip_assigned", "driver_changed", "driver_on_the_way", "driver_arrived", "trip_document_added", "sos_alert", "trip_request", "trip_request_decided"],
       site_type: ["construction_site", "office", "warehouse", "other"],
       task_category: ["daily_routine", "airport", "document_delivery", "escort"],
       task_event_type: ["created", "updated", "assigned", "unassigned", "acknowledged", "declined", "reminder_sent", "started", "arrived", "delayed", "resumed", "completed", "cancelled", "no_show", "conflict_overridden", "note_added", "attachment_added", "location_snapshot"],
