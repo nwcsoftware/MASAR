@@ -10,33 +10,448 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as adminRouteRouteImport } from './routes/(admin)/route'
+import { Route as authRouteRouteImport } from './routes/(auth)/route'
+import { Route as driverRouteRouteImport } from './routes/(driver)/route'
+import { Route as passengerRouteRouteImport } from './routes/(passenger)/route'
+import { Route as NoCompanyRouteImport } from './routes/no-company'
+import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PlatformRouteImport } from './routes/platform'
+import { Route as adminCalendarRouteImport } from './routes/(admin)/calendar'
+import { Route as adminDashboardRouteImport } from './routes/(admin)/dashboard'
+import { Route as adminDocumentsRouteImport } from './routes/(admin)/documents'
+import { Route as adminMapRouteImport } from './routes/(admin)/map'
+import { Route as adminRatingsRouteImport } from './routes/(admin)/ratings'
+import { Route as adminReportsRouteImport } from './routes/(admin)/reports'
+import { Route as adminRequestsRouteImport } from './routes/(admin)/requests'
+import { Route as adminSettingsRouteImport } from './routes/(admin)/settings'
+import { Route as adminStaffRouteImport } from './routes/(admin)/staff'
+import { Route as adminTasksRouteImport } from './routes/(admin)/tasks'
+import { Route as authAcceptInviteRouteImport } from './routes/(auth)/accept-invite'
+import { Route as authLoginRouteImport } from './routes/(auth)/login'
+import { Route as authRegisterRouteImport } from './routes/(auth)/register'
+import { Route as TrackTokenRouteImport } from './routes/track.$token'
+import { Route as adminDriversIndexRouteImport } from './routes/(admin)/drivers/index'
+import { Route as adminDriversDriverIdRouteImport } from './routes/(admin)/drivers/$driverId'
+import { Route as adminSitesIndexRouteImport } from './routes/(admin)/sites/index'
+import { Route as adminSitesSiteIdRouteImport } from './routes/(admin)/sites/$siteId'
+import { Route as driverDriverIndexRouteImport } from './routes/(driver)/driver/index'
+import { Route as driverDriverHoursRouteImport } from './routes/(driver)/driver/hours'
+import { Route as driverDriverMeRouteImport } from './routes/(driver)/driver/me'
+import { Route as driverDriverWeekRouteImport } from './routes/(driver)/driver/week'
+import { Route as passengerPassengerIndexRouteImport } from './routes/(passenger)/passenger/index'
+import { Route as passengerPassengerMeRouteImport } from './routes/(passenger)/passenger/me'
+import { Route as passengerPassengerRequestsRouteImport } from './routes/(passenger)/passenger/requests'
+import { Route as driverDriverTasksTaskIdRouteImport } from './routes/(driver)/driver/tasks/$taskId'
+import { Route as passengerPassengerRateTaskIdRouteImport } from './routes/(passenger)/passenger/rate.$taskId'
+import { Route as passengerPassengerTripsTaskIdRouteImport } from './routes/(passenger)/passenger/trips/$taskId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const adminRouteRoute = adminRouteRouteImport.update({
+  id: '/(admin)',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const authRouteRoute = authRouteRouteImport.update({
+  id: '/(auth)',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const driverRouteRoute = driverRouteRouteImport.update({
+  id: '/(driver)',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const passengerRouteRoute = passengerRouteRouteImport.update({
+  id: '/(passenger)',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NoCompanyRoute = NoCompanyRouteImport.update({
+  id: '/no-company',
+  path: '/no-company',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OnboardingRoute = OnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlatformRoute = PlatformRouteImport.update({
+  id: '/platform',
+  path: '/platform',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const adminCalendarRoute = adminCalendarRouteImport.update({
+  id: '/calendar',
+  path: '/calendar',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminDashboardRoute = adminDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminDocumentsRoute = adminDocumentsRouteImport.update({
+  id: '/documents',
+  path: '/documents',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminMapRoute = adminMapRouteImport.update({
+  id: '/map',
+  path: '/map',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminRatingsRoute = adminRatingsRouteImport.update({
+  id: '/ratings',
+  path: '/ratings',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminReportsRoute = adminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminRequestsRoute = adminRequestsRouteImport.update({
+  id: '/requests',
+  path: '/requests',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminSettingsRoute = adminSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminStaffRoute = adminStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminTasksRoute = adminTasksRouteImport.update({
+  id: '/tasks',
+  path: '/tasks',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const authAcceptInviteRoute = authAcceptInviteRouteImport.update({
+  id: '/accept-invite',
+  path: '/accept-invite',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authLoginRoute = authLoginRouteImport.update({
+  id: '/login',
+  path: '/login',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const authRegisterRoute = authRegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => authRouteRoute,
+} as any)
+const TrackTokenRoute = TrackTokenRouteImport.update({
+  id: '/track/$token',
+  path: '/track/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const adminDriversIndexRoute = adminDriversIndexRouteImport.update({
+  id: '/drivers/',
+  path: '/drivers/',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminDriversDriverIdRoute = adminDriversDriverIdRouteImport.update({
+  id: '/drivers/$driverId',
+  path: '/drivers/$driverId',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminSitesIndexRoute = adminSitesIndexRouteImport.update({
+  id: '/sites/',
+  path: '/sites/',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const adminSitesSiteIdRoute = adminSitesSiteIdRouteImport.update({
+  id: '/sites/$siteId',
+  path: '/sites/$siteId',
+  getParentRoute: () => adminRouteRoute,
+} as any)
+const driverDriverIndexRoute = driverDriverIndexRouteImport.update({
+  id: '/driver/',
+  path: '/driver/',
+  getParentRoute: () => driverRouteRoute,
+} as any)
+const driverDriverHoursRoute = driverDriverHoursRouteImport.update({
+  id: '/driver/hours',
+  path: '/driver/hours',
+  getParentRoute: () => driverRouteRoute,
+} as any)
+const driverDriverMeRoute = driverDriverMeRouteImport.update({
+  id: '/driver/me',
+  path: '/driver/me',
+  getParentRoute: () => driverRouteRoute,
+} as any)
+const driverDriverWeekRoute = driverDriverWeekRouteImport.update({
+  id: '/driver/week',
+  path: '/driver/week',
+  getParentRoute: () => driverRouteRoute,
+} as any)
+const passengerPassengerIndexRoute = passengerPassengerIndexRouteImport.update({
+  id: '/passenger/',
+  path: '/passenger/',
+  getParentRoute: () => passengerRouteRoute,
+} as any)
+const passengerPassengerMeRoute = passengerPassengerMeRouteImport.update({
+  id: '/passenger/me',
+  path: '/passenger/me',
+  getParentRoute: () => passengerRouteRoute,
+} as any)
+const passengerPassengerRequestsRoute =
+  passengerPassengerRequestsRouteImport.update({
+    id: '/passenger/requests',
+    path: '/passenger/requests',
+    getParentRoute: () => passengerRouteRoute,
+  } as any)
+const driverDriverTasksTaskIdRoute = driverDriverTasksTaskIdRouteImport.update({
+  id: '/driver/tasks/$taskId',
+  path: '/driver/tasks/$taskId',
+  getParentRoute: () => driverRouteRoute,
+} as any)
+const passengerPassengerRateTaskIdRoute =
+  passengerPassengerRateTaskIdRouteImport.update({
+    id: '/passenger/rate/$taskId',
+    path: '/passenger/rate/$taskId',
+    getParentRoute: () => passengerRouteRoute,
+  } as any)
+const passengerPassengerTripsTaskIdRoute =
+  passengerPassengerTripsTaskIdRouteImport.update({
+    id: '/passenger/trips/$taskId',
+    path: '/passenger/trips/$taskId',
+    getParentRoute: () => passengerRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/no-company': typeof NoCompanyRoute
+  '/onboarding': typeof OnboardingRoute
+  '/platform': typeof PlatformRoute
+  '/calendar': typeof adminCalendarRoute
+  '/dashboard': typeof adminDashboardRoute
+  '/documents': typeof adminDocumentsRoute
+  '/map': typeof adminMapRoute
+  '/ratings': typeof adminRatingsRoute
+  '/reports': typeof adminReportsRoute
+  '/requests': typeof adminRequestsRoute
+  '/settings': typeof adminSettingsRoute
+  '/staff': typeof adminStaffRoute
+  '/tasks': typeof adminTasksRoute
+  '/accept-invite': typeof authAcceptInviteRoute
+  '/login': typeof authLoginRoute
+  '/register': typeof authRegisterRoute
+  '/track/$token': typeof TrackTokenRoute
+  '/drivers/$driverId': typeof adminDriversDriverIdRoute
+  '/sites/$siteId': typeof adminSitesSiteIdRoute
+  '/driver/hours': typeof driverDriverHoursRoute
+  '/driver/me': typeof driverDriverMeRoute
+  '/driver/week': typeof driverDriverWeekRoute
+  '/passenger/me': typeof passengerPassengerMeRoute
+  '/passenger/requests': typeof passengerPassengerRequestsRoute
+  '/drivers/': typeof adminDriversIndexRoute
+  '/sites/': typeof adminSitesIndexRoute
+  '/driver/': typeof driverDriverIndexRoute
+  '/passenger/': typeof passengerPassengerIndexRoute
+  '/driver/tasks/$taskId': typeof driverDriverTasksTaskIdRoute
+  '/passenger/rate/$taskId': typeof passengerPassengerRateTaskIdRoute
+  '/passenger/trips/$taskId': typeof passengerPassengerTripsTaskIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/no-company': typeof NoCompanyRoute
+  '/onboarding': typeof OnboardingRoute
+  '/platform': typeof PlatformRoute
+  '/calendar': typeof adminCalendarRoute
+  '/dashboard': typeof adminDashboardRoute
+  '/documents': typeof adminDocumentsRoute
+  '/map': typeof adminMapRoute
+  '/ratings': typeof adminRatingsRoute
+  '/reports': typeof adminReportsRoute
+  '/requests': typeof adminRequestsRoute
+  '/settings': typeof adminSettingsRoute
+  '/staff': typeof adminStaffRoute
+  '/tasks': typeof adminTasksRoute
+  '/accept-invite': typeof authAcceptInviteRoute
+  '/login': typeof authLoginRoute
+  '/register': typeof authRegisterRoute
+  '/track/$token': typeof TrackTokenRoute
+  '/drivers/$driverId': typeof adminDriversDriverIdRoute
+  '/sites/$siteId': typeof adminSitesSiteIdRoute
+  '/driver/hours': typeof driverDriverHoursRoute
+  '/driver/me': typeof driverDriverMeRoute
+  '/driver/week': typeof driverDriverWeekRoute
+  '/passenger/me': typeof passengerPassengerMeRoute
+  '/passenger/requests': typeof passengerPassengerRequestsRoute
+  '/drivers': typeof adminDriversIndexRoute
+  '/sites': typeof adminSitesIndexRoute
+  '/driver': typeof driverDriverIndexRoute
+  '/passenger': typeof passengerPassengerIndexRoute
+  '/driver/tasks/$taskId': typeof driverDriverTasksTaskIdRoute
+  '/passenger/rate/$taskId': typeof passengerPassengerRateTaskIdRoute
+  '/passenger/trips/$taskId': typeof passengerPassengerTripsTaskIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/(admin)': typeof adminRouteRouteWithChildren
+  '/(auth)': typeof authRouteRouteWithChildren
+  '/(driver)': typeof driverRouteRouteWithChildren
+  '/(passenger)': typeof passengerRouteRouteWithChildren
+  '/no-company': typeof NoCompanyRoute
+  '/onboarding': typeof OnboardingRoute
+  '/platform': typeof PlatformRoute
+  '/(admin)/calendar': typeof adminCalendarRoute
+  '/(admin)/dashboard': typeof adminDashboardRoute
+  '/(admin)/documents': typeof adminDocumentsRoute
+  '/(admin)/map': typeof adminMapRoute
+  '/(admin)/ratings': typeof adminRatingsRoute
+  '/(admin)/reports': typeof adminReportsRoute
+  '/(admin)/requests': typeof adminRequestsRoute
+  '/(admin)/settings': typeof adminSettingsRoute
+  '/(admin)/staff': typeof adminStaffRoute
+  '/(admin)/tasks': typeof adminTasksRoute
+  '/(auth)/accept-invite': typeof authAcceptInviteRoute
+  '/(auth)/login': typeof authLoginRoute
+  '/(auth)/register': typeof authRegisterRoute
+  '/track/$token': typeof TrackTokenRoute
+  '/(admin)/drivers/$driverId': typeof adminDriversDriverIdRoute
+  '/(admin)/sites/$siteId': typeof adminSitesSiteIdRoute
+  '/(driver)/driver/hours': typeof driverDriverHoursRoute
+  '/(driver)/driver/me': typeof driverDriverMeRoute
+  '/(driver)/driver/week': typeof driverDriverWeekRoute
+  '/(passenger)/passenger/me': typeof passengerPassengerMeRoute
+  '/(passenger)/passenger/requests': typeof passengerPassengerRequestsRoute
+  '/(admin)/drivers/': typeof adminDriversIndexRoute
+  '/(admin)/sites/': typeof adminSitesIndexRoute
+  '/(driver)/driver/': typeof driverDriverIndexRoute
+  '/(passenger)/passenger/': typeof passengerPassengerIndexRoute
+  '/(driver)/driver/tasks/$taskId': typeof driverDriverTasksTaskIdRoute
+  '/(passenger)/passenger/rate/$taskId': typeof passengerPassengerRateTaskIdRoute
+  '/(passenger)/passenger/trips/$taskId': typeof passengerPassengerTripsTaskIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/no-company'
+    | '/onboarding'
+    | '/platform'
+    | '/calendar'
+    | '/dashboard'
+    | '/documents'
+    | '/map'
+    | '/ratings'
+    | '/reports'
+    | '/requests'
+    | '/settings'
+    | '/staff'
+    | '/tasks'
+    | '/accept-invite'
+    | '/login'
+    | '/register'
+    | '/track/$token'
+    | '/drivers/$driverId'
+    | '/sites/$siteId'
+    | '/driver/hours'
+    | '/driver/me'
+    | '/driver/week'
+    | '/passenger/me'
+    | '/passenger/requests'
+    | '/drivers/'
+    | '/sites/'
+    | '/driver/'
+    | '/passenger/'
+    | '/driver/tasks/$taskId'
+    | '/passenger/rate/$taskId'
+    | '/passenger/trips/$taskId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/no-company'
+    | '/onboarding'
+    | '/platform'
+    | '/calendar'
+    | '/dashboard'
+    | '/documents'
+    | '/map'
+    | '/ratings'
+    | '/reports'
+    | '/requests'
+    | '/settings'
+    | '/staff'
+    | '/tasks'
+    | '/accept-invite'
+    | '/login'
+    | '/register'
+    | '/track/$token'
+    | '/drivers/$driverId'
+    | '/sites/$siteId'
+    | '/driver/hours'
+    | '/driver/me'
+    | '/driver/week'
+    | '/passenger/me'
+    | '/passenger/requests'
+    | '/drivers'
+    | '/sites'
+    | '/driver'
+    | '/passenger'
+    | '/driver/tasks/$taskId'
+    | '/passenger/rate/$taskId'
+    | '/passenger/trips/$taskId'
+  id:
+    | '__root__'
+    | '/'
+    | '/(admin)'
+    | '/(auth)'
+    | '/(driver)'
+    | '/(passenger)'
+    | '/no-company'
+    | '/onboarding'
+    | '/platform'
+    | '/(admin)/calendar'
+    | '/(admin)/dashboard'
+    | '/(admin)/documents'
+    | '/(admin)/map'
+    | '/(admin)/ratings'
+    | '/(admin)/reports'
+    | '/(admin)/requests'
+    | '/(admin)/settings'
+    | '/(admin)/staff'
+    | '/(admin)/tasks'
+    | '/(auth)/accept-invite'
+    | '/(auth)/login'
+    | '/(auth)/register'
+    | '/track/$token'
+    | '/(admin)/drivers/$driverId'
+    | '/(admin)/sites/$siteId'
+    | '/(driver)/driver/hours'
+    | '/(driver)/driver/me'
+    | '/(driver)/driver/week'
+    | '/(passenger)/passenger/me'
+    | '/(passenger)/passenger/requests'
+    | '/(admin)/drivers/'
+    | '/(admin)/sites/'
+    | '/(driver)/driver/'
+    | '/(passenger)/passenger/'
+    | '/(driver)/driver/tasks/$taskId'
+    | '/(passenger)/passenger/rate/$taskId'
+    | '/(passenger)/passenger/trips/$taskId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  adminRouteRoute: typeof adminRouteRouteWithChildren
+  authRouteRoute: typeof authRouteRouteWithChildren
+  driverRouteRoute: typeof driverRouteRouteWithChildren
+  passengerRouteRoute: typeof passengerRouteRouteWithChildren
+  NoCompanyRoute: typeof NoCompanyRoute
+  OnboardingRoute: typeof OnboardingRoute
+  PlatformRoute: typeof PlatformRoute
+  TrackTokenRoute: typeof TrackTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +463,358 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/(admin)': {
+      id: '/(admin)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof adminRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(auth)': {
+      id: '/(auth)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof authRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(driver)': {
+      id: '/(driver)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof driverRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(passenger)': {
+      id: '/(passenger)'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof passengerRouteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/no-company': {
+      id: '/no-company'
+      path: '/no-company'
+      fullPath: '/no-company'
+      preLoaderRoute: typeof NoCompanyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/onboarding': {
+      id: '/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/platform': {
+      id: '/platform'
+      path: '/platform'
+      fullPath: '/platform'
+      preLoaderRoute: typeof PlatformRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(admin)/calendar': {
+      id: '/(admin)/calendar'
+      path: '/calendar'
+      fullPath: '/calendar'
+      preLoaderRoute: typeof adminCalendarRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/dashboard': {
+      id: '/(admin)/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof adminDashboardRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/documents': {
+      id: '/(admin)/documents'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof adminDocumentsRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/map': {
+      id: '/(admin)/map'
+      path: '/map'
+      fullPath: '/map'
+      preLoaderRoute: typeof adminMapRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/ratings': {
+      id: '/(admin)/ratings'
+      path: '/ratings'
+      fullPath: '/ratings'
+      preLoaderRoute: typeof adminRatingsRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/reports': {
+      id: '/(admin)/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof adminReportsRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/requests': {
+      id: '/(admin)/requests'
+      path: '/requests'
+      fullPath: '/requests'
+      preLoaderRoute: typeof adminRequestsRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/settings': {
+      id: '/(admin)/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof adminSettingsRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/staff': {
+      id: '/(admin)/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof adminStaffRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/tasks': {
+      id: '/(admin)/tasks'
+      path: '/tasks'
+      fullPath: '/tasks'
+      preLoaderRoute: typeof adminTasksRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(auth)/accept-invite': {
+      id: '/(auth)/accept-invite'
+      path: '/accept-invite'
+      fullPath: '/accept-invite'
+      preLoaderRoute: typeof authAcceptInviteRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/login': {
+      id: '/(auth)/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof authLoginRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/(auth)/register': {
+      id: '/(auth)/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof authRegisterRouteImport
+      parentRoute: typeof authRouteRoute
+    }
+    '/track/$token': {
+      id: '/track/$token'
+      path: '/track/$token'
+      fullPath: '/track/$token'
+      preLoaderRoute: typeof TrackTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/(admin)/drivers/': {
+      id: '/(admin)/drivers/'
+      path: '/drivers'
+      fullPath: '/drivers/'
+      preLoaderRoute: typeof adminDriversIndexRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/drivers/$driverId': {
+      id: '/(admin)/drivers/$driverId'
+      path: '/drivers/$driverId'
+      fullPath: '/drivers/$driverId'
+      preLoaderRoute: typeof adminDriversDriverIdRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/sites/': {
+      id: '/(admin)/sites/'
+      path: '/sites'
+      fullPath: '/sites/'
+      preLoaderRoute: typeof adminSitesIndexRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(admin)/sites/$siteId': {
+      id: '/(admin)/sites/$siteId'
+      path: '/sites/$siteId'
+      fullPath: '/sites/$siteId'
+      preLoaderRoute: typeof adminSitesSiteIdRouteImport
+      parentRoute: typeof adminRouteRoute
+    }
+    '/(driver)/driver/': {
+      id: '/(driver)/driver/'
+      path: '/driver'
+      fullPath: '/driver/'
+      preLoaderRoute: typeof driverDriverIndexRouteImport
+      parentRoute: typeof driverRouteRoute
+    }
+    '/(driver)/driver/hours': {
+      id: '/(driver)/driver/hours'
+      path: '/driver/hours'
+      fullPath: '/driver/hours'
+      preLoaderRoute: typeof driverDriverHoursRouteImport
+      parentRoute: typeof driverRouteRoute
+    }
+    '/(driver)/driver/me': {
+      id: '/(driver)/driver/me'
+      path: '/driver/me'
+      fullPath: '/driver/me'
+      preLoaderRoute: typeof driverDriverMeRouteImport
+      parentRoute: typeof driverRouteRoute
+    }
+    '/(driver)/driver/week': {
+      id: '/(driver)/driver/week'
+      path: '/driver/week'
+      fullPath: '/driver/week'
+      preLoaderRoute: typeof driverDriverWeekRouteImport
+      parentRoute: typeof driverRouteRoute
+    }
+    '/(passenger)/passenger/': {
+      id: '/(passenger)/passenger/'
+      path: '/passenger'
+      fullPath: '/passenger/'
+      preLoaderRoute: typeof passengerPassengerIndexRouteImport
+      parentRoute: typeof passengerRouteRoute
+    }
+    '/(passenger)/passenger/me': {
+      id: '/(passenger)/passenger/me'
+      path: '/passenger/me'
+      fullPath: '/passenger/me'
+      preLoaderRoute: typeof passengerPassengerMeRouteImport
+      parentRoute: typeof passengerRouteRoute
+    }
+    '/(passenger)/passenger/requests': {
+      id: '/(passenger)/passenger/requests'
+      path: '/passenger/requests'
+      fullPath: '/passenger/requests'
+      preLoaderRoute: typeof passengerPassengerRequestsRouteImport
+      parentRoute: typeof passengerRouteRoute
+    }
+    '/(driver)/driver/tasks/$taskId': {
+      id: '/(driver)/driver/tasks/$taskId'
+      path: '/driver/tasks/$taskId'
+      fullPath: '/driver/tasks/$taskId'
+      preLoaderRoute: typeof driverDriverTasksTaskIdRouteImport
+      parentRoute: typeof driverRouteRoute
+    }
+    '/(passenger)/passenger/rate/$taskId': {
+      id: '/(passenger)/passenger/rate/$taskId'
+      path: '/passenger/rate/$taskId'
+      fullPath: '/passenger/rate/$taskId'
+      preLoaderRoute: typeof passengerPassengerRateTaskIdRouteImport
+      parentRoute: typeof passengerRouteRoute
+    }
+    '/(passenger)/passenger/trips/$taskId': {
+      id: '/(passenger)/passenger/trips/$taskId'
+      path: '/passenger/trips/$taskId'
+      fullPath: '/passenger/trips/$taskId'
+      preLoaderRoute: typeof passengerPassengerTripsTaskIdRouteImport
+      parentRoute: typeof passengerRouteRoute
+    }
   }
 }
 
+interface adminRouteRouteChildren {
+  adminCalendarRoute: typeof adminCalendarRoute
+  adminDashboardRoute: typeof adminDashboardRoute
+  adminDocumentsRoute: typeof adminDocumentsRoute
+  adminMapRoute: typeof adminMapRoute
+  adminRatingsRoute: typeof adminRatingsRoute
+  adminReportsRoute: typeof adminReportsRoute
+  adminRequestsRoute: typeof adminRequestsRoute
+  adminSettingsRoute: typeof adminSettingsRoute
+  adminStaffRoute: typeof adminStaffRoute
+  adminTasksRoute: typeof adminTasksRoute
+  adminDriversDriverIdRoute: typeof adminDriversDriverIdRoute
+  adminSitesSiteIdRoute: typeof adminSitesSiteIdRoute
+  adminDriversIndexRoute: typeof adminDriversIndexRoute
+  adminSitesIndexRoute: typeof adminSitesIndexRoute
+}
+
+const adminRouteRouteChildren: adminRouteRouteChildren = {
+  adminCalendarRoute: adminCalendarRoute,
+  adminDashboardRoute: adminDashboardRoute,
+  adminDocumentsRoute: adminDocumentsRoute,
+  adminMapRoute: adminMapRoute,
+  adminRatingsRoute: adminRatingsRoute,
+  adminReportsRoute: adminReportsRoute,
+  adminRequestsRoute: adminRequestsRoute,
+  adminSettingsRoute: adminSettingsRoute,
+  adminStaffRoute: adminStaffRoute,
+  adminTasksRoute: adminTasksRoute,
+  adminDriversDriverIdRoute: adminDriversDriverIdRoute,
+  adminSitesSiteIdRoute: adminSitesSiteIdRoute,
+  adminDriversIndexRoute: adminDriversIndexRoute,
+  adminSitesIndexRoute: adminSitesIndexRoute,
+}
+
+const adminRouteRouteWithChildren = adminRouteRoute._addFileChildren(
+  adminRouteRouteChildren,
+)
+
+interface authRouteRouteChildren {
+  authAcceptInviteRoute: typeof authAcceptInviteRoute
+  authLoginRoute: typeof authLoginRoute
+  authRegisterRoute: typeof authRegisterRoute
+}
+
+const authRouteRouteChildren: authRouteRouteChildren = {
+  authAcceptInviteRoute: authAcceptInviteRoute,
+  authLoginRoute: authLoginRoute,
+  authRegisterRoute: authRegisterRoute,
+}
+
+const authRouteRouteWithChildren = authRouteRoute._addFileChildren(
+  authRouteRouteChildren,
+)
+
+interface driverRouteRouteChildren {
+  driverDriverHoursRoute: typeof driverDriverHoursRoute
+  driverDriverMeRoute: typeof driverDriverMeRoute
+  driverDriverWeekRoute: typeof driverDriverWeekRoute
+  driverDriverIndexRoute: typeof driverDriverIndexRoute
+  driverDriverTasksTaskIdRoute: typeof driverDriverTasksTaskIdRoute
+}
+
+const driverRouteRouteChildren: driverRouteRouteChildren = {
+  driverDriverHoursRoute: driverDriverHoursRoute,
+  driverDriverMeRoute: driverDriverMeRoute,
+  driverDriverWeekRoute: driverDriverWeekRoute,
+  driverDriverIndexRoute: driverDriverIndexRoute,
+  driverDriverTasksTaskIdRoute: driverDriverTasksTaskIdRoute,
+}
+
+const driverRouteRouteWithChildren = driverRouteRoute._addFileChildren(
+  driverRouteRouteChildren,
+)
+
+interface passengerRouteRouteChildren {
+  passengerPassengerMeRoute: typeof passengerPassengerMeRoute
+  passengerPassengerRequestsRoute: typeof passengerPassengerRequestsRoute
+  passengerPassengerIndexRoute: typeof passengerPassengerIndexRoute
+  passengerPassengerRateTaskIdRoute: typeof passengerPassengerRateTaskIdRoute
+  passengerPassengerTripsTaskIdRoute: typeof passengerPassengerTripsTaskIdRoute
+}
+
+const passengerRouteRouteChildren: passengerRouteRouteChildren = {
+  passengerPassengerMeRoute: passengerPassengerMeRoute,
+  passengerPassengerRequestsRoute: passengerPassengerRequestsRoute,
+  passengerPassengerIndexRoute: passengerPassengerIndexRoute,
+  passengerPassengerRateTaskIdRoute: passengerPassengerRateTaskIdRoute,
+  passengerPassengerTripsTaskIdRoute: passengerPassengerTripsTaskIdRoute,
+}
+
+const passengerRouteRouteWithChildren = passengerRouteRoute._addFileChildren(
+  passengerRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  adminRouteRoute: adminRouteRouteWithChildren,
+  authRouteRoute: authRouteRouteWithChildren,
+  driverRouteRoute: driverRouteRouteWithChildren,
+  passengerRouteRoute: passengerRouteRouteWithChildren,
+  NoCompanyRoute: NoCompanyRoute,
+  OnboardingRoute: OnboardingRoute,
+  PlatformRoute: PlatformRoute,
+  TrackTokenRoute: TrackTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

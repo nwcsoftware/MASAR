@@ -50,3 +50,6 @@ supabase/.temp/
 apps/web/dev-dist/
 apps/web/public/sw.js
 apps/web/public/workbox-*.js
+
+# Edge Function secrets (template: supabase/functions/.env.example)
+supabase/functions/.env

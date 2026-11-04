@@ -1,0 +1,89 @@
+# CLAUDE.md Phase 0 — CI: lint, typecheck, test, `supabase db lint`
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web:
+    name: Lint · typecheck · i18n · unit tests · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4 # version from package.json "packageManager"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm i18n:check
+      - run: pnpm test
+      - run: pnpm build
+
+  e2e:
+    name: Playwright (en · ar · driver PWA)
+    runs-on: ubuntu-latest
+    needs: web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @masar/web exec playwright install --with-deps chromium
+      # No Supabase secrets in CI → the app runs in demo mode with seeded mock data.
+      - run: pnpm e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: apps/web/playwright-report
+          retention-days: 7
+
+  functions:
+    name: Edge Functions (deno check)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check every function
+        run: |
+          for dir in supabase/functions/*/; do
+            [ -f "$dir/index.ts" ] || continue
+            echo "::group::$dir"
+            (cd "$dir" && deno check index.ts)
+            echo "::endgroup::"
+          done
+
+  db:
+    name: Supabase migration + seed + db lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.122.0
+      # Applies supabase/migrations/* and supabase/seed.sql to a throwaway Postgres.
+      - run: supabase db start
+      - run: supabase db lint --level error
+      - run: supabase test db # pgTAP — supabase/tests/*.test.sql
+      - name: Seed sanity check
+        run: |
+          psql "postgresql://postgres:postgres@127.0.0.1:54322/postgres" -v ON_ERROR_STOP=1 -c "
+            do \$\$ begin
+              if (select count(*) from tasks) < 14 then raise exception 'seed did not load tasks'; end if;
+              if not exists (select 1 from task_conflicts where type = 'driver_overlap' and resolved_at is null)
+                then raise exception 'expected the seeded double booking'; end if;
+            end \$\$;"

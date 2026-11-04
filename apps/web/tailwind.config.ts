@@ -60,6 +60,11 @@ export default {
         ring: 'var(--ring)',
         success: 'var(--success)',
         warning: 'var(--warning)',
+        // Text-safe variants: amber/green/orange on white fall below 4.5:1, so text mixes
+        // the token toward --text (darker in light mode, lighter in dark). DESIGN.md §8.
+        'warning-fg': 'color-mix(in srgb, var(--warning) 62%, var(--text))',
+        'success-fg': 'color-mix(in srgb, var(--success) 72%, var(--text))',
+        'delayed-fg': 'color-mix(in srgb, var(--status-delayed) 70%, var(--text))',
         danger: 'var(--danger)',
         info: 'var(--info)',
       },
